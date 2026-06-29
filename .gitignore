@@ -1,0 +1,22 @@
+# Segredos e configuração de ambiente (Princípio I — nunca commitar)
+.env
+.env.*
+!.env.example
+
+# Dependências
+node_modules/
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Build e artefatos
+dist/
+build/
+*.log
+
+# Sistema operacional e editores
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
