@@ -15,6 +15,18 @@ dist/
 build/
 *.log
 
+# Next.js
+/.next/
+/out/
+next-env.d.ts
+
+# TypeScript build info
+*.tsbuildinfo
+
+# Prisma (cliente gerado)
+/src/generated/
+/prisma/*.db
+
 # Sistema operacional e editores
 .DS_Store
 Thumbs.db

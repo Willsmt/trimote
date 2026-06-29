@@ -65,9 +65,10 @@ ALTER TABLE "Booking"
 
 ## D3 — Modelo de horário de funcionamento
 
-- **Decision**: Tabela `OpeningHours` com `(barbershopId, weekday, opensAt, closesAt)`, onde `weekday`
-  é 0–6 e `opensAt/closesAt` são horários locais (TIME, em `America/Sao_Paulo`). Um dia sem linha =
-  fechado (sem slots — FR-005, edge case "dia sem expediente").
+- **Decision**: Tabela `OpeningHours` com `(barbershopId, weekday, opensAtMinutes, closesAtMinutes)`,
+  onde `weekday` é 0–6 e `opensAtMinutes/closesAtMinutes` são horários locais em minutos desde a
+  meia-noite (`America/Sao_Paulo`), evitando ambiguidade de fuso. Um dia sem linha = fechado (sem
+  slots — FR-005, edge case "dia sem expediente").
 - **Rationale**: Simples e suficiente para o MVP (uma barbearia, uma cadeira). Mantém o horário de
   funcionamento como dado pré-cadastrado (sem CRUD do dono — escopo).
 - **Alternatives considered**:

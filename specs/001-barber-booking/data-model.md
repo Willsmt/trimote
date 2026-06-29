@@ -33,12 +33,15 @@ Horário de funcionamento por dia da semana (entidade "Horário de Funcionamento
 | `id` | string (cuid) | PK |
 | `barbershopId` | string | FK → Barbershop |
 | `weekday` | int (0–6) | 0 = domingo … 6 = sábado |
-| `opensAt` | time (local) | hora local de abertura (America/Sao_Paulo) |
-| `closesAt` | time (local) | hora local de fechamento; `closesAt > opensAt` |
+| `opensAtMinutes` | int | hora local de abertura em minutos desde a meia-noite (America/Sao_Paulo); ex.: 09:00 = 540 |
+| `closesAtMinutes` | int | hora local de fechamento em minutos desde a meia-noite; `closesAtMinutes > opensAtMinutes` |
 
 - Restrições: `UNIQUE (barbershopId, weekday)` no MVP (uma janela contínua por dia).
 - Ausência de linha para um `weekday` ⇒ barbearia fechada nesse dia (sem slots — FR-005, edge "dia sem
   expediente").
+- **Representação do horário**: usamos minutos desde a meia-noite (Int) em vez de `TIME`. É uma hora
+  local "sem fuso" consumida diretamente pela lógica de domínio pura, evitando ambiguidade de fuso na
+  conversão; a conversão para instante UTC ocorre na camada `src/domain/time` (Princípio VII).
 
 ### BarbershopService
 

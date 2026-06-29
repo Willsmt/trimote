@@ -1,0 +1,137 @@
+// Schema Prisma — feature 001-barber-booking.
+// Convenções: objetos de banco e código em inglês (Princípio V).
+// Tempo: todos os instantes em UTC via Timestamptz (Princípio VII); o cálculo em
+// America/Sao_Paulo é responsabilidade da camada de domínio, não do banco.
+//
+// IMPORTANTE: a garantia de não-sobreposição (Princípio II / FR-008/FR-009) é uma
+// exclusion constraint (EXCLUDE USING gist sobre tstzrange) que o Prisma NÃO modela.
+// Ela é adicionada por migration SQL manual — ver prisma/migrations e research.md (D1/D8).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------------------
+// Autenticação (NextAuth / Auth.js — Prisma adapter)
+// ---------------------------------------------------------------------------
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  accounts      Account[]
+  sessions      Session[]
+  bookings      Booking[]
+  createdAt     DateTime  @default(now()) @db.Timestamptz(6)
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ---------------------------------------------------------------------------
+// Domínio da barbearia
+// ---------------------------------------------------------------------------
+
+model Barbershop {
+  id        String              @id @default(cuid())
+  name      String
+  // Fuso usado pela camada de domínio para derivar disponibilidade (default America/Sao_Paulo).
+  timezone  String              @default("America/Sao_Paulo")
+  openingHours OpeningHours[]
+  services  BarbershopService[]
+  bookings  Booking[]
+  createdAt DateTime            @default(now()) @db.Timestamptz(6)
+}
+
+model OpeningHours {
+  id           String     @id @default(cuid())
+  barbershopId String
+  // 0 = domingo ... 6 = sábado.
+  weekday      Int
+  // Horário local de abertura/fechamento, em minutos desde a meia-noite no fuso da barbearia
+  // (ex.: 09:00 = 540, 18:00 = 1080). Evita ambiguidade de fuso ao representar hora local.
+  opensAtMinutes  Int
+  closesAtMinutes Int
+
+  barbershop Barbershop @relation(fields: [barbershopId], references: [id], onDelete: Cascade)
+
+  // Uma janela contínua por dia no MVP.
+  @@unique([barbershopId, weekday])
+}
+
+model BarbershopService {
+  id              String    @id @default(cuid())
+  barbershopId    String
+  name            String
+  // Preço monetário: NUMERIC, nunca float (Princípio II — precisão).
+  price           Decimal   @db.Decimal(10, 2)
+  durationMinutes Int
+
+  barbershop Barbershop @relation(fields: [barbershopId], references: [id], onDelete: Cascade)
+  bookings   Booking[]
+}
+
+enum BookingStatus {
+  ACTIVE
+  CANCELLED
+}
+
+model Booking {
+  id           String        @id @default(cuid())
+  barbershopId String
+  userId       String
+  serviceId    String
+  // Instantes em UTC. endsAt é materializado (= startsAt + durationMinutes) na criação,
+  // dentro da transação, para alimentar a exclusion constraint (research.md D8).
+  startsAt     DateTime      @db.Timestamptz(6)
+  endsAt       DateTime      @db.Timestamptz(6)
+  status       BookingStatus @default(ACTIVE)
+  createdAt    DateTime      @default(now()) @db.Timestamptz(6)
+  cancelledAt  DateTime?     @db.Timestamptz(6)
+
+  barbershop Barbershop        @relation(fields: [barbershopId], references: [id])
+  user       User              @relation(fields: [userId], references: [id])
+  service    BarbershopService @relation(fields: [serviceId], references: [id])
+
+  @@index([userId])
+  @@index([barbershopId, status])
+}

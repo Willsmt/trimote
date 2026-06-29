@@ -14,7 +14,7 @@ de implementação — referencia [data-model.md](./data-model.md) e [contracts/
 Copiar `.env.example` para `.env` e preencher (Princípio I — `.env` nunca é commitado):
 
 ```text
-DATABASE_URL=postgresql://postgres:postgres@localhost:5432/trimote
+DATABASE_URL=postgresql://postgres:postgres@localhost:5433/trimote
 NEXTAUTH_SECRET=<gerar>
 NEXTAUTH_URL=http://localhost:3000
 GOOGLE_CLIENT_ID=<do Google Cloud>

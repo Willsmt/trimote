@@ -1,0 +1,25 @@
+# Ambiente local — PostgreSQL para a feature 001-barber-booking.
+# Credenciais aqui são apenas de desenvolvimento local; segredos reais nunca são versionados
+# (Princípio I). A connection string da aplicação vem de DATABASE_URL no .env.
+services:
+  postgres:
+    image: postgres:16
+    container_name: trimote-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: trimote
+    # Porta do host 5433 (5432 pode estar ocupada por outro Postgres local). Container: 5432.
+    ports:
+      - "5433:5432"
+    volumes:
+      - trimote_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d trimote"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  trimote_pgdata:
