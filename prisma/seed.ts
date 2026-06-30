@@ -1,3 +1,5 @@
+import "dotenv/config";
+
 import { PrismaClient, Prisma } from "@prisma/client";
 
 // Dados pré-cadastrados do MVP (sem painel do dono — escopo). Idempotente via ids fixos.
@@ -56,7 +58,22 @@ async function main() {
     });
   }
 
-  console.log("Seed concluído: barbearia, expediente e serviços.");
+  // Painel do dono (feature 002): promove (ou cria) o usuário OWNER a partir de OWNER_EMAIL (FR-001a).
+  // Idempotente: se já existe um User com esse e-mail (ex.: criado pelo login Google), apenas define
+  // role = OWNER; senão, cria um placeholder que o login real depois casa por e-mail. Sem UI de gestão.
+  const ownerEmail = process.env.OWNER_EMAIL;
+  if (ownerEmail) {
+    await prisma.user.upsert({
+      where: { email: ownerEmail },
+      update: { role: "OWNER" },
+      create: { email: ownerEmail, role: "OWNER" },
+    });
+    console.log(`Seed concluído: barbearia, expediente, serviços e OWNER (${ownerEmail}).`);
+  } else {
+    console.log(
+      "Seed concluído: barbearia, expediente e serviços. (OWNER_EMAIL não definido — nenhum OWNER promovido.)",
+    );
+  }
 }
 
 main()
