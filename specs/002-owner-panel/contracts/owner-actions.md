@@ -75,9 +75,10 @@ Convenções:
 
 - **Input**: `{ weekday: number }`.
 - **Output**: `{ ok: true } | { ok: false, reason }`.
-- **Regras**: `requireOwner`; marca o dia como fechado (remove a janela do weekday). Nenhum horário é
-  oferecido nesse dia (FR-008); bookings existentes preservados (FR-011).
-- **reasons**: `forbidden`, `not_found`.
+- **Regras**: `requireOwner`; marca o dia como fechado (remove a janela do weekday). **Idempotente**:
+  fechar um dia já fechado é um no-op de sucesso (`{ ok: true }`). Nenhum horário é oferecido nesse
+  dia (FR-008); bookings existentes preservados (FR-011).
+- **reasons**: `forbidden`, `invalid_input` (weekday fora de 0–6).
 
 ---
 

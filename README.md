@@ -37,6 +37,7 @@ Feature do MVP: [`specs/001-barber-booking`](specs/001-barber-booking/).
    | `NEXTAUTH_SECRET` | Segredo do NextAuth (gere um valor aleatório) |
    | `NEXTAUTH_URL` | URL da app (ex.: `http://localhost:3000`) |
    | `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | Credenciais do Google Cloud Console |
+   | `OWNER_EMAIL` | E-mail do dono. O seed promove (ou cria) este usuário como `OWNER` (ver Painel do dono) |
 
 2. Suba o banco:
 
@@ -93,23 +94,40 @@ nenhuma conversão de fuso fora dessa camada.
 
 > Os testes de integração exigem o Postgres do `docker-compose` no ar.
 
+## Painel do dono
+
+O dono gerencia o catálogo de serviços e o horário de funcionamento em `/owner`
+(`/owner/services`, `/owner/opening-hours`).
+
+- **Papéis**: o usuário tem um `role` (`CLIENT` por padrão ou `OWNER`). Apenas `OWNER` acessa o
+  painel; a verificação é **no servidor** (guard `requireOwner`) em toda página e ação de gestão.
+- **Promoção a OWNER**: definida via `OWNER_EMAIL` no `.env`. O seed faz upsert idempotente: se já
+  existe um usuário com esse e-mail (ex.: criado pelo login Google), define `role = OWNER`; senão,
+  cria um placeholder que o login real depois casa por e-mail. Não há UI de gestão de usuários.
+- **Serviços**: criar/editar/desativar/reativar. "Remover" um serviço em uso o **desativa**
+  (soft delete via `isActive`), preservando agendamentos; a unicidade de nome entre serviços ativos
+  é garantida por índice único parcial. A listagem pública (`/services`) mostra só os ativos.
+- **Horário**: editar abertura/fechamento por dia ou marcar o dia como fechado. Muda só a
+  disponibilidade futura; agendamentos existentes nunca são cancelados.
+
 ## Estrutura
 
 ```text
-prisma/          # schema, migrations (incl. exclusion constraint), seed, sql/
+prisma/          # schema, migrations (exclusion constraint, índice único parcial), seed, sql/
 src/
-├── app/         # rotas: /services, /booking, /my-bookings, /api/auth/[...nextauth]
-├── components/  # UI (client)
+├── app/         # rotas: /services, /booking, /my-bookings, /owner/*, /api/auth/[...nextauth]
+├── components/  # UI (client), incl. owner/
 ├── domain/      # lógica pura sem I/O: availability, time (test-first)
-├── server/      # actions/ (Server Actions), booking/ (core testável), auth/, db/
+├── server/      # actions/ (Server Actions), booking/ + owner/ (core testável), auth/, db/
 └── lib/
 tests/
 ├── unit/        # availability, time (sem banco)
-└── integration/ # booking-conflict, booking-ownership (contra Postgres)
+└── integration/ # booking-conflict, booking-ownership, owner-authorization, service-lifecycle
 ```
 
 Padrão: as Server Actions (`src/server/actions/`) são wrappers finos sobre um core em
-`src/server/booking/` testável por `userId` (o owner deriva sempre da sessão no servidor).
+`src/server/booking/` e `src/server/owner/`; o owner deriva sempre da sessão no servidor (guard
+`requireOwner` para gestão).
 
 ## Convenções
 
