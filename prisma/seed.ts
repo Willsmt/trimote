@@ -64,7 +64,7 @@ main()
     await prisma.$disconnect();
   })
   .catch(async (error) => {
-    console.error(error);
+    console.error(error instanceof Error ? error.message : String(error));
     await prisma.$disconnect();
     process.exit(1);
   });

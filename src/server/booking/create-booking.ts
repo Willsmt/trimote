@@ -95,9 +95,13 @@ export async function createBookingForUser(input: CreateBookingInput): Promise<C
     );
     return { ok: true, bookingId: booking.id };
   } catch (error) {
+    // A violação da exclusion constraint é fluxo de negócio ESPERADO (horário ocupado por uma
+    // criação concorrente), não um erro: traduzimos em recusa e não relançamos nem logamos. O
+    // logger do Prisma também filtra esse caso (ver src/server/db/client.ts).
     if (isExclusionViolation(error)) {
       return { ok: false, reason: "slot_unavailable" };
     }
+    // Qualquer outro erro é inesperado e deve propagar (logado/sanitizado pela camada de erro).
     throw error;
   }
 }
