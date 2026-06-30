@@ -16,6 +16,8 @@ export interface ServiceListItem {
 
 export async function listServices(): Promise<ServiceListItem[]> {
   const services = await prisma.barbershopService.findMany({
+    // Feature 002: a oferta pública mostra apenas serviços ativos (FR-006).
+    where: { isActive: true },
     orderBy: { name: "asc" },
     select: { id: true, name: true, price: true, durationMinutes: true },
   });
