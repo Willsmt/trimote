@@ -1,0 +1,35 @@
+# .claudeignore — Trimote
+# Reduz tokens descartando arquivos que o Claude não precisa ler.
+# Sintaxe idêntica ao .gitignore.
+
+# ── Dependências e build ──────────────────────────────────────────
+node_modules/
+.next/
+.turbo/
+
+# ── Arquivos gerados / lock ───────────────────────────────────────
+package-lock.json
+prisma/migrations/
+
+# ── Infraestrutura interna do specify ────────────────────────────
+# O Claude lê a constitution e as skills via CLAUDE.md.
+# Esses arquivos de registro/manifesto são metadata interna da ferramenta.
+.specify/extensions/.registry
+.specify/integrations/
+.specify/workflows/
+.specify/scripts/
+
+# ── Templates do specify ─────────────────────────────────────────
+# Só relevantes ao criar specs novos, não durante implementação.
+.specify/templates/
+
+# ── Ambiente e editor ─────────────────────────────────────────────
+.env
+.env.local
+.env*.local
+.vscode/
+.idea/
+
+# ── Logs e cobertura ─────────────────────────────────────────────
+*.log
+coverage/
