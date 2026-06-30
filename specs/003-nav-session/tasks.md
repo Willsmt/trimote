@@ -94,7 +94,7 @@ contracts/nav-contract.md).
 
 ### Implementation for User Story 2
 
-- [ ] T006 [US2] Estender `src/components/site-header.tsx` para renderizar os links por papel
+- [x] T006 [US2] Estender `src/components/site-header.tsx` para renderizar os links por papel
   conforme a matriz de `contracts/nav-contract.md`: CLIENT vê "Agendar" (`/booking`) e "Meus
   agendamentos" (`/my-bookings`); OWNER vê tudo do CLIENT mais "Painel" (`/owner`); papel não
   reconhecido → menor privilégio (nunca exibe "Painel"). Usa o `role` já fornecido por
