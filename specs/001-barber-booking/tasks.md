@@ -81,7 +81,7 @@ apenas uma sucede.
 
 - [ ] T018 [US1] Implementar a função pura de disponibilidade em `src/domain/availability/index.ts` (recebe opening hours + bookings ativos + duração + `slotStepMinutes` default 30 + `now`; sem I/O) até T016 passar (depende de T013)
 - [ ] T019 [US1] Implementar a Server Action `getAvailableSlots` em `src/server/actions/get-available-slots.ts` (carrega opening hours e bookings ativos, chama o domínio, retorna slots em ISO/UTC) — contrato em contracts/server-actions.md
-- [ ] T020 [US1] Implementar a Server Action `createBooking` em `src/server/actions/create-booking.ts`: valida sessão (owner) e entrada no servidor, calcula `endsAt = startsAt + durationMinutes` e insere o `Booking` (incluindo `barbershopId`, chave de partição da exclusion constraint) com `status = ACTIVE` dentro de `prisma.$transaction`; captura a violação da exclusion constraint e retorna `slot_unavailable` (FR-007/FR-015) até T017 passar
+- [ ] T020 [US1] Implementar a Server Action `createBooking` em `src/server/actions/create-booking.ts`: valida sessão (owner) e entrada no servidor, calcula `endsAt = startsAt + durationMinutes` e insere o `Booking` (incluindo `barbershopId`, chave de partição da exclusion constraint) com `status = ACTIVE` dentro de `prisma.$transaction`; captura a violação da exclusion constraint e retorna `slot_unavailable` (FR-007/FR-015) até T017 passar — a lógica fica no core testável `src/server/booking/create-booking.ts` (`createBookingForUser({ userId })`); a Server Action `src/server/actions/create-booking.ts` é um wrapper que deriva o owner via `requireUser`
 - [ ] T021 [US1] Construir a UI de agendamento em `src/app/booking/page.tsx` (+ componentes em `src/components/`): selecionar serviço, escolher dia, listar slots livres e confirmar
 - [ ] T022 [US1] Aplicar guarda de autenticação no fluxo de booking (`src/app/booking/`) redirecionando/recusando visitante não autenticado (FR-001)
 
@@ -102,8 +102,8 @@ como livre; outro cliente não consegue ver nem cancelar agendamento alheio.
 
 ### Implementation for User Story 2
 
-- [ ] T024 [US2] Implementar a Server Action `listMyBookings` em `src/server/actions/list-my-bookings.ts` filtrando por `userId` da sessão (FR-010/FR-012)
-- [ ] T025 [US2] Implementar a Server Action `cancelBooking` em `src/server/actions/cancel-booking.ts`: verifica ownership, aplica soft delete (`status = CANCELLED`, `cancelledAt = now`), liberando o intervalo via constraint parcial (FR-011/FR-013) até T023 passar
+- [ ] T024 [US2] Implementar `listBookingsForUser` (core, filtra por `userId`) em `src/server/booking/list-my-bookings.ts` e a Server Action `listMyBookings` (wrapper `requireUser`) em `src/server/actions/list-my-bookings.ts` (FR-010/FR-012)
+- [ ] T025 [US2] Implementar `cancelBookingForUser` (core: verifica ownership, soft delete `status = CANCELLED`, `cancelledAt = now`, liberando o intervalo via constraint parcial) em `src/server/booking/cancel-booking.ts` e a Server Action `cancelBooking` (wrapper `requireUser`) em `src/server/actions/cancel-booking.ts` (FR-011/FR-013) até T023 passar
 - [ ] T026 [US2] Construir a UI em `src/app/my-bookings/page.tsx`: listar os próprios agendamentos e cancelar
 
 **Checkpoint**: US1 e US2 funcionam independentemente.
@@ -202,3 +202,4 @@ Task: "Teste de conflito/concorrência em tests/integration/booking-conflict/con
 - Verificar que os testes falham antes de implementar
 - Commit por tarefa ou grupo lógico, em Conventional Commits (Princípio V)
 - Objetos de banco e código em inglês; comentários e docs em português (Princípio V)
+- Padrão: Server Actions (`src/server/actions/`) são wrappers finos sobre um core em `src/server/booking/` testável por `userId` (SOLID/testabilidade — Princípio III)

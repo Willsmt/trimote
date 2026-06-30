@@ -35,8 +35,9 @@ autenticada); a regra de negócio não depende do owner.
 - **Output**: `{ slots: string[] /* horários de início ISO 8601 (UTC) */ }`.
 - **Regras**:
   - Deriva slots do `OpeningHours` do `weekday` da `date`, passo `slotStepMinutes` (default 30).
-  - Inclui `t` somente se `[t, t + service.durationMinutes)` couber em `[opensAt, closesAt)` (FR-004,
-    FR-005), não colidir com booking ativo, e `t > now` em `America/Sao_Paulo` (FR-006).
+  - Inclui `t` somente se `[t, t + service.durationMinutes)` couber na janela de funcionamento do dia
+    (definida por `opensAtMinutes`/`closesAtMinutes`) (FR-004, FR-005), não colidir com booking ativo,
+    e `t > now` em `America/Sao_Paulo` (FR-006).
   - Dia sem `OpeningHours` ⇒ `slots: []`.
 - **Erros**: `service_not_found`.
 
