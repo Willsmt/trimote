@@ -114,7 +114,7 @@ para `/` (quickstart C4, SC-005).
 
 ### Implementation for User Story 3
 
-- [ ] T007 [US3] **Verificação, sem alteração de código**: confirmar que `src/server/auth/owner.ts`
+- [x] T007 [US3] **Verificação, sem alteração de código**: confirmar que `src/server/auth/owner.ts`
   e as páginas `src/app/owner/*` não foram tocados por esta feature (apenas `layout.tsx`,
   `session.ts` e os dois componentes novos mudaram). Executar o cenário C4 do `quickstart.md`: CLIENT
   acessando `/owner` direto é redirecionado para `/` (lockdown da 002 inalterado, FR-010/FR-011,
@@ -128,9 +128,9 @@ para `/` (quickstart C4, SC-005).
 
 **Purpose**: documentação e validação final.
 
-- [ ] T008 [P] Atualizar o `README.md` com a navegação (header, login/logout, links por papel),
+- [x] T008 [P] Atualizar o `README.md` com a navegação (header, login/logout, links por papel),
   conforme Princípio V.
-- [ ] T009 Rodar a validação completa do `quickstart.md` (C1–C8) e confirmar que `npm run test`
+- [x] T009 Rodar a validação completa do `quickstart.md` (C1–C8) e confirmar que `npm run test`
   segue verde (nenhuma garantia da 001/002 foi alterada).
 
 ---

@@ -94,6 +94,23 @@ nenhuma conversão de fuso fora dessa camada.
 
 > Os testes de integração exigem o Postgres do `docker-compose` no ar.
 
+## Navegação e sessão
+
+Um **header único** (montado no layout raiz) aparece em todas as páginas e torna a app navegável sem
+digitar URLs. Feature: [`specs/003-nav-session`](specs/003-nav-session/).
+
+- **Entrar / Sair**: o visitante inicia o login com Google pela ação "Entrar"; o usuário autenticado
+  encerra a sessão por "Sair" e volta à condição de visitante. A indicação de sessão mostra quem está
+  logado (nome ou e-mail).
+- **Links por papel**: visitante vê apenas "Serviços" (listagem pública) + "Entrar"; o `CLIENT` vê
+  "Agendar" e "Meus agendamentos"; o `OWNER` vê adicionalmente o "Painel".
+- **Decisão no servidor**: quais links exibir é decidido **no servidor** — a navegação lê a sessão e o
+  `role` da **mesma fonte de verdade do `requireOwner`** (o `role` no banco, por requisição), refletindo
+  o papel atual e não um claim cacheado.
+- **Visibilidade ≠ segurança**: esconder um link é conveniência de UI. A barreira real das áreas
+  restritas continua sendo a verificação no servidor (`requireOwner`); um `CLIENT` que acesse `/owner`
+  diretamente é barrado pelo servidor, independentemente do header.
+
 ## Painel do dono
 
 O dono gerencia o catálogo de serviços e o horário de funcionamento em `/owner`
@@ -116,7 +133,7 @@ O dono gerencia o catálogo de serviços e o horário de funcionamento em `/owne
 prisma/          # schema, migrations (exclusion constraint, índice único parcial), seed, sql/
 src/
 ├── app/         # rotas: /services, /booking, /my-bookings, /owner/*, /api/auth/[...nextauth]
-├── components/  # UI (client), incl. owner/
+├── components/  # UI: site-header (server) + auth-buttons (client), my-bookings, booking, owner/
 ├── domain/      # lógica pura sem I/O: availability, time (test-first)
 ├── server/      # actions/ (Server Actions), booking/ + owner/ (core testável), auth/, db/
 └── lib/
