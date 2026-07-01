@@ -201,7 +201,7 @@ recém-ocupado por concorrência → todas recusadas com mensagem clara e sem mo
 - [X] T020 [P] Atualizar o `README` com a remarcação (fluxo, reasons, escopo) — Princípio V (Convenções).
 - [X] T021 [P] Revisar o mapa completo `reason → mensagem amigável` na UI (todas as reasons do contrato
   cobertas, textos em português) em `src/components/reschedule-flow.tsx`.
-- [ ] T022 Regressão + validação: `npm test` verde (agendar/cancelar/disponibilidade/owner intactos —
+- [x] T022 Regressão + validação: `npm test` verde (agendar/cancelar/disponibilidade/owner intactos —
   001/002 não enfraquecidas) e executar o smoke manual do [quickstart](./quickstart.md) C1–C4.
 
 ---
