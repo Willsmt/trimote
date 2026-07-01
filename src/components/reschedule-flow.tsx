@@ -105,8 +105,6 @@ export function RescheduleFlow({
       return;
     }
     setMessage(FAILURE_MESSAGES[result.reason]);
-    // Recarrega a disponibilidade (o alvo pode ter sido ocupado por concorrência).
-    await loadSlots();
   }
 
   return (
