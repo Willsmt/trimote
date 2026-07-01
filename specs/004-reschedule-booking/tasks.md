@@ -178,17 +178,17 @@ recém-ocupado por concorrência → todas recusadas com mensagem clara e sem mo
 
 ### Tests for User Story 3 (asseguram as recusas do enforcement de T005) ⚠️
 
-- [ ] T017 [P] [US3] Teste de integração **ownership/elegibilidade** em
+- [X] T017 [P] [US3] Teste de integração **ownership/elegibilidade** em
   `tests/integration/reschedule/ownership.test.ts`: `not_owner` (booking de outro), `not_active`
   (cancelado), `booking_in_past` (source já iniciado/passado) — nenhuma recusa altera o booking
   (FR-007/FR-008/FR-009, SC-005/SC-006). Exercita as guardas implementadas em T005.
-- [ ] T018 [P] [US3] Teste de integração **alvo no passado + integridade sob concorrência** em
+- [X] T018 [P] [US3] Teste de integração **alvo no passado + integridade sob concorrência** em
   `tests/integration/reschedule/refusals.test.ts`: alvo `in_the_past` recusado; sob concorrência o
   original permanece intacto (FR-005, SC-004/SC-007).
 
 ### Implementation for User Story 3
 
-- [ ] T019 [US3] Garantir em `src/components/my-bookings-list.tsx` que "Remarcar" **não** aparece para
+- [X] T019 [US3] Garantir em `src/components/my-bookings-list.tsx` que "Remarcar" **não** aparece para
   bookings cancelados nem passados (conveniência de UI; o servidor continua sendo a barreira — FR-010).
 
 **Checkpoint**: todas as stories independentes; garantias de segurança/integridade **implementadas
