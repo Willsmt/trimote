@@ -127,6 +127,39 @@ O dono gerencia o catálogo de serviços e o horário de funcionamento em `/owne
 - **Horário**: editar abertura/fechamento por dia ou marcar o dia como fechado. Muda só a
   disponibilidade futura; agendamentos existentes nunca são cancelados.
 
+## Remarcação
+
+O cliente dono pode **mover** um agendamento ativo e futuro para outro horário e/ou **trocar o
+serviço**, mantendo a **mesma identidade** — é um `UPDATE` da mesma linha (não cancela e recria), e o
+horário antigo é liberado automaticamente. Feature: [`specs/004-reschedule-booking`](specs/004-reschedule-booking/).
+
+- **Fluxo**: em "Meus agendamentos", a ação **Remarcar** aparece só em agendamentos ativos e futuros;
+  ela leva a uma página que valida a posse no servidor, onde o cliente escolhe o serviço (padrão = o
+  atual), um novo dia e um horário livre, e confirma. A disponibilidade exclui o próprio agendamento
+  (`excludeBookingId`), para ele não bloquear o próprio horário nem as adjacências.
+- **Enforcement no servidor**: posse e elegibilidade são verificadas no core **antes** de qualquer
+  trabalho ou escrita — nenhuma recusa altera o agendamento. A não-sobreposição continua sendo a
+  exclusion constraint (`23P01` traduzido em `slot_unavailable`); a app apenas traduz a violação.
+  A visibilidade da ação é conveniência de UI; o servidor é a barreira.
+- **Reasons de recusa** (curto-circuito, sem efeito colateral):
+
+  | Reason | Significado |
+  |--------|-------------|
+  | `not_found` | Agendamento inexistente. |
+  | `not_owner` | Agendamento de outro cliente. |
+  | `not_active` | Agendamento não está `ACTIVE` (ex.: cancelado). |
+  | `booking_in_past` | O agendamento a remarcar já começou/passou (fronteira pelo início). |
+  | `no_change` | Mesmo serviço **e** mesmo horário (recusa amigável, sem escrever). |
+  | `service_not_found` | Serviço escolhido inexistente. |
+  | `service_inactive` | **Troca** para um serviço inativo (manter o serviço atual não dispara). |
+  | `in_the_past` | Novo horário-alvo no passado. |
+  | `outside_opening_hours` | O serviço escolhido não cabe na janela do dia. |
+  | `slot_unavailable` | Colisão com outro agendamento ativo (`23P01`), incluindo concorrência. |
+
+- **Escopo**: sem migration (opera sobre colunas existentes de `Booking`). O único arquivo da 001
+  alterado é `get-available-slots.ts` (parâmetro opcional `excludeBookingId`); o domínio puro
+  `computeAvailableSlots` e os cores `createBooking`/`cancelBooking` ficam intactos.
+
 ## Estrutura
 
 ```text
@@ -139,7 +172,7 @@ src/
 └── lib/
 tests/
 ├── unit/        # availability, time (sem banco)
-└── integration/ # booking-conflict, booking-ownership, owner-authorization, service-lifecycle
+└── integration/ # booking-conflict, booking-ownership, owner-authorization, service-lifecycle, reschedule
 ```
 
 Padrão: as Server Actions (`src/server/actions/`) são wrappers finos sobre um core em
