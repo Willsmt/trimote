@@ -6,12 +6,18 @@ import { useRouter } from "next/navigation";
 import { getAvailableSlots } from "@/server/actions/get-available-slots";
 import { rescheduleBooking } from "@/server/actions/reschedule-booking";
 
+interface ServiceOption {
+  id: string;
+  name: string;
+  durationMinutes: number;
+}
+
 interface RescheduleFlowProps {
   bookingId: string;
-  /** Serviço atual do agendamento (fixo na US1 — a troca de serviço é US2). */
-  serviceId: string;
-  serviceName: string;
-  durationMinutes: number;
+  /** Serviço atual do agendamento — default do seletor. */
+  currentServiceId: string;
+  /** Serviços selecionáveis: ativos + o atual (mesmo se inativo, para permitir mantê-lo). */
+  services: ServiceOption[];
   /** Horário atual do agendamento (ISO) — exibido como referência. */
   currentStartsAtIso: string;
 }
@@ -48,19 +54,27 @@ function formatDateTime(iso: string): string {
 
 export function RescheduleFlow({
   bookingId,
-  serviceId,
-  serviceName,
-  durationMinutes,
+  currentServiceId,
+  services,
   currentStartsAtIso,
 }: RescheduleFlowProps) {
   const router = useRouter();
+  const [serviceId, setServiceId] = useState(currentServiceId);
   const [date, setDate] = useState("");
   const [slots, setSlots] = useState<string[]>([]);
   const [message, setMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
+  // Ao trocar de serviço, os horários já carregados valem para o serviço anterior — limpa até
+  // recarregar com a duração do novo serviço.
+  function onServiceChange(nextServiceId: string) {
+    setServiceId(nextServiceId);
+    setSlots([]);
+    setMessage(null);
+  }
+
   async function loadSlots() {
-    if (!date) {
+    if (!serviceId || !date) {
       return;
     }
     setLoading(true);
@@ -98,10 +112,23 @@ export function RescheduleFlow({
   return (
     <div className="flex flex-col gap-4">
       <p className="text-sm text-neutral-500">
-        Serviço: <span className="font-medium text-neutral-800">{serviceName}</span> ({durationMinutes} min)
-        <br />
         Horário atual: <span className="font-medium text-neutral-800">{formatDateTime(currentStartsAtIso)}</span>
       </p>
+
+      <label className="flex flex-col gap-1 text-sm">
+        Serviço
+        <select
+          className="rounded border border-neutral-300 p-2"
+          value={serviceId}
+          onChange={(event) => onServiceChange(event.target.value)}
+        >
+          {services.map((service) => (
+            <option key={service.id} value={service.id}>
+              {service.name} ({service.durationMinutes} min)
+            </option>
+          ))}
+        </select>
+      </label>
 
       <label className="flex flex-col gap-1 text-sm">
         Novo dia
@@ -117,7 +144,7 @@ export function RescheduleFlow({
         type="button"
         className="rounded bg-neutral-900 p-2 text-white disabled:opacity-50"
         onClick={loadSlots}
-        disabled={loading || !date}
+        disabled={loading || !serviceId || !date}
       >
         Ver horários livres
       </button>

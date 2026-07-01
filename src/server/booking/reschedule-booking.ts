@@ -86,7 +86,12 @@ export async function rescheduleBookingForUser(
     return { ok: false, reason: "service_not_found" };
   }
 
-  // (service_inactive — troca para serviço inativo — é implementado na US2/T015.)
+  // 6b. Troca para serviço inativo (FR-014): a recusa só dispara na TROCA real. Se o cliente
+  // MANTÉM o serviço atual (mesmo que já esteja inativo por soft delete da 002), NÃO checamos
+  // isActive — assim a remarcação não bloqueia um agendamento existente cujo serviço foi desativado.
+  if (input.serviceId !== booking.serviceId && service.isActive === false) {
+    return { ok: false, reason: "service_inactive" };
+  }
 
   // 7. Alvo no passado (FR-005).
   if (input.startsAt.getTime() <= now.getTime()) {

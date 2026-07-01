@@ -25,6 +25,7 @@ export default async function ReschedulePage({
       userId: true,
       status: true,
       startsAt: true,
+      barbershopId: true,
       service: { select: { id: true, name: true, durationMinutes: true } },
     },
   });
@@ -39,17 +40,35 @@ export default async function ReschedulePage({
     redirect("/my-bookings");
   }
 
+  // Seletor (US2): apenas serviços ATIVOS. Se o serviço atual estiver inativo (soft delete da 002),
+  // incluímos ele mesmo assim para o default ser selecionável e permitir MANTER o serviço atual
+  // (o core não bloqueia manter — FR-014). A troca para inativo é recusada no servidor.
+  const activeServices = await prisma.barbershopService.findMany({
+    where: { barbershopId: booking.barbershopId, isActive: true },
+    orderBy: { name: "asc" },
+    select: { id: true, name: true, durationMinutes: true },
+  });
+  const serviceOptions = activeServices.some((s) => s.id === booking.service.id)
+    ? activeServices
+    : [
+        {
+          id: booking.service.id,
+          name: booking.service.name,
+          durationMinutes: booking.service.durationMinutes,
+        },
+        ...activeServices,
+      ];
+
   return (
     <main className="mx-auto flex max-w-xl flex-col gap-6 p-8">
       <header>
         <h1 className="text-2xl font-bold">Remarcar agendamento</h1>
-        <p className="text-sm text-neutral-500">Escolha um novo dia e horário livre.</p>
+        <p className="text-sm text-neutral-500">Escolha o serviço, um novo dia e horário livre.</p>
       </header>
       <RescheduleFlow
         bookingId={booking.id}
-        serviceId={booking.service.id}
-        serviceName={booking.service.name}
-        durationMinutes={booking.service.durationMinutes}
+        currentServiceId={booking.service.id}
+        services={serviceOptions}
         currentStartsAtIso={booking.startsAt.toISOString()}
       />
     </main>

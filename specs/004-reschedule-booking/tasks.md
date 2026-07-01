@@ -145,21 +145,21 @@ serviço atual (mesmo inativo) → não bloqueia.
 
 ### Tests for User Story 2 (test-first) ⚠️
 
-- [ ] T013 [P] [US2] Teste de integração **troca de serviço / encaixe** em
+- [X] T013 [P] [US2] Teste de integração **troca de serviço / encaixe** em
   `tests/integration/reschedule/service-change.test.ts`: trocar para serviço de duração maior — só
   horários onde cabe inteiro são aceitos; alvo onde não cabe → `outside_opening_hours` (FR-004, SC-002).
-- [ ] T014 [P] [US2] Teste de integração **service_inactive** em
+- [X] T014 [P] [US2] Teste de integração **service_inactive** em
   `tests/integration/reschedule/service-inactive.test.ts`: `serviceId !== booking.serviceId` e serviço
   inativo → `service_inactive`; **manter** o serviço atual (mesmo que inativo) → NÃO bloqueia (FR-014,
   SC-009).
 
 ### Implementation for User Story 2
 
-- [ ] T015 [US2] Estender o core `src/server/booking/reschedule-booking.ts` (no bloco de serviço,
+- [X] T015 [US2] Estender o core `src/server/booking/reschedule-booking.ts` (no bloco de serviço,
   **depois** do `no_change`): se `serviceId !== booking.serviceId` **e** serviço escolhido inativo
   (`isActive === false`) → `service_inactive` (se **mantém** o serviço atual, **não** checa `isActive`);
   `endsAt` e o encaixe no expediente passam a usar a duração do **serviço escolhido** (FR-004/FR-014).
-- [ ] T016 [US2] Estender `src/components/reschedule-flow.tsx`: seletor de serviço (apenas ativos,
+- [X] T016 [US2] Estender `src/components/reschedule-flow.tsx`: seletor de serviço (apenas ativos,
   default = serviço atual); ao trocar, recalcular horários via `getAvailableSlots(novo serviceId,
   excludeBookingId)`; mensagens para `service_inactive` ("Esse serviço não está mais disponível. Escolha
   outro.") e `service_not_found`.
