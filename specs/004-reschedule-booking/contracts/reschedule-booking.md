@@ -56,15 +56,18 @@ async function rescheduleBookingForUser(
 
 **Ordem de verificação (curto-circuito; nenhuma recusa altera o booking — FR-009):**
 
+Posse e elegibilidade **primeiro** (enforcement de segurança, antes de qualquer trabalho — Princípio I).
+
 1. Carrega booking (`id`, `userId`, `status`, `startsAt`, `serviceId`). Ausente → `not_found`.
-2. `booking.userId !== userId` → `not_owner`.
-3. `booking.status !== "ACTIVE"` → `not_active`.
-4. `booking.startsAt <= now` → `booking_in_past` (elegibilidade: deve ser futuro).
-5. Carrega serviço escolhido (com expediente). Ausente → `service_not_found`.
-5b. **Troca de serviço inativo**: se `serviceId !== booking.serviceId` **e** o serviço escolhido está
+2. **Posse**: `booking.userId !== userId` → `not_owner`.
+3. **Elegibilidade (ativo)**: `booking.status !== "ACTIVE"` → `not_active`.
+4. **Elegibilidade (futuro)**: `booking.startsAt <= now` → `booking_in_past` (fronteira pelo início).
+5. `no_change`: `serviceId === booking.serviceId && startsAt === booking.startsAt` → `no_change`
+   (recusa amigável, sem carregar serviço nem escrever).
+6. Carrega serviço escolhido (com expediente). Ausente → `service_not_found`.
+6b. **Troca de serviço inativo**: se `serviceId !== booking.serviceId` **e** o serviço escolhido está
    inativo (`isActive === false`) → `service_inactive`. Se **mantém** o serviço atual
    (`serviceId === booking.serviceId`), NÃO checa `isActive` (preserva o agendamento existente).
-6. `no_change`: `serviceId === booking.serviceId && startsAt === booking.startsAt` → `no_change`.
 7. `startsAt <= now` → `in_the_past`.
 8. Serviço não cabe na janela do dia (fuso da barbearia) → `outside_opening_hours`.
 9. `endsAt = startsAt + service.durationMinutes`; `prisma.$transaction(update da mesma linha)`.
