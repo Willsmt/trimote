@@ -35,7 +35,7 @@ export type CreateBookingResult =
  * violations para P2002 (que é unique); o Postgres usa SQLSTATE 23P01. Identificamos pela
  * SQLSTATE ou pelo nome da constraint, sem assumir um código de erro do Prisma (research.md D2).
  */
-function isExclusionViolation(error: unknown): boolean {
+export function isExclusionViolation(error: unknown): boolean {
   if (error instanceof Prisma.PrismaClientKnownRequestError) {
     const text = `${error.message} ${JSON.stringify(error.meta ?? {})}`;
     return text.includes("booking_no_overlap") || text.includes("23P01");

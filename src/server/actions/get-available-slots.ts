@@ -16,6 +16,7 @@ export type GetAvailableSlotsResult =
 export async function getAvailableSlots(input: {
   serviceId: string;
   date: string; // YYYY-MM-DD no fuso da barbearia
+  excludeBookingId?: string; // remarcação (004): exclui esse booking do cálculo de colisão
 }): Promise<GetAvailableSlotsResult> {
   const service = await prisma.barbershopService.findUnique({
     where: { id: input.serviceId },
@@ -38,6 +39,8 @@ export async function getAvailableSlots(input: {
       barbershopId: service.barbershopId,
       status: "ACTIVE",
       startsAt: { gte: dayStartUtc, lt: dayEndUtc },
+      // Remarcação (004, D1): o booking sendo movido não deve bloquear o próprio horário/adjacências.
+      ...(input.excludeBookingId ? { id: { not: input.excludeBookingId } } : {}),
     },
     select: { startsAt: true, endsAt: true },
   });

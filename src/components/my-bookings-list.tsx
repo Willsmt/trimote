@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 import { cancelBooking } from "@/server/actions/cancel-booking";
@@ -71,14 +72,25 @@ export function MyBookingsList({ items }: { items: BookingItem[] }) {
               </p>
             </div>
             {item.status === "ACTIVE" ? (
-              <button
-                type="button"
-                className="rounded border border-red-300 px-3 py-1 text-sm text-red-700 hover:bg-red-50 disabled:opacity-50"
-                onClick={() => onCancel(item.id)}
-                disabled={pendingId === item.id}
-              >
-                Cancelar
-              </button>
+              <div className="flex items-center gap-2">
+                {/* Remarcar aparece só para ativos E futuros (conveniência; o servidor revalida — FR-010). */}
+                {new Date(item.startsAtIso).getTime() > Date.now() && (
+                  <Link
+                    href={`/my-bookings/${item.id}/reschedule`}
+                    className="rounded border border-neutral-300 px-3 py-1 text-sm text-neutral-700 hover:bg-neutral-100"
+                  >
+                    Remarcar
+                  </Link>
+                )}
+                <button
+                  type="button"
+                  className="rounded border border-red-300 px-3 py-1 text-sm text-red-700 hover:bg-red-50 disabled:opacity-50"
+                  onClick={() => onCancel(item.id)}
+                  disabled={pendingId === item.id}
+                >
+                  Cancelar
+                </button>
+              </div>
             ) : (
               <span className="text-sm text-neutral-400">Cancelado</span>
             )}

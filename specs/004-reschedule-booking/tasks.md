@@ -44,7 +44,7 @@ o core (só testes + UI).
 
 **Purpose**: Preparar a base de testes de integração da feature (sem tocar código de produção).
 
-- [ ] T001 Criar a pasta `tests/integration/reschedule/` e um helper de fixtures reutilizando o padrão
+- [X] T001 Criar a pasta `tests/integration/reschedule/` e um helper de fixtures reutilizando o padrão
   de setup de integração já existente (seed de barbershop + user + serviço ativo + booking `ACTIVE`
   futuro; limpeza entre testes). Reusar utilitários de tempo `src/domain/time` e `localDateTimeToUtc`.
 
@@ -58,23 +58,23 @@ o core (só testes + UI).
 **⚠️ CRITICAL**: exclude-self na disponibilidade, esqueleto do core/Server Action e as **guardas de
 posse/elegibilidade** são pré-requisito de US1/US2/US3.
 
-- [ ] T002 [P] (test-first) Escrever o teste de integração **exclude-self** em
+- [X] T002 [P] (test-first) Escrever o teste de integração **exclude-self** em
   `tests/integration/reschedule/exclude-self.test.ts`: `getAvailableSlots({ serviceId, date, excludeBookingId })`
   para o dia do próprio booking **inclui** o horário atual do booking e as adjacências válidas (deve
   **falhar** antes de T003). Cobre FR-002/FR-004 (D1) e o teste #1 do quickstart.
-- [ ] T003 Adicionar o parâmetro **opcional** `excludeBookingId?: string` a `getAvailableSlots` em
+- [X] T003 Adicionar o parâmetro **opcional** `excludeBookingId?: string` a `getAvailableSlots` em
   `src/server/actions/get-available-slots.ts`: quando presente, incluir `id: { not: excludeBookingId }`
   no `where` da busca de `activeBookings`. Sem o parâmetro, comportamento **idêntico** ao atual
   (retrocompatível); `computeAvailableSlots` (domínio puro) **não** muda. Faz T002 passar. (ÚNICO
   arquivo da 001 alterado.)
-- [ ] T004 Criar o esqueleto do core e da Server Action (sem regra de negócio ainda):
+- [X] T004 Criar o esqueleto do core e da Server Action (sem regra de negócio ainda):
   `src/server/booking/reschedule-booking.ts` com os tipos `RescheduleBookingInput`,
   `RescheduleBookingReason` (incl. `not_found`, `not_owner`, `not_active`, `booking_in_past`,
   `service_not_found`, `service_inactive`, `no_change`, `in_the_past`, `outside_opening_hours`,
   `slot_unavailable`), `RescheduleBookingResult` e a assinatura de
   `rescheduleBookingForUser({ userId, bookingId, serviceId, startsAt, now? })`; e o arquivo da Server
   Action fina `src/server/actions/reschedule-booking.ts` (`"use server"`).
-- [ ] T005 **(enforcement — segurança primeiro)** Implementar no topo do core
+- [X] T005 **(enforcement — segurança primeiro)** Implementar no topo do core
   `src/server/booking/reschedule-booking.ts` as guardas de **posse e elegibilidade**, com curto-circuito
   e **sem efeito colateral** (FR-007/FR-008/FR-009/FR-010): carregar booking (`id`, `userId`, `status`,
   `startsAt`, `serviceId`) → ausente `not_found`; `booking.userId !== userId` → `not_owner`;
@@ -98,33 +98,33 @@ horário antigo é liberado automaticamente. Mesmo serviço.
 
 ### Tests for User Story 1 (test-first — devem FALHAR antes da implementação) ⚠️
 
-- [ ] T006 [P] [US1] Teste de integração **mover + liberar** em
+- [X] T006 [P] [US1] Teste de integração **mover + liberar** em
   `tests/integration/reschedule/move-and-release.test.ts`: `rescheduleBookingForUser` move o booking
   (mesma `id`) para horário livre; depois `getAvailableSlots` (sem exclude) volta a ofertar o horário
   **antigo** (FR-001/FR-003, SC-001/SC-003).
-- [ ] T007 [P] [US1] Teste de integração **no_change** em
+- [X] T007 [P] [US1] Teste de integração **no_change** em
   `tests/integration/reschedule/no-change.test.ts`: mesmo `serviceId` **e** mesmo `startsAt` →
   `{ ok: false, reason: "no_change" }` sem UPDATE (FR-012).
-- [ ] T008 [P] [US1] Teste de integração **conflito/concorrência** em
+- [X] T008 [P] [US1] Teste de integração **conflito/concorrência** em
   `tests/integration/reschedule/conflict.test.ts`: alvo ocupado por outro booking `ACTIVE` →
   `slot_unavailable`; o booking original permanece intacto (FR-006/FR-009, SC-007).
 
 ### Implementation for User Story 1
 
-- [ ] T009 [US1] Implementar o caminho de move no core `src/server/booking/reschedule-booking.ts`,
+- [X] T009 [US1] Implementar o caminho de move no core `src/server/booking/reschedule-booking.ts`,
   **abaixo das guardas de T005**: checar `no_change` (mesmo serviceId+startsAt → recusa amigável, sem
   UPDATE); carregar o serviço escolhido → ausente `service_not_found`; revalidar alvo
   (`startsAt <= now` → `in_the_past`) e encaixe no expediente (`outside_opening_hours`) no fuso
   `America/Sao_Paulo`; recalcular `endsAt = startsAt + service.durationMinutes`; `prisma.$transaction`
   com **UPDATE da mesma linha**; traduzir `23P01`/`booking_no_overlap` → `slot_unavailable` **reusando**
   `isExclusionViolation` de `src/server/booking/create-booking.ts`. (Faz T006/T007/T008 passarem.)
-- [ ] T010 [P] [US1] Adicionar a ação **"Remarcar"** em `src/components/my-bookings-list.tsx`, exibida
+- [X] T010 [P] [US1] Adicionar a ação **"Remarcar"** em `src/components/my-bookings-list.tsx`, exibida
   apenas para bookings `ACTIVE` **e futuros** (conveniência; o servidor revalida — FR-010), linkando
   para a página de remarcação.
-- [ ] T011 [US1] Criar a página `src/app/my-bookings/[id]/reschedule/page.tsx`: exigir sessão
+- [X] T011 [US1] Criar a página `src/app/my-bookings/[id]/reschedule/page.tsx`: exigir sessão
   (`requireUser`), carregar o booking e validar posse no servidor, carregar serviços ativos e renderizar
   o flow (espelha `src/app/booking/page.tsx`).
-- [ ] T012 [US1] Criar `src/components/reschedule-flow.tsx` (client) para o caso **mesmo serviço**:
+- [X] T012 [US1] Criar `src/components/reschedule-flow.tsx` (client) para o caso **mesmo serviço**:
   escolher dia/horário chamando `getAvailableSlots` com `excludeBookingId = bookingId`, confirmar →
   `rescheduleBooking`; mapear `reason` → mensagem amigável (`no_change`: "Esse já é o horário e serviço
   atuais do agendamento."; `slot_unavailable`: "Horário indisponível. Escolha outro.").
