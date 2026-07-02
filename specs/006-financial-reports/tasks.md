@@ -37,7 +37,7 @@ core (`cash-summary.ts`) e são entregues juntas.
 
 **Purpose**: preparar o terreno de leitura pura (nenhuma dependência nova, nenhum schema).
 
-- [ ] T001 Confirmar que a feature é leitura pura: `prisma/schema.prisma` **inalterado** (nenhuma
+- [X] T001 Confirmar que a feature é leitura pura: `prisma/schema.prisma` **inalterado** (nenhuma
   migração/entidade — FR-025) e criar o diretório `tests/integration/reports/` para os testes de
   leitura (seguindo o padrão de `tests/integration/ledger/`).
 
@@ -49,16 +49,16 @@ core (`cash-summary.ts`) e são entregues juntas.
 
 **⚠️ CRITICAL**: nenhuma história começa antes desta fase.
 
-- [ ] T003 Teste unitário `tests/unit/time/period-bounds.test.ts` para `periodBoundsInZone`
+- [X] T003 Teste unitário `tests/unit/time/period-bounds.test.ts` para `periodBoundsInZone`
   (**test-first — escrever e ver FALHAR antes de T002**): semana ISO (segunda), bordas de mês/ano, e
   um instante 22:30 local perto da virada UTC caindo no dia local correto. (FR-003, SC-003)
-- [ ] T002 Adicionar helpers de limites de período em `src/domain/time/index.ts` (**após T003 RED**):
+- [X] T002 Adicionar helpers de limites de período em `src/domain/time/index.ts` (**após T003 RED**):
   `periodBoundsInZone(referenceLocalDate, granularity, timeZone) -> { startUtc, endUtc }` (dia /
   **semana ISO começando na segunda** / mês / ano, no fuso da barbearia, retornando range UTC
   `[início, fim)`) e `shiftPeriod(referenceLocalDate, granularity, dir)` para navegação
   anterior/próximo. Fim calculado somando o intervalo em wall-clock local antes de voltar a UTC
   (DST-safe via Luxon). Mantém a fronteira única de fuso do projeto. (FR-002/FR-003, D2/D3/D15)
-- [ ] T004 Criar fixtures de leitura `tests/integration/reports/fixtures.ts`:
+- [X] T004 Criar fixtures de leitura `tests/integration/reports/fixtures.ts`:
   `seedLedgerEntry({ type, origin, amount, occurredAt, paymentMethod?, category?, clientId?,
   isActive?, items? })` + limpeza, reutilizando `BARBERSHOP_ID`, `SP`, `upsertUsers` e
   `cleanupLedgerAndBookings` de `tests/integration/ledger/fixtures.ts`. Prover instantes de fuso
