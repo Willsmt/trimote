@@ -27,6 +27,7 @@ const FAILURE_MESSAGES: Record<string, string> = {
   not_found: "Agendamento não encontrado.",
   not_owner: "Você não pode remarcar este agendamento.",
   not_active: "Este agendamento não está mais ativo.",
+  already_completed: "Este atendimento já foi concluído e não pode ser remarcado.",
   booking_in_past: "Este agendamento já passou e não pode ser remarcado.",
   service_not_found: "Serviço não encontrado.",
   service_inactive: "Esse serviço não está mais disponível. Escolha outro.",

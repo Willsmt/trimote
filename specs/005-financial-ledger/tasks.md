@@ -221,7 +221,7 @@ lançamento de BOOKING inativado mantém o booking `COMPLETED`.
 **Purpose**: Telas/ações mínimas do OWNER para os quatro caminhos + mapa completo de mensagens dos
 reasons do ledger e a mensagem do novo reason `already_completed` nos fluxos da F004.
 
-- [ ] T022 [P] UI do OWNER em `src/app/owner/ledger/` (página server + ilhas client mínimas, ShadCN/
+- [x] T022 [P] UI do OWNER em `src/app/owner/ledger/` (página server + ilhas client mínimas, ShadCN/
   Tailwind, padrão 002): concluir atendimento (com extras), registrar walk-in, registrar despesa e
   inativar lançamento, chamando as Server Actions. **Incluir um mapa `reason → mensagem` (pt-BR)**
   cobrindo TODOS os reasons dos quatro fluxos do ledger, sem reason órfão sem mensagem (mesma
@@ -229,7 +229,7 @@ reasons do ledger e a mensagem do novo reason `already_completed` nos fluxos da 
   conclusão), `booking_cancelled`, `invalid_amount`, `no_items`, `service_not_found`,
   `client_not_found`, `entry_not_found`, `already_inactive`. **Sem** relatório/agregação/caixa/visão
   CLIENT (F006). (US1–US5; FR-018; contracts/*.md)
-- [ ] T023 [P] Adicionar a mensagem `already_completed` (pt-BR, ex.: "Este atendimento já foi concluído
+- [x] T023 [P] Adicionar a mensagem `already_completed` (pt-BR, ex.: "Este atendimento já foi concluído
   e não pode ser alterado.") ao `FAILURE_MESSAGES` de `src/components/reschedule-flow.tsx` e ao mapa de
   mensagens de `src/components/my-bookings-list.tsx`. (FR-005; contracts/booking-state-machine.md #3)
 
