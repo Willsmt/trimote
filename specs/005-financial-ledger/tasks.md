@@ -203,13 +203,13 @@ o booking.
 **Independent Test**: Inativar um lançamento e verificar que some do dinheiro válido mas persiste; um
 lançamento de BOOKING inativado mantém o booking `COMPLETED`.
 
-- [ ] T019 [P] [US5] Integração `tests/integration/ledger/deactivate-ledger-entry.test.ts`: soft
+- [x] T019 [P] [US5] Integração `tests/integration/ledger/deactivate-ledger-entry.test.ts`: soft
   delete marca `isActive=false` e **não apaga** (registro consultável) (SC-008); lançamento de origem
   BOOKING inativado **não** desconclui o booking (FR-016); inativar duas vezes → `already_inactive`;
   inexistente → `entry_not_found`; **não-OWNER** recusado (SC-009). (FR-015/FR-016)
-- [ ] T020 [US5] Implementar o core `src/server/ledger/deactivate-ledger-entry.ts` (`entry_not_found`
+- [x] T020 [US5] Implementar o core `src/server/ledger/deactivate-ledger-entry.ts` (`entry_not_found`
   → `already_inactive` → `update({ isActive: false })`; **não** tocar `Booking.status`). (FR-015/016; contracts/deactivate-ledger-entry.md)
-- [ ] T021 [US5] Implementar a Server Action fina `src/server/actions/deactivate-ledger-entry.ts`
+- [x] T021 [US5] Implementar a Server Action fina `src/server/actions/deactivate-ledger-entry.ts`
   (`requireOwner` → core). (FR-018)
 
 **Checkpoint US5**: correção auditável, sem hard delete nem reabertura de booking.
