@@ -36,6 +36,9 @@ export default async function OwnerHomePage() {
         >
           Horário de funcionamento
         </Link>
+        <Link href="/owner/ledger" className="rounded border border-neutral-300 p-3 hover:bg-neutral-50">
+          Financeiro
+        </Link>
       </nav>
     </main>
   );

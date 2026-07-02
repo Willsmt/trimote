@@ -5,7 +5,11 @@ import { prisma } from "@/server/db/client";
  * delete (status = CANCELLED). Como a exclusion constraint é parcial em ACTIVE, cancelar libera
  * automaticamente o intervalo para outro cliente.
  */
-export type CancelBookingReason = "not_found" | "not_owner" | "already_cancelled";
+export type CancelBookingReason =
+  | "not_found"
+  | "not_owner"
+  | "already_cancelled"
+  | "already_completed";
 
 export type CancelBookingResult = { ok: true } | { ok: false; reason: CancelBookingReason };
 
@@ -27,6 +31,12 @@ export async function cancelBookingForUser(input: {
   }
   if (booking.status === "CANCELLED") {
     return { ok: false, reason: "already_cancelled" };
+  }
+  // 005: como este core é DENYLIST (segue para o UPDATE quando não recusa), um agendamento CONCLUÍDO
+  // precisa de branch próprio ANTES do update — senão seria cancelado indevidamente. Reason distinto
+  // de already_cancelled para a UI renderizar mensagem específica (FR-005).
+  if (booking.status === "COMPLETED") {
+    return { ok: false, reason: "already_completed" };
   }
 
   await prisma.booking.update({

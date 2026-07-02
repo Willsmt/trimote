@@ -47,7 +47,7 @@ genérico `not_active`. Reason distinto, nunca reutilizar `not_active`/`already_
 
 **Purpose**: Base de testes de integração da feature (sem tocar código de produção).
 
-- [ ] T001 Criar `tests/integration/ledger/` e um `fixtures.ts` reutilizando o padrão de
+- [x] T001 Criar `tests/integration/ledger/` e um `fixtures.ts` reutilizando o padrão de
   `tests/integration/reschedule/fixtures.ts`: seed idempotente de um usuário **OWNER**, um usuário
   **CLIENT**, e helpers para criar um `Booking` `ACTIVE` futuro; reusar `BARBERSHOP_ID`
   (`barbershop-trimote`), os serviços semeados (`service-corte` 40.00/30min, etc.) e
@@ -62,17 +62,17 @@ genérico `not_active`. Reason distinto, nunca reutilizar `not_active`/`already_
 **⚠️ CRITICAL**: o valor de enum `COMPLETED`, as tabelas `LedgerEntry`/`LedgerEntryItem` e o helper de
 itens são pré-requisito de US1–US5.
 
-- [ ] T002 [P] Migration (Prisma normal, **sem SQL manual**): editar `prisma/schema.prisma` —
+- [x] T002 [P] Migration (Prisma normal, **sem SQL manual**): editar `prisma/schema.prisma` —
   adicionar `COMPLETED` a `BookingStatus` (aditivo); enums `LedgerType`/`LedgerOrigin`/`PaymentMethod`;
   models `LedgerEntry` e `LedgerEntryItem` (PKs cuid, `Decimal(10,2)`, `Timestamptz(6)`, relations
   **nomeadas** `LedgerClient`/`LedgerCreatedBy` em User, back-relations em Booking/BarbershopService/
   Barbershop, `bookingId` sem unicidade, `isActive` default true, `@@index([barbershopId, occurredAt])`).
   Rodar `prisma migrate dev --name financial_ledger` + `prisma generate`. **NÃO** tocar a exclusion
   constraint `booking_no_overlap`. (data-model.md; FR-001/010/011/013/017; itens 6/8/9/10/13/14/15)
-- [ ] T003 [P] Unit test-first do helper puro em `tests/unit/ledger/ledger-items.test.ts`: soma dos
+- [x] T003 [P] Unit test-first do helper puro em `tests/unit/ledger/ledger-items.test.ts`: soma dos
   itens; rejeição de `amount <= 0`; construção do item de serviço a partir de um preço fornecido
   (snapshot); `total == Σ itens`. Deve **falhar** antes de T004. (SC-005; FR-007/FR-011)
-- [ ] T004 Implementar o helper puro `src/server/ledger/ledger-items.ts` (`LedgerItemInput`,
+- [x] T004 Implementar o helper puro `src/server/ledger/ledger-items.ts` (`LedgerItemInput`,
   resolução de valor do item a partir de um preço fornecido, `sumItems`, validação de positividade),
   sem dependência de Prisma (recebe preços já resolvidos). Torna T003 verde. (FR-007/FR-011/FR-019)
 
@@ -89,7 +89,7 @@ com item = preço no instante da conclusão, e que alterar o preço depois não 
 
 ### Tests (test-first — devem falhar antes da impl)
 
-- [ ] T005 [P] [US1] Integração `tests/integration/ledger/complete-booking.test.ts`: sucesso
+- [x] T005 [P] [US1] Integração `tests/integration/ledger/complete-booking.test.ts`: sucesso
   (booking `COMPLETED` + 1 `LedgerEntry` INCOME/BOOKING + 1 item snapshot); **atomicidade** — falha na
   criação do lançamento → booking **não** fica `COMPLETED` e nada persiste (SC-001); **snapshot** —
   mudar `BarbershopService.price` depois não altera o lançamento (SC-002); **occurredAt** — passar um
@@ -99,26 +99,26 @@ com item = preço no instante da conclusão, e que alterar o preço depois não 
   concluir `COMPLETED` de novo → `already_completed`, **sem** 2º lançamento (SC-003); concluir um
   booking `CANCELLED` → `booking_cancelled` (sem lançamento); serviço com `isActive=false` → conclusão
   **permitida** (snapshot independe de isActive, research.md D5); **não-OWNER** recusado (SC-009).
-- [ ] T006 [P] [US1] Integração `tests/integration/ledger/completed-state-machine.test.ts`:
+- [x] T006 [P] [US1] Integração `tests/integration/ledger/completed-state-machine.test.ts`:
   **remarcar** um `COMPLETED` → `already_completed` (allowlist do reschedule), booking intacto (SC-004);
   **cancelar** um `COMPLETED` → `already_completed` e **não** vira `CANCELLED` (regressão do bug latente
   do denylist do cancel, SC-004).
 
 ### Implementation
 
-- [ ] T007 [US1] Inserir o branch `already_completed` em `src/server/booking/reschedule-booking.ts`
+- [x] T007 [US1] Inserir o branch `already_completed` em `src/server/booking/reschedule-booking.ts`
   **antes** do check `status !== "ACTIVE"`; adicionar `"already_completed"` ao union
   `RescheduleBookingReason`; atualizar o comentário de ordem de verificação. (FR-005; contracts/booking-state-machine.md)
-- [ ] T008 [US1] Inserir o branch `already_completed` em `src/server/booking/cancel-booking.ts`
+- [x] T008 [US1] Inserir o branch `already_completed` em `src/server/booking/cancel-booking.ts`
   **junto** ao check `already_cancelled` e **antes** do `update`; adicionar `"already_completed"` ao
   union `CancelBookingReason`. (FR-005; regressão do denylist)
-- [ ] T009 [US1] Implementar o core `src/server/ledger/complete-booking.ts` (ordem:
+- [x] T009 [US1] Implementar o core `src/server/ledger/complete-booking.ts` (ordem:
   `booking_not_found` → `already_completed` → `booking_cancelled` → snapshot do serviço agendado via
   `findUnique` **sem** filtrar `isActive` → item base pelo helper → `amount = Σ` →
   `$transaction`(`booking.update(COMPLETED)` + `ledgerEntry.create` com item aninhado)), persistindo
   `occurredAt` (default agora) e `paymentMethod` (opcional) sem inferir de `origin`. Sem extras
   ainda (MVP). (FR-001/002/003/004/012/013/017/019; contracts/complete-booking.md)
-- [ ] T010 [US1] Implementar a Server Action fina `src/server/actions/complete-booking.ts`
+- [x] T010 [US1] Implementar a Server Action fina `src/server/actions/complete-booking.ts`
   (`requireOwner` → core; ISO→Date de `occurredAt`). (FR-018)
 
 **Checkpoint US1**: MVP entregue — concluir atendimento gera receita com snapshot, atômico e seguro no
@@ -135,11 +135,11 @@ não há edição de item (só soft delete — clarify).
 **Independent Test**: Concluir adicionando um extra de serviço e um manual; verificar `amount == Σ` e
 que não há caminho para editar itens depois.
 
-- [ ] T011 [P] [US2] Integração `tests/integration/ledger/complete-booking-extras.test.ts`: conclusão
+- [x] T011 [P] [US2] Integração `tests/integration/ledger/complete-booking-extras.test.ts`: conclusão
   com extra de serviço (snapshot) + extra manual → `amount == Σ itens` validado na transação (SC-005);
   item com `amount <= 0` → `invalid_amount`; extra com `serviceId` inexistente → `service_not_found`.
   Deve falhar antes de T012. (FR-006/FR-007/FR-011)
-- [ ] T012 [US2] Estender o core `src/server/ledger/complete-booking.ts` para aceitar `extras[]`
+- [x] T012 [US2] Estender o core `src/server/ledger/complete-booking.ts` para aceitar `extras[]`
   (serviço via snapshot / manual via valor informado), delegando resolução e soma ao helper
   (`ledger-items.ts`); recomputar `amount` como Σ dentro da mesma `$transaction`. (FR-006/FR-007)
 
@@ -155,7 +155,7 @@ cliente cadastrado, nome livre ou anônimo.
 **Independent Test**: Registrar walk-in nos 3 modos e confirmar lançamento sem vínculo a booking e
 agenda/disponibilidade inalteradas.
 
-- [ ] T013 [P] [US3] Integração `tests/integration/ledger/register-walk-in.test.ts`: 3 modos
+- [x] T013 [P] [US3] Integração `tests/integration/ledger/register-walk-in.test.ts`: 3 modos
   (`clientId` cadastrado / só `clientName` / anônimo) → INCOME/WALK_IN, `bookingId` nulo (SC-006);
   **agenda intocada** (sem exclusion constraint, disponibilidade inalterada); **extras** — walk-in com
   item de serviço (snapshot) + extra manual (sem `serviceId`), afirmando `amount == Σ itens` (US2 no
@@ -164,10 +164,10 @@ agenda/disponibilidade inalteradas.
   de `origin` (FR-012/FR-013); `items` vazio → `no_items`; item `<= 0` → `invalid_amount`; `clientId`
   inexistente → `client_not_found`; item com `serviceId` inexistente → `service_not_found`; **não-OWNER**
   recusado (SC-009). (FR-006/FR-007/FR-008/FR-009)
-- [ ] T014 [US3] Implementar o core `src/server/ledger/register-walk-in.ts` (ordem do contrato;
+- [x] T014 [US3] Implementar o core `src/server/ledger/register-walk-in.ts` (ordem do contrato;
   itens/extras via helper; `barbershopId` derivado; `$transaction` com itens aninhados), persistindo
   `occurredAt` (default agora) e `paymentMethod` (opcional). (FR-006/FR-008/FR-009/FR-012/FR-013; contracts/register-walk-in.md)
-- [ ] T015 [US3] Implementar a Server Action fina `src/server/actions/register-walk-in.ts`
+- [x] T015 [US3] Implementar a Server Action fina `src/server/actions/register-walk-in.ts`
   (`requireOwner` → core). (FR-018)
 
 **Checkpoint US3**: receita fora da agenda capturada nos 3 modos de identificação.
@@ -181,14 +181,14 @@ cliente.
 
 **Independent Test**: Registrar despesa e verificar lançamento sem itens/cliente contando como saída.
 
-- [ ] T016 [P] [US4] Integração `tests/integration/ledger/register-expense.test.ts`: EXPENSE/EXPENSE
+- [x] T016 [P] [US4] Integração `tests/integration/ledger/register-expense.test.ts`: EXPENSE/EXPENSE
   **sem** itens e **sem** cliente (SC-007); **paymentMethod** — registrar COM e SEM `paymentMethod`,
   persistência independente de `origin` (FR-012/FR-013); `amount <= 0` → `invalid_amount`; **não-OWNER**
   recusado (SC-009). (FR-010/FR-011/FR-012/FR-013)
-- [ ] T017 [US4] Implementar o core `src/server/ledger/register-expense.ts` (`invalid_amount` →
+- [x] T017 [US4] Implementar o core `src/server/ledger/register-expense.ts` (`invalid_amount` →
   `barbershopId` da barbearia do MVP → `ledgerEntry.create` sem `items`), persistindo `paymentMethod`
   (opcional) sem inferir de `origin`. (FR-010/FR-012/FR-013; contracts/register-expense.md)
-- [ ] T018 [US4] Implementar a Server Action fina `src/server/actions/register-expense.ts`
+- [x] T018 [US4] Implementar a Server Action fina `src/server/actions/register-expense.ts`
   (`requireOwner` → core). (FR-018)
 
 **Checkpoint US4**: saída de dinheiro registrada.
@@ -203,13 +203,13 @@ o booking.
 **Independent Test**: Inativar um lançamento e verificar que some do dinheiro válido mas persiste; um
 lançamento de BOOKING inativado mantém o booking `COMPLETED`.
 
-- [ ] T019 [P] [US5] Integração `tests/integration/ledger/deactivate-ledger-entry.test.ts`: soft
+- [x] T019 [P] [US5] Integração `tests/integration/ledger/deactivate-ledger-entry.test.ts`: soft
   delete marca `isActive=false` e **não apaga** (registro consultável) (SC-008); lançamento de origem
   BOOKING inativado **não** desconclui o booking (FR-016); inativar duas vezes → `already_inactive`;
   inexistente → `entry_not_found`; **não-OWNER** recusado (SC-009). (FR-015/FR-016)
-- [ ] T020 [US5] Implementar o core `src/server/ledger/deactivate-ledger-entry.ts` (`entry_not_found`
+- [x] T020 [US5] Implementar o core `src/server/ledger/deactivate-ledger-entry.ts` (`entry_not_found`
   → `already_inactive` → `update({ isActive: false })`; **não** tocar `Booking.status`). (FR-015/016; contracts/deactivate-ledger-entry.md)
-- [ ] T021 [US5] Implementar a Server Action fina `src/server/actions/deactivate-ledger-entry.ts`
+- [x] T021 [US5] Implementar a Server Action fina `src/server/actions/deactivate-ledger-entry.ts`
   (`requireOwner` → core). (FR-018)
 
 **Checkpoint US5**: correção auditável, sem hard delete nem reabertura de booking.
@@ -221,7 +221,7 @@ lançamento de BOOKING inativado mantém o booking `COMPLETED`.
 **Purpose**: Telas/ações mínimas do OWNER para os quatro caminhos + mapa completo de mensagens dos
 reasons do ledger e a mensagem do novo reason `already_completed` nos fluxos da F004.
 
-- [ ] T022 [P] UI do OWNER em `src/app/owner/ledger/` (página server + ilhas client mínimas, ShadCN/
+- [x] T022 [P] UI do OWNER em `src/app/owner/ledger/` (página server + ilhas client mínimas, ShadCN/
   Tailwind, padrão 002): concluir atendimento (com extras), registrar walk-in, registrar despesa e
   inativar lançamento, chamando as Server Actions. **Incluir um mapa `reason → mensagem` (pt-BR)**
   cobrindo TODOS os reasons dos quatro fluxos do ledger, sem reason órfão sem mensagem (mesma
@@ -229,7 +229,7 @@ reasons do ledger e a mensagem do novo reason `already_completed` nos fluxos da 
   conclusão), `booking_cancelled`, `invalid_amount`, `no_items`, `service_not_found`,
   `client_not_found`, `entry_not_found`, `already_inactive`. **Sem** relatório/agregação/caixa/visão
   CLIENT (F006). (US1–US5; FR-018; contracts/*.md)
-- [ ] T023 [P] Adicionar a mensagem `already_completed` (pt-BR, ex.: "Este atendimento já foi concluído
+- [x] T023 [P] Adicionar a mensagem `already_completed` (pt-BR, ex.: "Este atendimento já foi concluído
   e não pode ser alterado.") ao `FAILURE_MESSAGES` de `src/components/reschedule-flow.tsx` e ao mapa de
   mensagens de `src/components/my-bookings-list.tsx`. (FR-005; contracts/booking-state-machine.md #3)
 
@@ -237,10 +237,10 @@ reasons do ledger e a mensagem do novo reason `already_completed` nos fluxos da 
 
 ## Phase 9: Polish & Cross-Cutting Concerns
 
-- [ ] T024 [P] Atualizar o `README` com o financeiro (fluxos concluir/walk-in/despesa/soft delete;
+- [x] T024 [P] Atualizar o `README` com o financeiro (fluxos concluir/walk-in/despesa/soft delete;
   reasons incluindo `already_completed`; snapshot/atomicidade; escopo F005 e o que fica na F006) —
   Princípio V.
-- [ ] T025 Regressão + validação: `npm test` verde (001–004 intactas — suites de reschedule/cancel/
+- [x] T025 Regressão + validação: `npm test` verde (001–004 intactas — suites de reschedule/cancel/
   disponibilidade/owner **não** enfraquecidas) e executar o smoke manual do [quickstart](./quickstart.md)
   C1–C7. (SC-001..SC-010)
 

@@ -11,13 +11,14 @@ interface BookingItem {
   serviceName: string;
   startsAtIso: string;
   endsAtIso: string;
-  status: "ACTIVE" | "CANCELLED";
+  status: "ACTIVE" | "CANCELLED" | "COMPLETED";
 }
 
 const CANCEL_FAILURE_MESSAGES: Record<string, string> = {
   not_found: "Agendamento não encontrado.",
   not_owner: "Você não pode cancelar este agendamento.",
   already_cancelled: "Este agendamento já está cancelado.",
+  already_completed: "Este atendimento já foi concluído e não pode ser cancelado.",
 };
 
 function formatRange(startIso: string, endIso: string): string {
@@ -92,7 +93,9 @@ export function MyBookingsList({ items }: { items: BookingItem[] }) {
                 </button>
               </div>
             ) : (
-              <span className="text-sm text-neutral-400">Cancelado</span>
+              <span className="text-sm text-neutral-400">
+                {item.status === "COMPLETED" ? "Concluído" : "Cancelado"}
+              </span>
             )}
           </li>
         ))}
