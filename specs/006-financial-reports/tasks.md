@@ -103,10 +103,10 @@ soma dos baldes == totais.
 
 ### UI
 
-- [ ] T008 [P] [US1] Criar `src/components/owner/cash-summary-view.tsx` (server-friendly): exibe
+- [X] T008 [P] [US1] Criar `src/components/owner/cash-summary-view.tsx` (server-friendly): exibe
   entradas, saídas, **saldo** (com sinal), breakdown por forma e por categoria com rótulos pt-BR
   (Dinheiro/Pix/Cartão/Online/Outro/**Não informado**/**Sem categoria**). Sem gráficos (FR-026).
-- [ ] T009 [US1] Criar Server Component `src/app/owner/finance/page.tsx`: `requireOwner` (redirect
+- [X] T009 [US1] Criar Server Component `src/app/owner/finance/page.tsx`: `requireOwner` (redirect
   padrão da F005: visitante→login, cliente→home); resolve `barbershopId` + `timezone`
   (`getOwnerBarbershopId` + leitura de `Barbershop.timezone`); período default **mês corrente**
   (`todayInZone(now, tz)`), granularidade + navegação anterior/próximo via **searchParams**
