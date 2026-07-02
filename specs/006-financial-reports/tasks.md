@@ -213,7 +213,7 @@ anônimos nem inativos; id no input é ignorado.
 
 ### Tests (test-first) ⚠️
 
-- [ ] T019 [P] [US5] Escrever `tests/integration/reports/client-history.test.ts` (deve FALHAR): só
+- [X] T019 [P] [US5] Escrever `tests/integration/reports/client-history.test.ts` (deve FALHAR): só
   **INCOME ativos** do próprio `clientId` (SC-010); **NÃO** retorna despesas, lançamentos de outro
   cliente, anônimos (`clientId=null`) nem inativos; **keyset idêntico** ao razão; `clientId` **sempre
   da sessão** — a action **não possui** o parâmetro (SC-011); visitante não autenticado recusado na
@@ -221,22 +221,22 @@ anônimos nem inativos; id no input é ignorado.
 
 ### Implementation
 
-- [ ] T020 [US5] Implementar core `listClientHistory` em `src/server/ledger/client-history.ts`:
+- [X] T020 [US5] Implementar core `listClientHistory` em `src/server/ledger/client-history.ts`:
   `where { clientId: input.userId, type: 'INCOME', isActive: true }`, mesmo keyset/`take = pageSize+1`,
   `select` enxuto (sem type/origin/paymentMethod) + `include items`; mesmo **comentário de precisão**
   do cursor. (US5, FR-019/FR-020, D11)
-- [ ] T021 [US5] Implementar Server Action `src/server/actions/list-my-ledger.ts`: `const user =
+- [X] T021 [US5] Implementar Server Action `src/server/actions/list-my-ledger.ts`: `const user =
   await requireUser()` (**não** `requireOwner`); `userId = user.id`; **sem parâmetro `clientId`** na
   assinatura (só `cursor` opcional validado no servidor — FR-021); delega ao core; serializa
   `ClientHistoryPageDTO` (Decimal→string). (US5, FR-019/FR-021)
-- [ ] T022 [US5] Rodar `client-history.test.ts` até **verde** (não-vazamento e filtro-da-sessão —
+- [X] T022 [US5] Rodar `client-history.test.ts` até **verde** (não-vazamento e filtro-da-sessão —
   SC-010/SC-011).
 
 ### UI
 
-- [ ] T023 [P] [US5] Criar ilha client `src/components/client/my-spending-list.tsx`: "carregar mais"
+- [X] T023 [P] [US5] Criar ilha client `src/components/client/my-spending-list.tsx`: "carregar mais"
   (chama `listMyLedger`), exibe momento/descrição/itens/valor (sem sinal de despesa). (US5, FR-020)
-- [ ] T024 [US5] Criar Server Component `src/app/my-spending/page.tsx`: `requireUser` (redirect ao
+- [X] T024 [US5] Criar Server Component `src/app/my-spending/page.tsx`: `requireUser` (redirect ao
   login se visitante); resolve o fuso da barbearia (single-shop MVP) para formatar `occurredAt`;
   render da 1ª página + ilha `my-spending-list`. (US5, FR-019/FR-022)
 
