@@ -246,17 +246,17 @@ anônimos nem inativos; id no input é ignorado.
 
 ## Phase 7: Polish & Cross-Cutting Concerns
 
-- [ ] T025 Navegação (F003): adicionar links na nav condicional — **/owner/finance** (só OWNER) e
+- [X] T025 Navegação (F003): adicionar links na nav condicional — **/owner/finance** (só OWNER) e
   **/my-spending** (autenticado) — no header/nav (`src/components/site-header.tsx` /
   `auth-buttons.tsx`, conforme a ilha da F003). Visibilidade é conveniência; a barreira é
   `requireOwner`/`requireUser`. (item 7, FR-022)
-- [ ] T026 Simplificar a **superfície de UI** da home do ledger da F005: em
+- [X] T026 Simplificar a **superfície de UI** da home do ledger da F005: em
   `src/app/owner/ledger/page.tsx` e `src/components/owner/ledger-manager.tsx`, remover/simplificar o
   banner de "último lançamento" (inativar migrou para a listagem — US4). **NÃO** tocar
   `deactivate-ledger-entry` (core/action) nem outros cores da F005. (item 7/16, FR-025)
-- [ ] T027 [P] README: documentar o **balancete** (caixa/breakdown por período) e o **histórico do
+- [X] T027 [P] README: documentar o **balancete** (caixa/breakdown por período) e o **histórico do
   cliente**, incluindo o fuso da barbearia e a paginação keyset. (Princípio V)
-- [ ] T028 Regressão: `npm test` (112+ verdes, suites 001–005 intactas) e `npx tsc --noEmit` limpo;
+- [X] T028 Regressão: `npm test` (112+ verdes, suites 001–005 intactas) e `npx tsc --noEmit` limpo;
   `git diff` confirma que **nenhum** core/action da F005 foi alterado (só a superfície de UI do
   T026). (FR-025)
 - [ ] T029 Smoke manual (roteiro do `quickstart.md`): caixa nas **4 granularidades** com navegação

@@ -7,7 +7,6 @@ import type { PaymentMethod } from "@prisma/client";
 import { completeBooking } from "@/server/actions/complete-booking";
 import { registerWalkIn } from "@/server/actions/register-walk-in";
 import { registerExpense } from "@/server/actions/register-expense";
-import { deactivateLedgerEntry } from "@/server/actions/deactivate-ledger-entry";
 
 // Mapa completo reason -> mensagem (pt-BR) de TODOS os fluxos do ledger (T022). Nenhum reason órfão:
 // mesma disciplina que evita mensagem ausente (bug do no_change). SEM relatório/agregação (F006).
@@ -51,7 +50,7 @@ type LedgerActionResult =
   | { ok: true; ledgerEntryId?: string }
   | { ok: false; reason: string };
 
-type BusyForm = "complete" | "walkin" | "expense" | "deactivate";
+type BusyForm = "complete" | "walkin" | "expense";
 
 function emptyRow(): ItemRow {
   return { serviceId: "", description: "", amount: "" };
@@ -84,8 +83,6 @@ export function LedgerManager({
   const submittingRef = useRef(false);
   const [busy, setBusy] = useState<BusyForm | null>(null);
   const [message, setMessage] = useState<string | null>(null);
-  // Último lançamento criado — permite corrigir por soft delete sem listar/agrupar (fora de F006).
-  const [lastEntryId, setLastEntryId] = useState<string | null>(null);
 
   // Conclusão
   const [bookingId, setBookingId] = useState("");
@@ -148,7 +145,6 @@ export function LedgerManager({
       try {
         const result = await action();
         if (result.ok) {
-          setLastEntryId(result.ledgerEntryId ?? null);
           onSuccess(); // reset dos campos + mensagem de sucesso com o valor
           router.refresh();
         } else {
@@ -225,34 +221,11 @@ export function LedgerManager({
     );
   }
 
-  function onDeactivate() {
-    if (!lastEntryId) return;
-    const entryId = lastEntryId;
-    run(
-      "deactivate",
-      () => deactivateLedgerEntry({ ledgerEntryId: entryId }),
-      () => {
-        setLastEntryId(null);
-        setMessage("Lançamento inativado (correção).");
-      },
-    );
-  }
-
   return (
     <div className="flex flex-col gap-8">
       {message && (
         <p className="rounded border border-neutral-300 bg-neutral-50 p-3 text-sm font-medium">
           {message}
-          {lastEntryId && (
-            <button
-              type="button"
-              className="ml-3 rounded border border-red-300 px-2 py-0.5 text-xs text-red-700 hover:bg-red-50 disabled:opacity-50"
-              onClick={onDeactivate}
-              disabled={isPending}
-            >
-              {busy === "deactivate" ? "Inativando..." : "Inativar (corrigir)"}
-            </button>
-          )}
         </p>
       )}
 
