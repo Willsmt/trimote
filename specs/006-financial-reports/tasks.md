@@ -166,11 +166,11 @@ empatado), filtros em conjunção, itens na expansão e inativos só sob o filtr
 
 ### UI
 
-- [ ] T015 [P] [US3] Criar ilha client `src/components/owner/ledger-browser.tsx`: filtros
+- [X] T015 [P] [US3] Criar ilha client `src/components/owner/ledger-browser.tsx`: filtros
   combináveis (tipo/origem/forma/categoria/período/**mostrar inativos**), "carregar mais" (chama
   `listLedger`, acumula páginas via `nextCursor`), **expansão** de itens client-side, **sinal
   visual** do valor pelo `type`, marca linhas inativas. (US3, FR-011..015, D5)
-- [ ] T016 [US3] Integrar `ledger-browser` na página `src/app/owner/finance/page.tsx` (render inicial
+- [X] T016 [US3] Integrar `ledger-browser` na página `src/app/owner/finance/page.tsx` (render inicial
   da 1ª página server-side + ilha). Estende a página do T009. (US3)
 
 **Checkpoint**: razão navegável e filtrável, independente do caixa.

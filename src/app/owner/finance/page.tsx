@@ -5,8 +5,11 @@ import { requireOwner, ForbiddenError } from "@/server/auth/owner";
 import { UnauthorizedError } from "@/server/auth/session";
 import { prisma } from "@/server/db/client";
 import { getCashSummaryForOwner } from "@/server/ledger/cash-summary";
+import { listLedgerForOwner } from "@/server/ledger/ledger-list";
 import { todayInZone, shiftPeriod, type Granularity } from "@/domain/time";
 import { CashSummaryView } from "@/components/owner/cash-summary-view";
+import { LedgerBrowser } from "@/components/owner/ledger-browser";
+import type { LedgerPageDTO } from "@/server/actions/list-ledger";
 
 export const dynamic = "force-dynamic";
 
@@ -58,12 +61,30 @@ export default async function OwnerFinancePage({
   const granularity = parseGranularity(sp.g);
   const referenceLocalDate = parseReference(sp.d, todayInZone(new Date(), timeZone));
 
-  const summary = await getCashSummaryForOwner({
-    barbershopId: barbershop.id,
-    timeZone,
-    granularity,
-    referenceLocalDate,
-  });
+  const period = { granularity, referenceLocalDate };
+
+  const [summary, ledgerFirst] = await Promise.all([
+    getCashSummaryForOwner({ barbershopId: barbershop.id, timeZone, granularity, referenceLocalDate }),
+    listLedgerForOwner({ barbershopId: barbershop.id, timeZone, filter: { period } }),
+  ]);
+
+  // Serializa a 1ª página do razão para a ilha (Decimal→string, datas→ISO — D5).
+  const initialLedgerPage: LedgerPageDTO = {
+    rows: ledgerFirst.rows.map((r) => ({
+      id: r.id,
+      occurredAtIso: r.occurredAt.toISOString(),
+      type: r.type,
+      origin: r.origin,
+      description: r.description,
+      paymentMethod: r.paymentMethod,
+      amount: r.amount.toString(),
+      isActive: r.isActive,
+      items: r.items.map((it) => ({ description: it.description, amount: it.amount.toString() })),
+    })),
+    nextCursor: ledgerFirst.nextCursor
+      ? { occurredAtIso: ledgerFirst.nextCursor.occurredAt.toISOString(), id: ledgerFirst.nextCursor.id }
+      : null,
+  };
 
   const prev = shiftPeriod(referenceLocalDate, granularity, -1);
   const next = shiftPeriod(referenceLocalDate, granularity, 1);
@@ -110,6 +131,8 @@ export default async function OwnerFinancePage({
         incomeByPaymentMethod={summary.incomeByPaymentMethod.map((b) => ({ key: b.key, amount: b.amount.toString() }))}
         expenseByCategory={summary.expenseByCategory.map((b) => ({ key: b.key, amount: b.amount.toString() }))}
       />
+
+      <LedgerBrowser initialPage={initialLedgerPage} period={period} />
     </main>
   );
 }
