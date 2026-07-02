@@ -155,7 +155,7 @@ cliente cadastrado, nome livre ou anônimo.
 **Independent Test**: Registrar walk-in nos 3 modos e confirmar lançamento sem vínculo a booking e
 agenda/disponibilidade inalteradas.
 
-- [ ] T013 [P] [US3] Integração `tests/integration/ledger/register-walk-in.test.ts`: 3 modos
+- [x] T013 [P] [US3] Integração `tests/integration/ledger/register-walk-in.test.ts`: 3 modos
   (`clientId` cadastrado / só `clientName` / anônimo) → INCOME/WALK_IN, `bookingId` nulo (SC-006);
   **agenda intocada** (sem exclusion constraint, disponibilidade inalterada); **extras** — walk-in com
   item de serviço (snapshot) + extra manual (sem `serviceId`), afirmando `amount == Σ itens` (US2 no
@@ -164,10 +164,10 @@ agenda/disponibilidade inalteradas.
   de `origin` (FR-012/FR-013); `items` vazio → `no_items`; item `<= 0` → `invalid_amount`; `clientId`
   inexistente → `client_not_found`; item com `serviceId` inexistente → `service_not_found`; **não-OWNER**
   recusado (SC-009). (FR-006/FR-007/FR-008/FR-009)
-- [ ] T014 [US3] Implementar o core `src/server/ledger/register-walk-in.ts` (ordem do contrato;
+- [x] T014 [US3] Implementar o core `src/server/ledger/register-walk-in.ts` (ordem do contrato;
   itens/extras via helper; `barbershopId` derivado; `$transaction` com itens aninhados), persistindo
   `occurredAt` (default agora) e `paymentMethod` (opcional). (FR-006/FR-008/FR-009/FR-012/FR-013; contracts/register-walk-in.md)
-- [ ] T015 [US3] Implementar a Server Action fina `src/server/actions/register-walk-in.ts`
+- [x] T015 [US3] Implementar a Server Action fina `src/server/actions/register-walk-in.ts`
   (`requireOwner` → core). (FR-018)
 
 **Checkpoint US3**: receita fora da agenda capturada nos 3 modos de identificação.
