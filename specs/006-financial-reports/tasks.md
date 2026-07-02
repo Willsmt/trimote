@@ -81,7 +81,7 @@ soma dos baldes == totais.
 
 ### Tests (test-first — escrever e ver FALHAR antes de implementar) ⚠️
 
-- [ ] T005 [P] [US1] Escrever `tests/integration/reports/cash-summary.test.ts` (deve FALHAR):
+- [X] T005 [P] [US1] Escrever `tests/integration/reports/cash-summary.test.ts` (deve FALHAR):
   totais income/expense e **saldo** do período (SC-001); **saldo negativo** (saídas > entradas, FR-006);
   **período vazio → "0.00"** em tudo, sem erro (SC-005); **inativo fora** de todo total/balde
   (SC-002); **borda de fuso** 22h/23h local vs. dia UTC seguinte nas **4 granularidades** com semana
@@ -90,7 +90,7 @@ soma dos baldes == totais.
 
 ### Implementation
 
-- [ ] T006 [US1] Implementar core `getCashSummaryForOwner` em `src/server/ledger/cash-summary.ts`:
+- [X] T006 [US1] Implementar core `getCashSummaryForOwner` em `src/server/ledger/cash-summary.ts`:
   deriva `[startUtc, endUtc)` via `periodBoundsInZone` (T002); `prisma.$queryRaw` **tipado e
   parametrizado** (`Prisma.sql`, `$tz`/limites como placeholders) com
   `WHERE barbershopId = $shop AND isActive = true AND occurredAt >= $start AND occurredAt < $end`
@@ -98,7 +98,7 @@ soma dos baldes == totais.
   `COALESCE(SUM(amount) FILTER (WHERE type=...),0)` para income/expense; `GROUP BY paymentMethod`
   (INCOME, `null`→`UNSET`) e `GROUP BY category` (EXPENSE, `null` preservado); tudo em
   `Prisma.Decimal`; `balance = income.minus(expense)`. (US1/US2, FR-001..009, D1/D3/D4/D6/D7)
-- [ ] T007 [US1] Rodar `cash-summary.test.ts` até **verde**; confirmar exatidão Decimal (sem float —
+- [X] T007 [US1] Rodar `cash-summary.test.ts` até **verde**; confirmar exatidão Decimal (sem float —
   **FR-023**) e invariante soma-dos-baldes == total (SC-004/SC-012).
 
 ### UI
