@@ -47,7 +47,7 @@ genérico `not_active`. Reason distinto, nunca reutilizar `not_active`/`already_
 
 **Purpose**: Base de testes de integração da feature (sem tocar código de produção).
 
-- [ ] T001 Criar `tests/integration/ledger/` e um `fixtures.ts` reutilizando o padrão de
+- [x] T001 Criar `tests/integration/ledger/` e um `fixtures.ts` reutilizando o padrão de
   `tests/integration/reschedule/fixtures.ts`: seed idempotente de um usuário **OWNER**, um usuário
   **CLIENT**, e helpers para criar um `Booking` `ACTIVE` futuro; reusar `BARBERSHOP_ID`
   (`barbershop-trimote`), os serviços semeados (`service-corte` 40.00/30min, etc.) e
@@ -62,7 +62,7 @@ genérico `not_active`. Reason distinto, nunca reutilizar `not_active`/`already_
 **⚠️ CRITICAL**: o valor de enum `COMPLETED`, as tabelas `LedgerEntry`/`LedgerEntryItem` e o helper de
 itens são pré-requisito de US1–US5.
 
-- [ ] T002 [P] Migration (Prisma normal, **sem SQL manual**): editar `prisma/schema.prisma` —
+- [x] T002 [P] Migration (Prisma normal, **sem SQL manual**): editar `prisma/schema.prisma` —
   adicionar `COMPLETED` a `BookingStatus` (aditivo); enums `LedgerType`/`LedgerOrigin`/`PaymentMethod`;
   models `LedgerEntry` e `LedgerEntryItem` (PKs cuid, `Decimal(10,2)`, `Timestamptz(6)`, relations
   **nomeadas** `LedgerClient`/`LedgerCreatedBy` em User, back-relations em Booking/BarbershopService/

@@ -11,7 +11,7 @@ interface BookingItem {
   serviceName: string;
   startsAtIso: string;
   endsAtIso: string;
-  status: "ACTIVE" | "CANCELLED";
+  status: "ACTIVE" | "CANCELLED" | "COMPLETED";
 }
 
 const CANCEL_FAILURE_MESSAGES: Record<string, string> = {
@@ -92,7 +92,9 @@ export function MyBookingsList({ items }: { items: BookingItem[] }) {
                 </button>
               </div>
             ) : (
-              <span className="text-sm text-neutral-400">Cancelado</span>
+              <span className="text-sm text-neutral-400">
+                {item.status === "COMPLETED" ? "Concluído" : "Cancelado"}
+              </span>
             )}
           </li>
         ))}

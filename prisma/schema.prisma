@@ -36,6 +36,9 @@ model User {
   accounts      Account[]
   sessions      Session[]
   bookings      Booking[]
+  // Financeiro (005): dois papéis distintos num lançamento — cliente e autor (OWNER).
+  ledgerEntriesAsClient LedgerEntry[] @relation("LedgerClient")
+  ledgerEntriesCreated  LedgerEntry[] @relation("LedgerCreatedBy")
   createdAt     DateTime  @default(now()) @db.Timestamptz(6)
 }
 
@@ -86,6 +89,7 @@ model Barbershop {
   openingHours OpeningHours[]
   services  BarbershopService[]
   bookings  Booking[]
+  ledgerEntries LedgerEntry[]
   createdAt DateTime            @default(now()) @db.Timestamptz(6)
 }
 
@@ -118,11 +122,16 @@ model BarbershopService {
 
   barbershop Barbershop @relation(fields: [barbershopId], references: [id], onDelete: Cascade)
   bookings   Booking[]
+  // Financeiro (005): itens de lançamento que referenciam este serviço (snapshot de preço).
+  ledgerItems LedgerEntryItem[]
 }
 
 enum BookingStatus {
   ACTIVE
   CANCELLED
+  // 005-financial-ledger: estado terminal. Ao concluir, gera o lançamento de receita (US1).
+  // Aditivo: sai naturalmente do índice parcial booking_no_overlap (WHERE status='ACTIVE').
+  COMPLETED
 }
 
 model Booking {
@@ -141,7 +150,86 @@ model Booking {
   barbershop Barbershop        @relation(fields: [barbershopId], references: [id])
   user       User              @relation(fields: [userId], references: [id])
   service    BarbershopService @relation(fields: [serviceId], references: [id])
+  // Financeiro (005): bookingId nullable e SEM unicidade — um booking pode ter 1 lançamento ativo
+  // + N inativados por soft delete (correção). Ver data-model.md D10.
+  ledgerEntries LedgerEntry[]
 
   @@index([userId])
   @@index([barbershopId, status])
+}
+
+// ---------------------------------------------------------------------------
+// Financeiro — captura de lançamentos (005-financial-ledger)
+// ---------------------------------------------------------------------------
+
+// Natureza do lançamento: entrada ou saída. O sinal do balancete vem daqui, NÃO do valor
+// (amount é sempre positivo — FR-011).
+enum LedgerType {
+  INCOME
+  EXPENSE
+}
+
+// Evento que originou o lançamento. Ortogonal a PaymentMethod (evento != meio — FR-012).
+enum LedgerOrigin {
+  BOOKING
+  WALK_IN
+  EXPENSE
+}
+
+// Meio de pagamento (opcional, informativo). ONLINE/externalRef preparam pagamento online futuro
+// (FR-013), sem fluxo ativo nesta feature.
+enum PaymentMethod {
+  CASH
+  PIX
+  CARD
+  ONLINE
+  OTHER
+}
+
+// Uma linha do razão financeiro (entrada ou saída). amount sempre positivo; para receita é a soma
+// dos itens (validada na aplicação, dentro da transação — FR-007), para despesa é informado direto.
+model LedgerEntry {
+  id           String        @id @default(cuid())
+  barbershopId String
+  type         LedgerType
+  origin       LedgerOrigin
+  // Valor monetário: NUMERIC, nunca float (Princípio II). Sempre > 0 (FR-011).
+  amount       Decimal       @db.Decimal(10, 2)
+  // Instante da captura (FR-017) — informado, NÃO derivado do endsAt do booking. UTC (Princípio VII).
+  occurredAt   DateTime      @db.Timestamptz(6)
+  description  String
+  category     String?
+  paymentMethod PaymentMethod?
+  externalRef  String?
+  bookingId    String?
+  clientId     String?
+  clientName   String?
+  createdBy    String
+  // Soft delete (FR-015): correção = inativar o lançamento inteiro, nunca hard delete nem estorno.
+  isActive     Boolean       @default(true)
+  createdAt    DateTime      @default(now()) @db.Timestamptz(6)
+  updatedAt    DateTime      @updatedAt @db.Timestamptz(6)
+
+  barbershop Barbershop         @relation(fields: [barbershopId], references: [id], onDelete: Cascade)
+  booking    Booking?           @relation(fields: [bookingId], references: [id])
+  client     User?              @relation("LedgerClient", fields: [clientId], references: [id])
+  creator    User               @relation("LedgerCreatedBy", fields: [createdBy], references: [id])
+  items      LedgerEntryItem[]
+
+  // Ajuda a agregação por barbearia/período da F006 (data-model.md D8/item 13).
+  @@index([barbershopId, occurredAt])
+}
+
+// Line item de um lançamento de receita (serviço agendado ou extra). A soma dos itens deve bater
+// com LedgerEntry.amount (FR-007). serviceId nullable: extra manual sem serviço (US2).
+model LedgerEntryItem {
+  id            String  @id @default(cuid())
+  ledgerEntryId String
+  serviceId     String?
+  description   String
+  // Item de serviço = snapshot de BarbershopService.price no ato da captura (FR-002).
+  amount        Decimal @db.Decimal(10, 2)
+
+  ledgerEntry LedgerEntry        @relation(fields: [ledgerEntryId], references: [id], onDelete: Cascade)
+  service     BarbershopService? @relation(fields: [serviceId], references: [id])
 }
