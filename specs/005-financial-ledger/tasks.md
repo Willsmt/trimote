@@ -69,10 +69,10 @@ itens são pré-requisito de US1–US5.
   Barbershop, `bookingId` sem unicidade, `isActive` default true, `@@index([barbershopId, occurredAt])`).
   Rodar `prisma migrate dev --name financial_ledger` + `prisma generate`. **NÃO** tocar a exclusion
   constraint `booking_no_overlap`. (data-model.md; FR-001/010/011/013/017; itens 6/8/9/10/13/14/15)
-- [ ] T003 [P] Unit test-first do helper puro em `tests/unit/ledger/ledger-items.test.ts`: soma dos
+- [x] T003 [P] Unit test-first do helper puro em `tests/unit/ledger/ledger-items.test.ts`: soma dos
   itens; rejeição de `amount <= 0`; construção do item de serviço a partir de um preço fornecido
   (snapshot); `total == Σ itens`. Deve **falhar** antes de T004. (SC-005; FR-007/FR-011)
-- [ ] T004 Implementar o helper puro `src/server/ledger/ledger-items.ts` (`LedgerItemInput`,
+- [x] T004 Implementar o helper puro `src/server/ledger/ledger-items.ts` (`LedgerItemInput`,
   resolução de valor do item a partir de um preço fornecido, `sumItems`, validação de positividade),
   sem dependência de Prisma (recebe preços já resolvidos). Torna T003 verde. (FR-007/FR-011/FR-019)
 
