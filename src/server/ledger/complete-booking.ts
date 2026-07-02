@@ -1,7 +1,7 @@
-import type { PaymentMethod } from "@prisma/client";
+import { Prisma, type PaymentMethod } from "@prisma/client";
 
 import { prisma } from "@/server/db/client";
-import { allAmountsPositive, buildServiceItem, sumItems } from "./ledger-items";
+import { allAmountsPositive, buildServiceItem, sumItems, type LedgerItemInput } from "./ledger-items";
 
 /**
  * Núcleo da conclusão de atendimento (005-financial-ledger, US1), testável com um `ownerId`
@@ -12,10 +12,23 @@ import { allAmountsPositive, buildServiceItem, sumItems } from "./ledger-items";
  * de receita (INCOME/BOOKING) com um item do serviço agendado. O valor do item é um SNAPSHOT do
  * preço no ato da conclusão (FR-002) — lido SEM filtrar `isActive` (registra o que aconteceu; D5).
  *
+ * Extras (US2) são capturados AQUI, no ato da conclusão (não há edição pós-COMPLETED — só soft
+ * delete): item de serviço (snapshot do preço) ou item manual (valor informado). O `amount` do
+ * lançamento é a soma dos itens (base + extras), validada dentro da transação (FR-006/FR-007).
+ *
  * Ordem de verificação (curto-circuito; nenhuma recusa escreve nada):
  *   booking_not_found → already_completed → booking_cancelled → service_not_found → invalid_amount
- *   → $transaction(update COMPLETED + create LedgerEntry+item)
+ *   → $transaction(update COMPLETED + create LedgerEntry+itens)
  */
+
+/** Extra capturado na conclusão: item de serviço (snapshot) OU item manual (valor informado). */
+export interface CompleteBookingExtraInput {
+  /** Serviço do catálogo (snapshot do preço) ou ausente para extra manual. */
+  serviceId?: string;
+  description: string;
+  /** Obrigatório para extra manual; ignorado para extra de serviço (usa o snapshot). */
+  amount?: number;
+}
 
 export interface CompleteBookingInput {
   /** OWNER que registra (createdBy — auditoria). Derivado da sessão pela Server Action. */
@@ -24,6 +37,8 @@ export interface CompleteBookingInput {
   /** Instante da captura (FR-017); default agora. NÃO derivado do endsAt do booking. */
   occurredAt?: Date;
   paymentMethod?: PaymentMethod;
+  /** Extras feitos na hora (US2). Capturados só aqui — não há edição pós-conclusão. */
+  extras?: CompleteBookingExtraInput[];
 }
 
 export type CompleteBookingReason =
@@ -66,9 +81,40 @@ export async function completeBookingForOwner(
     return { ok: false, reason: "service_not_found" };
   }
 
-  const items = [
+  const items: LedgerItemInput[] = [
     buildServiceItem({ serviceId: service.id, description: service.name, price: service.price }),
   ];
+
+  // Extras (US2): serviço → snapshot do preço (SEM filtrar isActive); manual → valor informado.
+  for (const extra of input.extras ?? []) {
+    if (extra.serviceId) {
+      const extraService = await prisma.barbershopService.findUnique({
+        where: { id: extra.serviceId },
+        select: { id: true, name: true, price: true },
+      });
+      if (!extraService) {
+        return { ok: false, reason: "service_not_found" };
+      }
+      items.push(
+        buildServiceItem({
+          serviceId: extraService.id,
+          description: extra.description || extraService.name,
+          price: extraService.price,
+        }),
+      );
+    } else {
+      // Extra manual sem valor não pode existir (FR-011).
+      if (extra.amount == null) {
+        return { ok: false, reason: "invalid_amount" };
+      }
+      items.push({
+        serviceId: null,
+        description: extra.description,
+        amount: new Prisma.Decimal(extra.amount),
+      });
+    }
+  }
+
   if (!allAmountsPositive(items)) {
     return { ok: false, reason: "invalid_amount" };
   }

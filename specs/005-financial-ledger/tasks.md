@@ -135,11 +135,11 @@ não há edição de item (só soft delete — clarify).
 **Independent Test**: Concluir adicionando um extra de serviço e um manual; verificar `amount == Σ` e
 que não há caminho para editar itens depois.
 
-- [ ] T011 [P] [US2] Integração `tests/integration/ledger/complete-booking-extras.test.ts`: conclusão
+- [x] T011 [P] [US2] Integração `tests/integration/ledger/complete-booking-extras.test.ts`: conclusão
   com extra de serviço (snapshot) + extra manual → `amount == Σ itens` validado na transação (SC-005);
   item com `amount <= 0` → `invalid_amount`; extra com `serviceId` inexistente → `service_not_found`.
   Deve falhar antes de T012. (FR-006/FR-007/FR-011)
-- [ ] T012 [US2] Estender o core `src/server/ledger/complete-booking.ts` para aceitar `extras[]`
+- [x] T012 [US2] Estender o core `src/server/ledger/complete-booking.ts` para aceitar `extras[]`
   (serviço via snapshot / manual via valor informado), delegando resolução e soma ao helper
   (`ledger-items.ts`); recomputar `amount` como Σ dentro da mesma `$transaction`. (FR-006/FR-007)
 

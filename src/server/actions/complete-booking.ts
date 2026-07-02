@@ -5,6 +5,7 @@ import type { PaymentMethod } from "@prisma/client";
 import { requireOwner } from "@/server/auth/owner";
 import {
   completeBookingForOwner,
+  type CompleteBookingExtraInput,
   type CompleteBookingResult,
 } from "@/server/ledger/complete-booking";
 
@@ -17,6 +18,7 @@ export async function completeBooking(input: {
   bookingId: string;
   occurredAt?: string; // ISO 8601 (UTC)
   paymentMethod?: PaymentMethod;
+  extras?: CompleteBookingExtraInput[];
 }): Promise<CompleteBookingResult> {
   const owner = await requireOwner();
   return completeBookingForOwner({
@@ -24,5 +26,6 @@ export async function completeBooking(input: {
     bookingId: input.bookingId,
     occurredAt: input.occurredAt ? new Date(input.occurredAt) : undefined,
     paymentMethod: input.paymentMethod,
+    extras: input.extras,
   });
 }
