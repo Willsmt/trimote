@@ -16,7 +16,9 @@ import { ForbiddenError } from "@/server/auth/owner";
 import { listLedgerForOwner, type LedgerListInput } from "@/server/ledger/ledger-list";
 import { listLedger } from "@/server/actions/list-ledger";
 import { getCashSummaryForOwner } from "@/server/ledger/cash-summary";
+import { deactivateLedgerEntryForOwner } from "@/server/ledger/deactivate-ledger-entry";
 import { BARBERSHOP_ID, SP, slotAt, seedLedgerEntry, upsertUsers, cleanupLedgerAndBookings } from "./fixtures";
+import { SERVICE_CORTE, seedBooking } from "../ledger/fixtures";
 
 // Integração (Postgres) do razão paginado (US3) + consistência com o caixa (US1) e autorização da
 // action. Ano 2032 isola do restante (a listagem é por barbearia). Keyset (occurredAt, id) desc,
@@ -184,6 +186,37 @@ describe("consistência caixa × listagem (US3/US1 — FR-024)", () => {
     const cash = await getCashSummaryForOwner({ barbershopId: BARBERSHOP_ID, timeZone: SP, granularity: "month", referenceLocalDate: "2032-09-15" });
     expect(cash.balance.equals(sum)).toBe(true); // 40.10 + 30.05 - 20.30 = 49.85
     expect(cash.balance.equals(D("49.85"))).toBe(true);
+  });
+});
+
+describe("inativar a partir da listagem — reuso do soft delete da F005 (US4)", () => {
+  it("inativa um lançamento ANTIGO: sai da lista/caixa; booking de origem BOOKING segue COMPLETED (SC-009)", async () => {
+    const OCT = { granularity: "month", referenceLocalDate: "2032-10-15" } as const;
+    const cash = () =>
+      getCashSummaryForOwner({ barbershopId: BARBERSHOP_ID, timeZone: SP, granularity: "month", referenceLocalDate: "2032-10-15" });
+
+    // Booking concluído + lançamento de origem BOOKING (o "antigo").
+    const bookingId = await seedBooking({ userId: CLIENT_ID, serviceId: SERVICE_CORTE, startsAt: slotAt("2032-10-05", 600), status: "COMPLETED" });
+    const oldEntry = await seedLedgerEntry({ createdBy: OWNER_ID, type: "INCOME", origin: "BOOKING", amount: "40.00", occurredAt: slotAt("2032-10-05", 600), clientId: CLIENT_ID, bookingId });
+    // Lançamento mais novo → garante que o inativado NÃO é o último criado (limitação da F005).
+    await seedLedgerEntry({ createdBy: OWNER_ID, type: "INCOME", origin: "WALK_IN", amount: "10.00", occurredAt: slotAt("2032-10-08", 600) });
+
+    expect((await cash()).income.equals(D("50.00"))).toBe(true);
+
+    // Reusa o core de soft delete da F005 SEM mudança.
+    const res = await deactivateLedgerEntryForOwner({ ledgerEntryId: oldEntry });
+    expect(res.ok).toBe(true);
+
+    const def = await listLedgerForOwner(baseInput({ filter: { period: OCT } }));
+    expect(def.rows.map((r) => r.id)).not.toContain(oldEntry);
+
+    const all = await listLedgerForOwner(baseInput({ filter: { period: OCT, includeInactive: true } }));
+    expect(all.rows.find((r) => r.id === oldEntry)?.isActive).toBe(false);
+
+    expect((await cash()).income.equals(D("10.00"))).toBe(true); // 40 inativado saiu
+
+    const booking = await prisma.booking.findUniqueOrThrow({ where: { id: bookingId } });
+    expect(booking.status).toBe("COMPLETED"); // FR-018: soft delete não reabre o agendamento
   });
 });
 

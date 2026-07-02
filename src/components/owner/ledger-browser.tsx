@@ -1,8 +1,10 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 
 import { listLedger, type LedgerPageDTO, type LedgerRowDTO } from "@/server/actions/list-ledger";
+import { deactivateLedgerEntry } from "@/server/actions/deactivate-ledger-entry";
 import type { Granularity } from "@/domain/time";
 
 // Ilha client do razão (006, US3): filtros combináveis, "carregar mais" (keyset via nextCursor),
@@ -47,6 +49,7 @@ export function LedgerBrowser({ initialPage, period }: LedgerBrowserProps) {
   const [filter, setFilter] = useState<LocalFilter>({});
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const [pending, startTransition] = useTransition();
+  const router = useRouter();
 
   function toBackendFilter(f: LocalFilter) {
     return {
@@ -74,6 +77,21 @@ export function LedgerBrowser({ initialPage, period }: LedgerBrowserProps) {
       const page = await listLedger({ filter: toBackendFilter(filter), cursor });
       setRows((prev) => [...prev, ...page.rows]);
       setCursor(page.nextCursor);
+    });
+  }
+
+  // US4: inativa uma linha ativa reutilizando a MESMA action da F005 (deactivateLedgerEntry), sem
+  // mudança. Após sucesso, recarrega a listagem (o inativado sai) e o caixa (router.refresh).
+  function inactivate(id: string) {
+    if (!confirm("Inativar este lançamento? Ele deixa de contar no caixa, mas fica registrado.")) return;
+    startTransition(async () => {
+      const res = await deactivateLedgerEntry({ ledgerEntryId: id });
+      if (res.ok) {
+        const page = await listLedger({ filter: toBackendFilter(filter) });
+        setRows(page.rows);
+        setCursor(page.nextCursor);
+        router.refresh();
+      }
     });
   }
 
@@ -156,6 +174,16 @@ export function LedgerBrowser({ initialPage, period }: LedgerBrowserProps) {
                   {row.items.length > 0 && (
                     <button type="button" className="text-xs text-neutral-500 underline" onClick={() => toggle(row.id)}>
                       {expanded.has(row.id) ? "ocultar" : "itens"}
+                    </button>
+                  )}
+                  {row.isActive && (
+                    <button
+                      type="button"
+                      className="text-xs text-red-600 underline disabled:opacity-50"
+                      disabled={pending}
+                      onClick={() => inactivate(row.id)}
+                    >
+                      Inativar (corrigir)
                     </button>
                   )}
                 </div>

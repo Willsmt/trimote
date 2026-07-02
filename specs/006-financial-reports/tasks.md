@@ -188,12 +188,12 @@ não reabre o booking.
 
 ### Implementation
 
-- [ ] T017 [US4] Ligar o botão **"Inativar (corrigir)"** em cada linha **ativa** de
+- [X] T017 [US4] Ligar o botão **"Inativar (corrigir)"** em cada linha **ativa** de
   `src/components/owner/ledger-browser.tsx`, chamando a **mesma** action da F005
   `deactivateLedgerEntry({ ledgerEntryId })` **SEM MUDANÇA**; após sucesso, recarregar a página atual
   e refletir no caixa/breakdown. **NÃO** editar `deactivate-ledger-entry` (core nem action). (US4,
   FR-016/FR-017/FR-018, D13)
-- [ ] T018 [US4] Teste de integração em `tests/integration/reports/ledger-list.test.ts` (ou arquivo
+- [X] T018 [US4] Teste de integração em `tests/integration/reports/ledger-list.test.ts` (ou arquivo
   dedicado): inativar via `deactivateLedgerEntryForOwner` um lançamento que **não** é o último →
   `ledger-list` default o exclui, `includeInactive` o mostra marcado, `cash-summary` não o conta, e
   um lançamento de origem `BOOKING` permanece `COMPLETED` (booking não reabre — **FR-018**). (US4,
