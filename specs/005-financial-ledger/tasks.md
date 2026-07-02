@@ -181,14 +181,14 @@ cliente.
 
 **Independent Test**: Registrar despesa e verificar lançamento sem itens/cliente contando como saída.
 
-- [ ] T016 [P] [US4] Integração `tests/integration/ledger/register-expense.test.ts`: EXPENSE/EXPENSE
+- [x] T016 [P] [US4] Integração `tests/integration/ledger/register-expense.test.ts`: EXPENSE/EXPENSE
   **sem** itens e **sem** cliente (SC-007); **paymentMethod** — registrar COM e SEM `paymentMethod`,
   persistência independente de `origin` (FR-012/FR-013); `amount <= 0` → `invalid_amount`; **não-OWNER**
   recusado (SC-009). (FR-010/FR-011/FR-012/FR-013)
-- [ ] T017 [US4] Implementar o core `src/server/ledger/register-expense.ts` (`invalid_amount` →
+- [x] T017 [US4] Implementar o core `src/server/ledger/register-expense.ts` (`invalid_amount` →
   `barbershopId` da barbearia do MVP → `ledgerEntry.create` sem `items`), persistindo `paymentMethod`
   (opcional) sem inferir de `origin`. (FR-010/FR-012/FR-013; contracts/register-expense.md)
-- [ ] T018 [US4] Implementar a Server Action fina `src/server/actions/register-expense.ts`
+- [x] T018 [US4] Implementar a Server Action fina `src/server/actions/register-expense.ts`
   (`requireOwner` → core). (FR-018)
 
 **Checkpoint US4**: saída de dinheiro registrada.
