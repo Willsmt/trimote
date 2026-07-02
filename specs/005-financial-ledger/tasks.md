@@ -89,7 +89,7 @@ com item = preço no instante da conclusão, e que alterar o preço depois não 
 
 ### Tests (test-first — devem falhar antes da impl)
 
-- [ ] T005 [P] [US1] Integração `tests/integration/ledger/complete-booking.test.ts`: sucesso
+- [x] T005 [P] [US1] Integração `tests/integration/ledger/complete-booking.test.ts`: sucesso
   (booking `COMPLETED` + 1 `LedgerEntry` INCOME/BOOKING + 1 item snapshot); **atomicidade** — falha na
   criação do lançamento → booking **não** fica `COMPLETED` e nada persiste (SC-001); **snapshot** —
   mudar `BarbershopService.price` depois não altera o lançamento (SC-002); **occurredAt** — passar um
@@ -99,26 +99,26 @@ com item = preço no instante da conclusão, e que alterar o preço depois não 
   concluir `COMPLETED` de novo → `already_completed`, **sem** 2º lançamento (SC-003); concluir um
   booking `CANCELLED` → `booking_cancelled` (sem lançamento); serviço com `isActive=false` → conclusão
   **permitida** (snapshot independe de isActive, research.md D5); **não-OWNER** recusado (SC-009).
-- [ ] T006 [P] [US1] Integração `tests/integration/ledger/completed-state-machine.test.ts`:
+- [x] T006 [P] [US1] Integração `tests/integration/ledger/completed-state-machine.test.ts`:
   **remarcar** um `COMPLETED` → `already_completed` (allowlist do reschedule), booking intacto (SC-004);
   **cancelar** um `COMPLETED` → `already_completed` e **não** vira `CANCELLED` (regressão do bug latente
   do denylist do cancel, SC-004).
 
 ### Implementation
 
-- [ ] T007 [US1] Inserir o branch `already_completed` em `src/server/booking/reschedule-booking.ts`
+- [x] T007 [US1] Inserir o branch `already_completed` em `src/server/booking/reschedule-booking.ts`
   **antes** do check `status !== "ACTIVE"`; adicionar `"already_completed"` ao union
   `RescheduleBookingReason`; atualizar o comentário de ordem de verificação. (FR-005; contracts/booking-state-machine.md)
-- [ ] T008 [US1] Inserir o branch `already_completed` em `src/server/booking/cancel-booking.ts`
+- [x] T008 [US1] Inserir o branch `already_completed` em `src/server/booking/cancel-booking.ts`
   **junto** ao check `already_cancelled` e **antes** do `update`; adicionar `"already_completed"` ao
   union `CancelBookingReason`. (FR-005; regressão do denylist)
-- [ ] T009 [US1] Implementar o core `src/server/ledger/complete-booking.ts` (ordem:
+- [x] T009 [US1] Implementar o core `src/server/ledger/complete-booking.ts` (ordem:
   `booking_not_found` → `already_completed` → `booking_cancelled` → snapshot do serviço agendado via
   `findUnique` **sem** filtrar `isActive` → item base pelo helper → `amount = Σ` →
   `$transaction`(`booking.update(COMPLETED)` + `ledgerEntry.create` com item aninhado)), persistindo
   `occurredAt` (default agora) e `paymentMethod` (opcional) sem inferir de `origin`. Sem extras
   ainda (MVP). (FR-001/002/003/004/012/013/017/019; contracts/complete-booking.md)
-- [ ] T010 [US1] Implementar a Server Action fina `src/server/actions/complete-booking.ts`
+- [x] T010 [US1] Implementar a Server Action fina `src/server/actions/complete-booking.ts`
   (`requireOwner` → core; ISO→Date de `occurredAt`). (FR-018)
 
 **Checkpoint US1**: MVP entregue — concluir atendimento gera receita com snapshot, atômico e seguro no

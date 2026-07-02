@@ -12,7 +12,7 @@ import { utcToLocalMinutes, weekdayInZone } from "@/domain/time";
  * UPDATE em transação e TRADUZ a violação (`23P01`) em `slot_unavailable`.
  *
  * Ordem de verificação (curto-circuito; nenhuma recusa altera o booking — FR-009):
- *   not_found → not_owner → not_active → booking_in_past → no_change
+ *   not_found → not_owner → already_completed → not_active → booking_in_past → no_change
  *   → service_not_found → service_inactive → in_the_past → outside_opening_hours
  *   → UPDATE ($transaction) / 23P01 → slot_unavailable
  */
@@ -29,6 +29,7 @@ export interface RescheduleBookingInput {
 export type RescheduleBookingReason =
   | "not_found"
   | "not_owner"
+  | "already_completed"
   | "not_active"
   | "booking_in_past"
   | "service_not_found"
@@ -62,7 +63,13 @@ export async function rescheduleBookingForUser(
   if (booking.userId !== input.userId) {
     return { ok: false, reason: "not_owner" };
   }
-  // 3. Elegibilidade (ativo): não se remarca um agendamento cancelado (FR-008).
+  // 3. Estado terminal (005): um agendamento CONCLUÍDO não é remarcável. Reason próprio e distinto
+  //    (não reutiliza not_active) para a UI renderizar mensagem específica (FR-005). Vem ANTES do
+  //    check allowlist `!== ACTIVE` para não cair no genérico not_active.
+  if (booking.status === "COMPLETED") {
+    return { ok: false, reason: "already_completed" };
+  }
+  // 4. Elegibilidade (ativo): não se remarca um agendamento cancelado (FR-008).
   if (booking.status !== "ACTIVE") {
     return { ok: false, reason: "not_active" };
   }
