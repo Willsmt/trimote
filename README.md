@@ -160,6 +160,40 @@ horário antigo é liberado automaticamente. Feature: [`specs/004-reschedule-boo
   alterado é `get-available-slots.ts` (parâmetro opcional `excludeBookingId`); o domínio puro
   `computeAvailableSlots` e os cores `createBooking`/`cancelBooking` ficam intactos.
 
+## Financeiro (captura de lançamentos)
+
+O OWNER registra todo o dinheiro que entra e sai da barbearia, formando a base do balancete
+(relatórios/agregações ficam para a F006). Feature: [`specs/005-financial-ledger`](specs/005-financial-ledger/).
+Entidades: `LedgerEntry` (razão) e `LedgerEntryItem` (itens); valores em `Decimal(10,2)`, instantes em
+UTC. Autorização por **role OWNER** (`requireOwner`) — **não** pela posse do booking (no `Booking`,
+`userId` é o cliente que agendou; o OWNER conclui qualquer atendimento).
+
+- **Concluir atendimento (US1)**: marca o booking como `COMPLETED` e gera, no **mesmo `$transaction`**,
+  um `LedgerEntry` de receita (`INCOME`/`BOOKING`) com um item do serviço agendado. O valor é um
+  **snapshot** do preço no ato da conclusão (lido **sem** filtrar `isActive` — registra o que
+  aconteceu); mudar o preço depois não altera lançamentos passados.
+- **Extras (US2)**: capturados **só** no ato da conclusão/registro — item de serviço (snapshot) ou item
+  manual; o valor do lançamento é a soma dos itens, validada na transação. Após concluído, a única
+  mutação é o soft delete.
+- **Walk-in (US3)**: receita (`INCOME`/`WALK_IN`) sem `bookingId`, **sem** tocar a agenda; cliente
+  cadastrado, nome livre ou anônimo.
+- **Despesa (US4)**: `EXPENSE`/`EXPENSE` com descrição, categoria e valor — sem itens e sem cliente.
+  O valor é sempre positivo; o sinal (entrada/saída) vem do `type`.
+- **Correção (US5)**: **soft delete** (`isActive=false`), nunca hard delete nem estorno. Inativar um
+  lançamento de origem `BOOKING` **não** reabre o agendamento (permanece `COMPLETED`).
+- **`origin` × `paymentMethod`**: eixos ortogonais — a origem é o evento; a forma de pagamento é o
+  meio (opcional). `ONLINE`/`externalRef` deixam o modelo pronto para pagamento online, sem fluxo
+  ativo agora. **Não** há constraint de banco "receita exige concluído" (fica na aplicação — FR-014).
+- **Estado terminal na F004**: concluir/remarcar/cancelar um agendamento já concluído são recusados
+  com o reason próprio **`already_completed`** (distinto de `not_active`/`already_cancelled`), integrado
+  na ordem de verificação existente de cada core.
+- **Reasons de recusa**: conclusão — `booking_not_found`, `already_completed`, `booking_cancelled`,
+  `service_not_found`, `invalid_amount`; walk-in — `no_items`, `invalid_amount`, `service_not_found`,
+  `client_not_found`; despesa — `invalid_amount`; correção — `entry_not_found`, `already_inactive`.
+- **Escopo**: migração Prisma normal (novos enums, `COMPLETED` aditivo, tabelas do ledger); a exclusion
+  constraint `booking_no_overlap` **não** é tocada. Sem relatório/agregação/caixa/visão do cliente
+  (F006) e sem gateway/webhooks (feature futura).
+
 ## Estrutura
 
 ```text
@@ -168,16 +202,16 @@ src/
 ├── app/         # rotas: /services, /booking, /my-bookings, /owner/*, /api/auth/[...nextauth]
 ├── components/  # UI: site-header (server) + auth-buttons (client), my-bookings, booking, owner/
 ├── domain/      # lógica pura sem I/O: availability, time (test-first)
-├── server/      # actions/ (Server Actions), booking/ + owner/ (core testável), auth/, db/
+├── server/      # actions/ (Server Actions), booking/ + owner/ + ledger/ (core testável), auth/, db/
 └── lib/
 tests/
-├── unit/        # availability, time (sem banco)
-└── integration/ # booking-conflict, booking-ownership, owner-authorization, service-lifecycle, reschedule
+├── unit/        # availability, time, ledger (sem banco)
+└── integration/ # booking-conflict, booking-ownership, owner-authorization, service-lifecycle, reschedule, ledger
 ```
 
 Padrão: as Server Actions (`src/server/actions/`) são wrappers finos sobre um core em
-`src/server/booking/` e `src/server/owner/`; o owner deriva sempre da sessão no servidor (guard
-`requireOwner` para gestão).
+`src/server/booking/`, `src/server/owner/` e `src/server/ledger/`; o owner deriva sempre da sessão no
+servidor (guard `requireOwner` para gestão e para a captura financeira).
 
 ## Convenções
 

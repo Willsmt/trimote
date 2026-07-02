@@ -237,7 +237,7 @@ reasons do ledger e a mensagem do novo reason `already_completed` nos fluxos da 
 
 ## Phase 9: Polish & Cross-Cutting Concerns
 
-- [ ] T024 [P] Atualizar o `README` com o financeiro (fluxos concluir/walk-in/despesa/soft delete;
+- [x] T024 [P] Atualizar o `README` com o financeiro (fluxos concluir/walk-in/despesa/soft delete;
   reasons incluindo `already_completed`; snapshot/atomicidade; escopo F005 e o que fica na F006) —
   Princípio V.
 - [ ] T025 Regressão + validação: `npm test` verde (001–004 intactas — suites de reschedule/cancel/
