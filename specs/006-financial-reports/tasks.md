@@ -127,26 +127,26 @@ empatado), filtros em conjunção, itens na expansão e inativos só sob o filtr
 
 ### Tests (test-first) ⚠️
 
-- [ ] T010 [P] [US3] Escrever `tests/integration/reports/ledger-list.test.ts` (deve FALHAR): ordem
+- [X] T010 [P] [US3] Escrever `tests/integration/reports/ledger-list.test.ts` (deve FALHAR): ordem
   **mais-recente-primeiro**; **keyset** sem repetir/pular com `occurredAt` **empatado** (criar 3+
   linhas no mesmo instante) (SC-006); `pageSize+1`/`hasMore`/`nextCursor`; **filtros combinados** em
   conjunção incl. `UNSET`→`null` (SC-007); **inativos** ausentes por padrão e presentes **marcados**
   sob `includeInactive`, nunca em total (SC-008); e uma linha de **receita** traz seus `items`
   (expansão — FR-014).
-- [ ] T010a [US3] Escrever teste de **consistência entre cores** em
+- [X] T010a [US3] Escrever teste de **consistência entre cores** em
   `tests/integration/reports/ledger-list.test.ts` (test-first; **verde após T006 e T011**): para um
   **período+filtros fixos** com dados mistos (INCOME/EXPENSE + **inativos no meio**), paginar
   `listLedgerForOwner` até o fim, somar em `Decimal` (`Σ income − Σ expense`) e comparar com
   `getCashSummaryForOwner().balance` do **mesmo** período/filtros — devem ser iguais; inativos não
   entram em nenhum dos lados. (US3/US1, **FR-024/FR-009/SC-004**)
-- [ ] T014 [US3] Escrever teste de **autorização** da action em
+- [X] T014 [US3] Escrever teste de **autorização** da action em
   `tests/integration/reports/ledger-list.test.ts` (**test-first**; RED por import inexistente até
   T013): não-OWNER (CLIENT) recusado com `ForbiddenError`; OWNER admitido (mock de sessão no padrão
   dos testes da F005). (SC-011)
 
 ### Implementation
 
-- [ ] T011 [US3] Implementar core `listLedgerForOwner` em `src/server/ledger/ledger-list.ts`:
+- [X] T011 [US3] Implementar core `listLedgerForOwner` em `src/server/ledger/ledger-list.ts`:
   `findMany` com `orderBy: [{ occurredAt: 'desc' }, { id: 'desc' }]`, keyset composto
   `(occurredAt < cur.occurredAt) OR (occurredAt = cur.occurredAt AND id < cur.id)`,
   `take = pageSize + 1`, `where` composto (barbershopId; `isActive: true` ou `{}` se
@@ -154,12 +154,12 @@ empatado), filtros em conjunção, itens na expansão e inativos só sob o filtr
   `period`→range via `periodBoundsInZone`), `select` enxuto + `include items`. **Comentário** no
   cursor documentando a premissa de precisão: cursor em `Date` (ms) vs `Timestamptz(6)` é seguro
   porque todos os writes da F005 usam `new Date()`. (US3, FR-010..015, D8/D9/D10)
-- [ ] T012 [US3] Rodar `ledger-list.test.ts` até **verde** (keyset estável e filtros — SC-006/SC-007/
+- [X] T012 [US3] Rodar `ledger-list.test.ts` até **verde** (keyset estável e filtros — SC-006/SC-007/
   SC-008).
 
 ### Server Action
 
-- [ ] T013 [US3] Implementar Server Action `src/server/actions/list-ledger.ts`: `requireOwner`
+- [X] T013 [US3] Implementar Server Action `src/server/actions/list-ledger.ts`: `requireOwner`
   (FR-022); resolve `barbershopId`+`timezone`; **valida whitelist** de filtro/cursor no servidor
   (enums/campos conhecidos; cursor parseado) (Princípio I); delega ao core; serializa `LedgerPageDTO`
   (Decimal→string, datas→ISO, `nextCursor` serializado). (US3, FR-012/FR-022, D5)
