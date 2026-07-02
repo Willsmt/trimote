@@ -34,7 +34,7 @@ export default async function OwnerLedgerPage() {
       select: {
         id: true,
         startsAt: true,
-        service: { select: { name: true } },
+        service: { select: { name: true, price: true } },
         user: { select: { name: true, email: true } },
       },
     }),
@@ -49,6 +49,7 @@ export default async function OwnerLedgerPage() {
     id: b.id,
     startsAtIso: b.startsAt.toISOString(),
     serviceName: b.service.name,
+    servicePrice: b.service.price.toString(),
     clientLabel: b.user.name ?? b.user.email ?? "Cliente",
   }));
   const activeServices = services.map((s) => ({

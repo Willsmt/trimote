@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import type { PaymentMethod } from "@prisma/client";
 
@@ -27,6 +27,7 @@ interface BookingOption {
   id: string;
   startsAtIso: string;
   serviceName: string;
+  servicePrice: string; // usado só para o feedback de valor registrado (exibição)
   clientLabel: string;
 }
 
@@ -49,6 +50,8 @@ type LedgerActionResult =
   | { ok: true; ledgerEntryId?: string }
   | { ok: false; reason: string };
 
+type BusyForm = "complete" | "walkin" | "expense" | "deactivate";
+
 function emptyRow(): ItemRow {
   return { serviceId: "", description: "", amount: "" };
 }
@@ -61,6 +64,10 @@ function formatWhen(iso: string): string {
   }).format(new Date(iso));
 }
 
+function formatBRL(value: number): string {
+  return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value);
+}
+
 export function LedgerManager({
   bookings,
   services,
@@ -69,7 +76,12 @@ export function LedgerManager({
   services: ServiceOption[];
 }) {
   const router = useRouter();
-  const [pending, setPending] = useState(false);
+  const [isPending, startTransition] = useTransition();
+  // Guarda SÍNCRONA contra double-click: fecha a janela de corrida entre o clique e o re-render que
+  // desabilita o botão (foi o que duplicou o walk-in "julio" no smoke). O `isPending` cuida do
+  // rótulo/disabled; o ref garante submit único mesmo em cliques quase simultâneos.
+  const submittingRef = useRef(false);
+  const [busy, setBusy] = useState<BusyForm | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   // Último lançamento criado — permite corrigir por soft delete sem listar/agrupar (fora de F006).
   const [lastEntryId, setLastEntryId] = useState<string | null>(null);
@@ -90,14 +102,20 @@ export function LedgerManager({
   const [expenseCategory, setExpenseCategory] = useState("");
   const [expensePayment, setExpensePayment] = useState("");
 
-  function report(result: LedgerActionResult) {
-    if (result.ok) {
-      setMessage("Lançamento registrado.");
-      setLastEntryId(result.ledgerEntryId ?? null);
-      router.refresh();
-    } else {
-      setMessage(FAILURE_MESSAGES[result.reason] ?? "Não foi possível concluir a operação.");
-    }
+  function servicePrice(id: string): number {
+    return Number(services.find((s) => s.id === id)?.price ?? 0);
+  }
+
+  function serviceName(id: string): string {
+    return services.find((s) => s.id === id)?.name ?? "Item";
+  }
+
+  // Total apenas para EXIBIÇÃO (o valor autoritativo é o do servidor). Serviço = preço do catálogo;
+  // manual = valor informado.
+  function itemsTotal(rows: ItemRow[]): number {
+    return rows
+      .filter((r) => r.serviceId || r.description || r.amount)
+      .reduce((sum, r) => sum + (r.serviceId ? servicePrice(r.serviceId) : Number(r.amount) || 0), 0);
   }
 
   // Converte linhas de item para o payload do core (serviço = snapshot; manual = valor informado).
@@ -111,64 +129,112 @@ export function LedgerManager({
       );
   }
 
-  function serviceName(id: string): string {
-    return services.find((s) => s.id === id)?.name ?? "Item";
-  }
-
   function asPayment(value: string): PaymentMethod | undefined {
     return value ? (value as PaymentMethod) : undefined;
   }
 
-  async function run(action: () => Promise<LedgerActionResult>) {
-    setPending(true);
+  // Executa a ação com prevenção de submit duplicado e reset dos campos no sucesso.
+  function run(
+    form: BusyForm,
+    action: () => Promise<LedgerActionResult>,
+    onSuccess: () => void,
+  ) {
+    if (submittingRef.current) return; // já há um submit em andamento — ignora o clique repetido
+    submittingRef.current = true;
+    setBusy(form);
     setMessage(null);
-    try {
-      report(await action());
-    } finally {
-      setPending(false);
-    }
+    startTransition(async () => {
+      try {
+        const result = await action();
+        if (result.ok) {
+          setLastEntryId(result.ledgerEntryId ?? null);
+          onSuccess(); // reset dos campos + mensagem de sucesso com o valor
+          router.refresh();
+        } else {
+          setMessage(FAILURE_MESSAGES[result.reason] ?? "Não foi possível concluir a operação.");
+        }
+      } finally {
+        submittingRef.current = false;
+        setBusy(null);
+      }
+    });
   }
 
-  async function onComplete() {
+  function onComplete() {
     if (!bookingId) {
       setMessage("Escolha um atendimento.");
       return;
     }
-    await run(() =>
-      completeBooking({
-        bookingId,
-        paymentMethod: asPayment(completePayment),
-        extras: toItems(completeExtras),
-      }),
-    );
-    setCompleteExtras([]);
-  }
-
-  async function onWalkIn() {
-    await run(() =>
-      registerWalkIn({
-        items: toItems(walkInItems),
-        clientName: walkInClientName || undefined,
-        paymentMethod: asPayment(walkInPayment),
-      }),
-    );
-  }
-
-  async function onExpense() {
-    await run(() =>
-      registerExpense({
-        amount: Number(expenseAmount),
-        description: expenseDescription,
-        category: expenseCategory || undefined,
-        paymentMethod: asPayment(expensePayment),
-      }),
+    const booking = bookings.find((b) => b.id === bookingId);
+    const total = (booking ? Number(booking.servicePrice) : 0) + itemsTotal(completeExtras);
+    run(
+      "complete",
+      () =>
+        completeBooking({
+          bookingId,
+          paymentMethod: asPayment(completePayment),
+          extras: toItems(completeExtras),
+        }),
+      () => {
+        setBookingId("");
+        setCompletePayment("");
+        setCompleteExtras([]);
+        setMessage(`Atendimento concluído — ${formatBRL(total)}`);
+      },
     );
   }
 
-  async function onDeactivate() {
+  function onWalkIn() {
+    const total = itemsTotal(walkInItems);
+    run(
+      "walkin",
+      () =>
+        registerWalkIn({
+          items: toItems(walkInItems),
+          clientName: walkInClientName || undefined,
+          paymentMethod: asPayment(walkInPayment),
+        }),
+      () => {
+        setWalkInItems([emptyRow()]);
+        setWalkInClientName("");
+        setWalkInPayment("");
+        setMessage(`Avulso registrado — ${formatBRL(total)}`);
+      },
+    );
+  }
+
+  function onExpense() {
+    const total = Number(expenseAmount) || 0;
+    run(
+      "expense",
+      () =>
+        registerExpense({
+          amount: Number(expenseAmount),
+          description: expenseDescription,
+          category: expenseCategory || undefined,
+          paymentMethod: asPayment(expensePayment),
+        }),
+      () => {
+        setExpenseAmount("");
+        setExpenseDescription("");
+        setExpenseCategory("");
+        setExpensePayment("");
+        setMessage(`Despesa registrada — ${formatBRL(total)}`);
+      },
+    );
+  }
+
+  function onDeactivate() {
     if (!lastEntryId) return;
-    await run(() => deactivateLedgerEntry({ ledgerEntryId: lastEntryId }));
-    setLastEntryId(null);
+    const entryId = lastEntryId;
+    run(
+      "deactivate",
+      () => deactivateLedgerEntry({ ledgerEntryId: entryId }),
+      () => {
+        setLastEntryId(null);
+        setMessage("Lançamento inativado (correção).");
+      },
+    );
   }
 
   return (
@@ -181,9 +247,9 @@ export function LedgerManager({
               type="button"
               className="ml-3 rounded border border-red-300 px-2 py-0.5 text-xs text-red-700 hover:bg-red-50 disabled:opacity-50"
               onClick={onDeactivate}
-              disabled={pending}
+              disabled={isPending}
             >
-              Inativar (corrigir)
+              {busy === "deactivate" ? "Inativando..." : "Inativar (corrigir)"}
             </button>
           )}
         </p>
@@ -215,9 +281,9 @@ export function LedgerManager({
           type="button"
           className="self-start rounded bg-neutral-900 px-4 py-2 text-sm text-white disabled:opacity-50"
           onClick={onComplete}
-          disabled={pending}
+          disabled={isPending}
         >
-          Concluir e registrar receita
+          {busy === "complete" ? "Concluindo..." : "Concluir e registrar receita"}
         </button>
       </section>
 
@@ -241,9 +307,9 @@ export function LedgerManager({
           type="button"
           className="self-start rounded bg-neutral-900 px-4 py-2 text-sm text-white disabled:opacity-50"
           onClick={onWalkIn}
-          disabled={pending}
+          disabled={isPending}
         >
-          Registrar avulso
+          {busy === "walkin" ? "Registrando..." : "Registrar avulso"}
         </button>
       </section>
 
@@ -274,9 +340,9 @@ export function LedgerManager({
           type="button"
           className="self-start rounded bg-neutral-900 px-4 py-2 text-sm text-white disabled:opacity-50"
           onClick={onExpense}
-          disabled={pending}
+          disabled={isPending}
         >
-          Registrar despesa
+          {busy === "expense" ? "Registrando..." : "Registrar despesa"}
         </button>
       </section>
     </div>
