@@ -5,6 +5,7 @@ import {
   buildServiceItem,
   sumItems,
   allAmountsPositive,
+  normalizeDescription,
   type LedgerItemInput,
 } from "@/server/ledger/ledger-items";
 
@@ -74,5 +75,19 @@ describe("allAmountsPositive (rejeição de valor <= 0 — FR-011)", () => {
       { serviceId: null, description: "Neg", amount: D("-5.00") },
     ];
     expect(allAmountsPositive(items)).toBe(false);
+  });
+});
+
+describe("normalizeDescription (rejeição de descrição vazia — invalid_description)", () => {
+  it("devolve o valor com trim quando há conteúdo", () => {
+    expect(normalizeDescription("  Aluguel  ")).toBe("Aluguel");
+  });
+
+  it("null quando vazia", () => {
+    expect(normalizeDescription("")).toBeNull();
+  });
+
+  it("null quando só espaços", () => {
+    expect(normalizeDescription("   ")).toBeNull();
   });
 });

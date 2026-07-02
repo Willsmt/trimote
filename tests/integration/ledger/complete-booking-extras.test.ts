@@ -90,6 +90,48 @@ describe("completeBookingForOwner — extras (US2)", () => {
     expect(await prisma.ledgerEntry.count({ where: { bookingId } })).toBe(0);
   });
 
+  it("extra manual com description so espacos -> invalid_description, nada persiste", async () => {
+    const bookingId = await seedBooking({
+      userId: CLIENT_ID,
+      serviceId: SERVICE_CORTE,
+      startsAt: slotAt(DATE, 13 * 60),
+    });
+
+    const result = await completeBookingForOwner({
+      ownerId: OWNER_ID,
+      bookingId,
+      extras: [{ description: "   ", amount: 10 }],
+    });
+    expect(result).toEqual({ ok: false, reason: "invalid_description" });
+
+    const booking = await prisma.booking.findUniqueOrThrow({ where: { id: bookingId } });
+    expect(booking.status).toBe("ACTIVE");
+    expect(await prisma.ledgerEntry.count({ where: { bookingId } })).toBe(0);
+  });
+
+  it("extra manual com description valida com espacos -> persiste com trim", async () => {
+    const bookingId = await seedBooking({
+      userId: CLIENT_ID,
+      serviceId: SERVICE_CORTE,
+      startsAt: slotAt(DATE, 14 * 60),
+    });
+
+    const result = await completeBookingForOwner({
+      ownerId: OWNER_ID,
+      bookingId,
+      extras: [{ description: "  Gorjeta  ", amount: 10 }],
+    });
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+
+    const entry = await prisma.ledgerEntry.findUniqueOrThrow({
+      where: { id: result.ledgerEntryId },
+      include: { items: true },
+    });
+    const manual = entry.items.find((i) => i.serviceId === null);
+    expect(manual!.description).toBe("Gorjeta");
+  });
+
   it("extra de servico inexistente -> service_not_found, nada persiste", async () => {
     const bookingId = await seedBooking({
       userId: CLIENT_ID,

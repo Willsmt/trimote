@@ -106,6 +106,28 @@ describe("registerExpenseForOwner (core)", () => {
     const neg = await registerExpenseForOwner({ ownerId: OWNER_ID, amount: -5, description: "x" });
     expect(neg).toEqual({ ok: false, reason: "invalid_amount" });
   });
+
+  it("description vazia -> invalid_description", async () => {
+    const result = await registerExpenseForOwner({ ownerId: OWNER_ID, amount: 100, description: "" });
+    expect(result).toEqual({ ok: false, reason: "invalid_description" });
+  });
+
+  it("description so com espacos -> invalid_description", async () => {
+    const result = await registerExpenseForOwner({ ownerId: OWNER_ID, amount: 100, description: "   " });
+    expect(result).toEqual({ ok: false, reason: "invalid_description" });
+  });
+
+  it("description valida com espacos nas pontas -> persiste com trim", async () => {
+    const result = await registerExpenseForOwner({
+      ownerId: OWNER_ID,
+      amount: 100,
+      description: "  Aluguel  ",
+    });
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    const entry = await prisma.ledgerEntry.findUniqueOrThrow({ where: { id: result.ledgerEntryId } });
+    expect(entry.description).toBe("Aluguel");
+  });
 });
 
 describe("registerExpense (Server Action) — autorizacao por role (SC-009)", () => {

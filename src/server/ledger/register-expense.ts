@@ -1,13 +1,15 @@
 import { Prisma, type PaymentMethod } from "@prisma/client";
 
 import { prisma } from "@/server/db/client";
+import { normalizeDescription } from "./ledger-items";
 
 /**
  * Núcleo da despesa (005-financial-ledger, US4), testável com `ownerId` explícito. Gera um
  * `LedgerEntry` de saída (EXPENSE/EXPENSE) com descrição, categoria e valor — SEM itens e SEM
  * cliente. O valor é sempre positivo; o sinal de saída vem do `type` (FR-011).
  *
- * Ordem de verificação (curto-circuito): invalid_amount → create LedgerEntry (sem itens).
+ * Ordem de verificação (curto-circuito): invalid_amount → invalid_description → create LedgerEntry
+ * (sem itens).
  */
 
 export interface RegisterExpenseInput {
@@ -22,7 +24,7 @@ export interface RegisterExpenseInput {
   paymentMethod?: PaymentMethod;
 }
 
-export type RegisterExpenseReason = "invalid_amount";
+export type RegisterExpenseReason = "invalid_amount" | "invalid_description";
 
 export type RegisterExpenseResult =
   | { ok: true; ledgerEntryId: string }
@@ -36,6 +38,12 @@ export async function registerExpenseForOwner(
     return { ok: false, reason: "invalid_amount" };
   }
 
+  // Descrição em branco não identifica a saída — rejeita e persiste o valor sem espaços nas pontas.
+  const description = normalizeDescription(input.description);
+  if (description === null) {
+    return { ok: false, reason: "invalid_description" };
+  }
+
   // Barbearia única do MVP (D8) — despesa não tem serviço de onde derivar o barbershopId.
   const shop = await prisma.barbershop.findFirstOrThrow({ select: { id: true } });
   const occurredAt = input.occurredAt ?? new Date();
@@ -47,7 +55,7 @@ export async function registerExpenseForOwner(
       origin: "EXPENSE",
       amount,
       occurredAt,
-      description: input.description,
+      description,
       category: input.category ?? null,
       paymentMethod: input.paymentMethod ?? null,
       bookingId: null,

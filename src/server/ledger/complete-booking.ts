@@ -1,7 +1,13 @@
 import { Prisma, type PaymentMethod } from "@prisma/client";
 
 import { prisma } from "@/server/db/client";
-import { allAmountsPositive, buildServiceItem, sumItems, type LedgerItemInput } from "./ledger-items";
+import {
+  allAmountsPositive,
+  buildServiceItem,
+  normalizeDescription,
+  sumItems,
+  type LedgerItemInput,
+} from "./ledger-items";
 
 /**
  * Núcleo da conclusão de atendimento (005-financial-ledger, US1), testável com um `ownerId`
@@ -17,7 +23,8 @@ import { allAmountsPositive, buildServiceItem, sumItems, type LedgerItemInput } 
  * lançamento é a soma dos itens (base + extras), validada dentro da transação (FR-006/FR-007).
  *
  * Ordem de verificação (curto-circuito; nenhuma recusa escreve nada):
- *   booking_not_found → already_completed → booking_cancelled → service_not_found → invalid_amount
+ *   booking_not_found → already_completed → booking_cancelled → service_not_found →
+ *   invalid_description (extra manual) → invalid_amount
  *   → $transaction(update COMPLETED + create LedgerEntry+itens)
  */
 
@@ -46,7 +53,8 @@ export type CompleteBookingReason =
   | "already_completed"
   | "booking_cancelled"
   | "service_not_found"
-  | "invalid_amount";
+  | "invalid_amount"
+  | "invalid_description";
 
 export type CompleteBookingResult =
   | { ok: true; ledgerEntryId: string }
@@ -107,9 +115,14 @@ export async function completeBookingForOwner(
       if (extra.amount == null) {
         return { ok: false, reason: "invalid_amount" };
       }
+      // Extra manual sem descrição não identifica a linha — rejeita e persiste sem espaços nas pontas.
+      const description = normalizeDescription(extra.description);
+      if (description === null) {
+        return { ok: false, reason: "invalid_description" };
+      }
       items.push({
         serviceId: null,
-        description: extra.description,
+        description,
         amount: new Prisma.Decimal(extra.amount),
       });
     }

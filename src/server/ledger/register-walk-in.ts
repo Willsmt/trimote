@@ -1,7 +1,13 @@
 import { Prisma, type PaymentMethod } from "@prisma/client";
 
 import { prisma } from "@/server/db/client";
-import { allAmountsPositive, buildServiceItem, sumItems, type LedgerItemInput } from "./ledger-items";
+import {
+  allAmountsPositive,
+  buildServiceItem,
+  normalizeDescription,
+  sumItems,
+  type LedgerItemInput,
+} from "./ledger-items";
 
 /**
  * Núcleo do atendimento avulso / walk-in (005-financial-ledger, US3), testável com `ownerId`
@@ -10,8 +16,8 @@ import { allAmountsPositive, buildServiceItem, sumItems, type LedgerItemInput } 
  * nome livre (`clientName`) ou anônimo (nenhum) — FR-009.
  *
  * Ordem de verificação (curto-circuito; nenhuma recusa escreve nada):
- *   no_items → (por item) service_not_found / invalid_amount → invalid_amount (positividade)
- *   → client_not_found → create LedgerEntry + itens
+ *   no_items → (por item) service_not_found / invalid_amount / invalid_description → invalid_amount
+ *   (positividade) → client_not_found → create LedgerEntry + itens
  */
 
 export interface WalkInItemInput {
@@ -38,6 +44,7 @@ export interface RegisterWalkInInput {
 export type RegisterWalkInReason =
   | "no_items"
   | "invalid_amount"
+  | "invalid_description"
   | "service_not_found"
   | "client_not_found";
 
@@ -78,9 +85,14 @@ export async function registerWalkInForOwner(
       if (item.amount == null) {
         return { ok: false, reason: "invalid_amount" };
       }
+      // Item manual sem descrição não identifica a receita — rejeita e persiste sem espaços nas pontas.
+      const description = normalizeDescription(item.description);
+      if (description === null) {
+        return { ok: false, reason: "invalid_description" };
+      }
       items.push({
         serviceId: null,
-        description: item.description,
+        description,
         amount: new Prisma.Decimal(item.amount),
       });
     }

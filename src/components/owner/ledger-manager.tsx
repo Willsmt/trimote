@@ -16,6 +16,7 @@ const FAILURE_MESSAGES: Record<string, string> = {
   already_completed: "Este atendimento já foi concluído e não pode ser alterado.",
   booking_cancelled: "Este agendamento está cancelado e não pode ser concluído.",
   invalid_amount: "Informe um valor maior que zero.",
+  invalid_description: "Informe uma descrição.",
   no_items: "Adicione ao menos um item ao atendimento.",
   service_not_found: "Serviço não encontrado.",
   client_not_found: "Cliente não encontrado.",

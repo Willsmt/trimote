@@ -151,6 +151,37 @@ describe("registerWalkInForOwner (core)", () => {
     expect(result).toEqual({ ok: false, reason: "invalid_amount" });
   });
 
+  it("item manual com description vazia -> invalid_description", async () => {
+    const result = await registerWalkInForOwner({
+      ownerId: OWNER_ID,
+      items: [{ description: "", amount: 25 }],
+    });
+    expect(result).toEqual({ ok: false, reason: "invalid_description" });
+  });
+
+  it("item manual com description so espacos -> invalid_description", async () => {
+    const result = await registerWalkInForOwner({
+      ownerId: OWNER_ID,
+      items: [{ description: "   ", amount: 25 }],
+    });
+    expect(result).toEqual({ ok: false, reason: "invalid_description" });
+  });
+
+  it("item manual com description valida com espacos -> persiste com trim", async () => {
+    const result = await registerWalkInForOwner({
+      ownerId: OWNER_ID,
+      items: [{ description: "  Produto  ", amount: 25 }],
+    });
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    const entry = await prisma.ledgerEntry.findUniqueOrThrow({
+      where: { id: result.ledgerEntryId },
+      include: { items: true },
+    });
+    const manual = entry.items.find((i) => i.serviceId === null);
+    expect(manual!.description).toBe("Produto");
+  });
+
   it("item de servico inexistente -> service_not_found", async () => {
     const result = await registerWalkInForOwner({
       ownerId: OWNER_ID,

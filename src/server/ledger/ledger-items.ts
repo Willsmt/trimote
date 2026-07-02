@@ -36,3 +36,13 @@ export function sumItems(items: LedgerItemInput[]): Prisma.Decimal {
 export function allAmountsPositive(items: LedgerItemInput[]): boolean {
   return items.every((item) => item.amount.greaterThan(0));
 }
+
+/**
+ * Normaliza uma descrição informada por humano (despesa, item/extra manual). Aplica trim e rejeita o
+ * que sobra vazio: devolve o valor sem espaços nas pontas, ou `null` se ficar em branco. Ponto único
+ * da regra `invalid_description` — os três fluxos de captura herdam (despesa, walk-in, conclusão).
+ */
+export function normalizeDescription(description: string): string | null {
+  const trimmed = description.trim();
+  return trimmed === "" ? null : trimmed;
+}
