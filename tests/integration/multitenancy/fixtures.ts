@@ -10,6 +10,19 @@ export { upsertUsers, cleanupLedgerAndBookings };
 
 export const DEMO_BUSINESS_ID = "business-trimote";
 
+/** Upsert de usuário com papel de plataforma explícito (inclui ADMIN, que upsertUsers não cobre). */
+export async function upsertUser(input: {
+  id: string;
+  email: string;
+  role: "CLIENT" | "OWNER" | "ADMIN";
+}): Promise<void> {
+  await prisma.user.upsert({
+    where: { id: input.id },
+    update: { role: input.role, email: input.email },
+    create: { id: input.id, email: input.email, role: input.role },
+  });
+}
+
 /** Cria (idempotente) um negócio de teste com slug único. Retorna o id. */
 export async function createTestBusiness(input: {
   id: string;

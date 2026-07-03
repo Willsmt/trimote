@@ -120,37 +120,37 @@ verificar auditoria e que não-ADMIN é recusado.
 
 ### Tests (test-first — RED antes) ⚠️
 
-- [ ] T015 [P] [US1] `tests/integration/multitenancy/admin.test.ts` (deve FALHAR): `requireAdmin` nega
+- [X] T015 [P] [US1] `tests/integration/multitenancy/admin.test.ts` (deve FALHAR): `requireAdmin` nega
   CLIENT e OWNER, admite ADMIN; `createBusinessForAdmin` cria com autor/momento; `promoteOwnerForAdmin`
   cria `BusinessMember` auditado, recusa email inexistente (`user_not_found`) e vínculo duplicado
   (`already_member`). (SC-003/FR-005..009)
-- [ ] T016 [P] [US1] `tests/integration/multitenancy/slug.test.ts` (deve FALHAR): slug fora do regex
+- [X] T016 [P] [US1] `tests/integration/multitenancy/slug.test.ts` (deve FALHAR): slug fora do regex
   `^[a-z0-9]+(-[a-z0-9]+)*$` → `invalid_slug`; duplicado → `slug_taken`; reservado (admin/api/b/booking/
   owner/login/my-bookings/my-spending — via `RESERVED_SLUGS`) → `slug_reserved`; válido → criado.
   (SC-007/FR-023)
-- [ ] T017 [P] [US1] `tests/integration/multitenancy/anti-escalation.test.ts` (deve FALHAR): CLIENT
+- [X] T017 [P] [US1] `tests/integration/multitenancy/anti-escalation.test.ts` (deve FALHAR): CLIENT
   chama `createBusiness`/`promoteOwner` (actions) → `ForbiddenError`; **não existe** action/símbolo p/
   promover a ADMIN (verificar por ausência); nenhuma action pública escreve `User.role`.
   (SC-003/SC-004/FR-006)
 
 ### Implementation
 
-- [ ] T018 [US1] `src/server/auth/admin.ts`: `requireAdmin()` (getCurrentUser → UnauthorizedError;
+- [X] T018 [US1] `src/server/auth/admin.ts`: `requireAdmin()` (getCurrentUser → UnauthorizedError;
   `User.role` do banco → ForbiddenError se != ADMIN). (FR-004, D6)
-- [ ] T019 [US1] `src/server/business/admin-create-business.ts`: valida slug (regex + reservados +
+- [X] T019 [US1] `src/server/business/admin-create-business.ts`: valida slug (regex + reservados +
   unicidade) → cria Business com `createdBy`/`createdAt`; reasons `invalid_slug|slug_reserved|
   slug_taken`. A lista de reservados é a **constante única** `RESERVED_SLUGS` exportada de
   `src/server/business/reserved-slugs.ts` (8 itens: admin, api, b, booking, owner, login, my-bookings,
   my-spending) — importada também por T016 e T011. Helper `slugify(name)` (kebab-case, sem acentos)
   para o pré-preenchimento. (FR-007/FR-023)
-- [ ] T020 [US1] `src/server/business/admin-promote-owner.ts`: busca usuário por **email exato** →
+- [X] T020 [US1] `src/server/business/admin-promote-owner.ts`: busca usuário por **email exato** →
   cria `BusinessMember(OWNER, createdBy=adminId)`; reasons `business_not_found|user_not_found|
   already_member`. **Só promove a OWNER** (sem parâmetro de role). (FR-008/FR-009)
-- [ ] T021 [US1] Server Actions `src/server/actions/admin-create-business.ts` e
+- [X] T021 [US1] Server Actions `src/server/actions/admin-create-business.ts` e
   `admin-promote-owner.ts`: `requireAdmin()`, validam entrada (whitelist), delegam com `adminId`.
   Nenhuma escreve `User.role`. (FR-005, D6)
-- [ ] T022 [US1] Rodar `admin.test.ts`/`slug.test.ts`/`anti-escalation.test.ts` até **verde**.
-- [ ] T023 [US1] UI `src/app/admin/page.tsx` (`requireAdmin`, redirect padrão) + ilhas em
+- [X] T022 [US1] Rodar `admin.test.ts`/`slug.test.ts`/`anti-escalation.test.ts` até **verde**.
+- [X] T023 [US1] UI `src/app/admin/page.tsx` (`requireAdmin`, redirect padrão) + ilhas em
   `src/components/admin/*`: form criar negócio (**slug pré-preenchido do nome, editável**), listar
   negócios, promover dono por email. Mensagens pt-BR por reason (sem reason órfão). (US1, FR-005..009)
 
