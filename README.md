@@ -194,6 +194,34 @@ UTC. Autorização por **role OWNER** (`requireOwner`) — **não** pela posse d
   constraint `booking_no_overlap` **não** é tocada. Sem relatório/agregação/caixa/visão do cliente
   (F006) e sem gateway/webhooks (feature futura).
 
+## Financeiro (balancete e histórico)
+
+Transforma os lançamentos da F005 em informação. Feature de **leitura pura**:
+[`specs/006-financial-reports`](specs/006-financial-reports/) — **nenhuma migração, nenhuma entidade
+nova, nenhum caminho de escrita novo**; a única mutação continua sendo o soft delete da F005,
+reutilizado sem alteração. Dinheiro em `Decimal` (serializado como string na fronteira Server→Client).
+
+- **Caixa por período (US1)**: em `/owner/finance`, o OWNER vê entradas, saídas e **saldo**
+  (entradas − saídas, pode ser negativo) por **dia/semana/mês/ano** com navegação anterior/próximo
+  (abre no mês corrente). Só lançamentos ativos contam.
+- **Breakdown (US2)**: entradas por forma de pagamento (`null` → "não informado") e despesas por
+  categoria (`null` → "sem categoria"); a soma dos baldes bate com os totais.
+- **Fuso**: os limites do período são derivados no **fuso da barbearia** (`Barbershop.timezone`) e
+  aplicados como **range em UTC** `[início, fim)` sobre `occurredAt` — usa o índice
+  `(barbershopId, occurredAt)`, **sem** `AT TIME ZONE`/`date_trunc` na query. Semana ISO (segunda).
+- **Razão (US3)**: listagem paginada por **keyset** `(occurredAt, id)` desc (página de 10, "carregar
+  mais", nunca `OFFSET`), filtros combináveis (período/tipo/origem/forma/categoria), expansão de itens
+  e "mostrar inativos" (marcados, fora de qualquer total).
+- **Inativar (US4)**: cada linha ativa oferece "Inativar (corrigir)", reutilizando a Server Action
+  `deactivateLedgerEntry` da F005 **sem mudança** — qualquer lançamento (não só o último) pode ser
+  corrigido; caixa e listagem refletem.
+- **Histórico do cliente (US5)**: em `/my-spending`, qualquer autenticado vê as **próprias receitas
+  ativas** (`clientId` = sessão, **no servidor**; nunca do input). Não expõe despesas, lançamentos de
+  outros clientes, walk-ins anônimos nem inativos.
+- **Autorização**: caixa/breakdown/razão/inativação exigem `requireOwner`; o histórico exige apenas
+  sessão autenticada. Consistência: para o mesmo período, `saldo do caixa == Σ entradas − Σ saídas`
+  da listagem. Sem gráficos/exportação/comparativos (fora de escopo).
+
 ## Estrutura
 
 ```text

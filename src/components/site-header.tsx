@@ -37,15 +37,25 @@ export async function SiteHeader() {
             <Link href="/my-bookings" className="text-sm hover:underline">
               Meus agendamentos
             </Link>
+            {/* Histórico dos próprios gastos (006, US5): qualquer autenticado; filtro por sessão no servidor. */}
+            <Link href="/my-spending" className="text-sm hover:underline">
+              Meus gastos
+            </Link>
           </>
         )}
 
         {/* Painel do dono (FR-006): só OWNER. Esconder é conveniência de UI; a barreira real é o
             servidor (requireOwner), que permanece inalterado (FR-010/FR-011). */}
         {isOwner && (
-          <Link href="/owner" className="text-sm hover:underline">
-            Painel
-          </Link>
+          <>
+            <Link href="/owner" className="text-sm hover:underline">
+              Painel
+            </Link>
+            {/* Balancete/razão (006, US1-US4): só OWNER. Esconder é conveniência; a barreira é requireOwner. */}
+            <Link href="/owner/finance" className="text-sm hover:underline">
+              Financeiro
+            </Link>
+          </>
         )}
 
         <div className="ml-auto flex items-center gap-3">

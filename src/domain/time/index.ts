@@ -63,3 +63,53 @@ export function weekdayInZone(instant: Date, timeZone: string): number {
 export function todayInZone(instant: Date, timeZone: string): string {
   return DateTime.fromJSDate(instant, { zone: timeZone }).toFormat("yyyy-MM-dd");
 }
+
+/** Granularidade de período do balancete (006-financial-reports). */
+export type Granularity = "day" | "week" | "month" | "year";
+
+// Luxon usa a mesma nomenclatura de unidade para startOf/plus (a semana é ISO — começa na segunda).
+const GRANULARITY_UNIT: Record<Granularity, "days" | "weeks" | "months" | "years"> = {
+  day: "days",
+  week: "weeks",
+  month: "months",
+  year: "years",
+};
+
+/**
+ * Limites `[startUtc, endUtc)` de um período (dia/semana/mês/ano) calculados NO FUSO da barbearia e
+ * convertidos a UTC (006-financial-reports, FR-003). É a bucketização por range: o chamador filtra
+ * `occurredAt >= startUtc AND occurredAt < endUtc` (range sobre a coluna nua — usa o índice; nunca
+ * função sobre `occurredAt`). A semana é ISO (segunda-feira). O fim é obtido somando a unidade em
+ * hora local (wall-clock) ANTES de voltar a UTC, ficando correto sob mudança de horário de verão.
+ */
+export function periodBoundsInZone(
+  referenceLocalDate: string,
+  granularity: Granularity,
+  timeZone: string,
+): { startUtc: Date; endUtc: Date } {
+  const ref = DateTime.fromISO(referenceLocalDate, { zone: timeZone });
+  if (!ref.isValid) {
+    throw new Error(`Data de referência inválida: ${referenceLocalDate} ${timeZone}`);
+  }
+  const unit = GRANULARITY_UNIT[granularity];
+  const start = ref.startOf(granularity);
+  const end = start.plus({ [unit]: 1 });
+  return { startUtc: start.toUTC().toJSDate(), endUtc: end.toUTC().toJSDate() };
+}
+
+/**
+ * Desloca a data de referência de um período para o anterior (`dir = -1`) ou o próximo (`dir = 1`),
+ * mantendo a granularidade (006-financial-reports, FR-002 — navegação). Aritmética de calendário
+ * (sem conversão de fuso: a data local não depende do fuso). A semana desloca ±7 dias.
+ */
+export function shiftPeriod(
+  referenceLocalDate: string,
+  granularity: Granularity,
+  dir: -1 | 1,
+): string {
+  const ref = DateTime.fromISO(referenceLocalDate, { zone: "utc" });
+  if (!ref.isValid) {
+    throw new Error(`Data de referência inválida: ${referenceLocalDate}`);
+  }
+  return ref.plus({ [GRANULARITY_UNIT[granularity]]: dir }).toFormat("yyyy-MM-dd");
+}

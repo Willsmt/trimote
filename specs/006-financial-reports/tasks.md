@@ -37,7 +37,7 @@ core (`cash-summary.ts`) e são entregues juntas.
 
 **Purpose**: preparar o terreno de leitura pura (nenhuma dependência nova, nenhum schema).
 
-- [ ] T001 Confirmar que a feature é leitura pura: `prisma/schema.prisma` **inalterado** (nenhuma
+- [X] T001 Confirmar que a feature é leitura pura: `prisma/schema.prisma` **inalterado** (nenhuma
   migração/entidade — FR-025) e criar o diretório `tests/integration/reports/` para os testes de
   leitura (seguindo o padrão de `tests/integration/ledger/`).
 
@@ -49,16 +49,16 @@ core (`cash-summary.ts`) e são entregues juntas.
 
 **⚠️ CRITICAL**: nenhuma história começa antes desta fase.
 
-- [ ] T003 Teste unitário `tests/unit/time/period-bounds.test.ts` para `periodBoundsInZone`
+- [X] T003 Teste unitário `tests/unit/time/period-bounds.test.ts` para `periodBoundsInZone`
   (**test-first — escrever e ver FALHAR antes de T002**): semana ISO (segunda), bordas de mês/ano, e
   um instante 22:30 local perto da virada UTC caindo no dia local correto. (FR-003, SC-003)
-- [ ] T002 Adicionar helpers de limites de período em `src/domain/time/index.ts` (**após T003 RED**):
+- [X] T002 Adicionar helpers de limites de período em `src/domain/time/index.ts` (**após T003 RED**):
   `periodBoundsInZone(referenceLocalDate, granularity, timeZone) -> { startUtc, endUtc }` (dia /
   **semana ISO começando na segunda** / mês / ano, no fuso da barbearia, retornando range UTC
   `[início, fim)`) e `shiftPeriod(referenceLocalDate, granularity, dir)` para navegação
   anterior/próximo. Fim calculado somando o intervalo em wall-clock local antes de voltar a UTC
   (DST-safe via Luxon). Mantém a fronteira única de fuso do projeto. (FR-002/FR-003, D2/D3/D15)
-- [ ] T004 Criar fixtures de leitura `tests/integration/reports/fixtures.ts`:
+- [X] T004 Criar fixtures de leitura `tests/integration/reports/fixtures.ts`:
   `seedLedgerEntry({ type, origin, amount, occurredAt, paymentMethod?, category?, clientId?,
   isActive?, items? })` + limpeza, reutilizando `BARBERSHOP_ID`, `SP`, `upsertUsers` e
   `cleanupLedgerAndBookings` de `tests/integration/ledger/fixtures.ts`. Prover instantes de fuso
@@ -81,7 +81,7 @@ soma dos baldes == totais.
 
 ### Tests (test-first — escrever e ver FALHAR antes de implementar) ⚠️
 
-- [ ] T005 [P] [US1] Escrever `tests/integration/reports/cash-summary.test.ts` (deve FALHAR):
+- [X] T005 [P] [US1] Escrever `tests/integration/reports/cash-summary.test.ts` (deve FALHAR):
   totais income/expense e **saldo** do período (SC-001); **saldo negativo** (saídas > entradas, FR-006);
   **período vazio → "0.00"** em tudo, sem erro (SC-005); **inativo fora** de todo total/balde
   (SC-002); **borda de fuso** 22h/23h local vs. dia UTC seguinte nas **4 granularidades** com semana
@@ -90,7 +90,7 @@ soma dos baldes == totais.
 
 ### Implementation
 
-- [ ] T006 [US1] Implementar core `getCashSummaryForOwner` em `src/server/ledger/cash-summary.ts`:
+- [X] T006 [US1] Implementar core `getCashSummaryForOwner` em `src/server/ledger/cash-summary.ts`:
   deriva `[startUtc, endUtc)` via `periodBoundsInZone` (T002); `prisma.$queryRaw` **tipado e
   parametrizado** (`Prisma.sql`, `$tz`/limites como placeholders) com
   `WHERE barbershopId = $shop AND isActive = true AND occurredAt >= $start AND occurredAt < $end`
@@ -98,15 +98,15 @@ soma dos baldes == totais.
   `COALESCE(SUM(amount) FILTER (WHERE type=...),0)` para income/expense; `GROUP BY paymentMethod`
   (INCOME, `null`→`UNSET`) e `GROUP BY category` (EXPENSE, `null` preservado); tudo em
   `Prisma.Decimal`; `balance = income.minus(expense)`. (US1/US2, FR-001..009, D1/D3/D4/D6/D7)
-- [ ] T007 [US1] Rodar `cash-summary.test.ts` até **verde**; confirmar exatidão Decimal (sem float —
+- [X] T007 [US1] Rodar `cash-summary.test.ts` até **verde**; confirmar exatidão Decimal (sem float —
   **FR-023**) e invariante soma-dos-baldes == total (SC-004/SC-012).
 
 ### UI
 
-- [ ] T008 [P] [US1] Criar `src/components/owner/cash-summary-view.tsx` (server-friendly): exibe
+- [X] T008 [P] [US1] Criar `src/components/owner/cash-summary-view.tsx` (server-friendly): exibe
   entradas, saídas, **saldo** (com sinal), breakdown por forma e por categoria com rótulos pt-BR
   (Dinheiro/Pix/Cartão/Online/Outro/**Não informado**/**Sem categoria**). Sem gráficos (FR-026).
-- [ ] T009 [US1] Criar Server Component `src/app/owner/finance/page.tsx`: `requireOwner` (redirect
+- [X] T009 [US1] Criar Server Component `src/app/owner/finance/page.tsx`: `requireOwner` (redirect
   padrão da F005: visitante→login, cliente→home); resolve `barbershopId` + `timezone`
   (`getOwnerBarbershopId` + leitura de `Barbershop.timezone`); período default **mês corrente**
   (`todayInZone(now, tz)`), granularidade + navegação anterior/próximo via **searchParams**
@@ -127,26 +127,26 @@ empatado), filtros em conjunção, itens na expansão e inativos só sob o filtr
 
 ### Tests (test-first) ⚠️
 
-- [ ] T010 [P] [US3] Escrever `tests/integration/reports/ledger-list.test.ts` (deve FALHAR): ordem
+- [X] T010 [P] [US3] Escrever `tests/integration/reports/ledger-list.test.ts` (deve FALHAR): ordem
   **mais-recente-primeiro**; **keyset** sem repetir/pular com `occurredAt` **empatado** (criar 3+
   linhas no mesmo instante) (SC-006); `pageSize+1`/`hasMore`/`nextCursor`; **filtros combinados** em
   conjunção incl. `UNSET`→`null` (SC-007); **inativos** ausentes por padrão e presentes **marcados**
   sob `includeInactive`, nunca em total (SC-008); e uma linha de **receita** traz seus `items`
   (expansão — FR-014).
-- [ ] T010a [US3] Escrever teste de **consistência entre cores** em
+- [X] T010a [US3] Escrever teste de **consistência entre cores** em
   `tests/integration/reports/ledger-list.test.ts` (test-first; **verde após T006 e T011**): para um
   **período+filtros fixos** com dados mistos (INCOME/EXPENSE + **inativos no meio**), paginar
   `listLedgerForOwner` até o fim, somar em `Decimal` (`Σ income − Σ expense`) e comparar com
   `getCashSummaryForOwner().balance` do **mesmo** período/filtros — devem ser iguais; inativos não
   entram em nenhum dos lados. (US3/US1, **FR-024/FR-009/SC-004**)
-- [ ] T014 [US3] Escrever teste de **autorização** da action em
+- [X] T014 [US3] Escrever teste de **autorização** da action em
   `tests/integration/reports/ledger-list.test.ts` (**test-first**; RED por import inexistente até
   T013): não-OWNER (CLIENT) recusado com `ForbiddenError`; OWNER admitido (mock de sessão no padrão
   dos testes da F005). (SC-011)
 
 ### Implementation
 
-- [ ] T011 [US3] Implementar core `listLedgerForOwner` em `src/server/ledger/ledger-list.ts`:
+- [X] T011 [US3] Implementar core `listLedgerForOwner` em `src/server/ledger/ledger-list.ts`:
   `findMany` com `orderBy: [{ occurredAt: 'desc' }, { id: 'desc' }]`, keyset composto
   `(occurredAt < cur.occurredAt) OR (occurredAt = cur.occurredAt AND id < cur.id)`,
   `take = pageSize + 1`, `where` composto (barbershopId; `isActive: true` ou `{}` se
@@ -154,23 +154,23 @@ empatado), filtros em conjunção, itens na expansão e inativos só sob o filtr
   `period`→range via `periodBoundsInZone`), `select` enxuto + `include items`. **Comentário** no
   cursor documentando a premissa de precisão: cursor em `Date` (ms) vs `Timestamptz(6)` é seguro
   porque todos os writes da F005 usam `new Date()`. (US3, FR-010..015, D8/D9/D10)
-- [ ] T012 [US3] Rodar `ledger-list.test.ts` até **verde** (keyset estável e filtros — SC-006/SC-007/
+- [X] T012 [US3] Rodar `ledger-list.test.ts` até **verde** (keyset estável e filtros — SC-006/SC-007/
   SC-008).
 
 ### Server Action
 
-- [ ] T013 [US3] Implementar Server Action `src/server/actions/list-ledger.ts`: `requireOwner`
+- [X] T013 [US3] Implementar Server Action `src/server/actions/list-ledger.ts`: `requireOwner`
   (FR-022); resolve `barbershopId`+`timezone`; **valida whitelist** de filtro/cursor no servidor
   (enums/campos conhecidos; cursor parseado) (Princípio I); delega ao core; serializa `LedgerPageDTO`
   (Decimal→string, datas→ISO, `nextCursor` serializado). (US3, FR-012/FR-022, D5)
 
 ### UI
 
-- [ ] T015 [P] [US3] Criar ilha client `src/components/owner/ledger-browser.tsx`: filtros
+- [X] T015 [P] [US3] Criar ilha client `src/components/owner/ledger-browser.tsx`: filtros
   combináveis (tipo/origem/forma/categoria/período/**mostrar inativos**), "carregar mais" (chama
   `listLedger`, acumula páginas via `nextCursor`), **expansão** de itens client-side, **sinal
   visual** do valor pelo `type`, marca linhas inativas. (US3, FR-011..015, D5)
-- [ ] T016 [US3] Integrar `ledger-browser` na página `src/app/owner/finance/page.tsx` (render inicial
+- [X] T016 [US3] Integrar `ledger-browser` na página `src/app/owner/finance/page.tsx` (render inicial
   da 1ª página server-side + ilha). Estende a página do T009. (US3)
 
 **Checkpoint**: razão navegável e filtrável, independente do caixa.
@@ -188,12 +188,12 @@ não reabre o booking.
 
 ### Implementation
 
-- [ ] T017 [US4] Ligar o botão **"Inativar (corrigir)"** em cada linha **ativa** de
+- [X] T017 [US4] Ligar o botão **"Inativar (corrigir)"** em cada linha **ativa** de
   `src/components/owner/ledger-browser.tsx`, chamando a **mesma** action da F005
   `deactivateLedgerEntry({ ledgerEntryId })` **SEM MUDANÇA**; após sucesso, recarregar a página atual
   e refletir no caixa/breakdown. **NÃO** editar `deactivate-ledger-entry` (core nem action). (US4,
   FR-016/FR-017/FR-018, D13)
-- [ ] T018 [US4] Teste de integração em `tests/integration/reports/ledger-list.test.ts` (ou arquivo
+- [X] T018 [US4] Teste de integração em `tests/integration/reports/ledger-list.test.ts` (ou arquivo
   dedicado): inativar via `deactivateLedgerEntryForOwner` um lançamento que **não** é o último →
   `ledger-list` default o exclui, `includeInactive` o mostra marcado, `cash-summary` não o conta, e
   um lançamento de origem `BOOKING` permanece `COMPLETED` (booking não reabre — **FR-018**). (US4,
@@ -213,7 +213,7 @@ anônimos nem inativos; id no input é ignorado.
 
 ### Tests (test-first) ⚠️
 
-- [ ] T019 [P] [US5] Escrever `tests/integration/reports/client-history.test.ts` (deve FALHAR): só
+- [X] T019 [P] [US5] Escrever `tests/integration/reports/client-history.test.ts` (deve FALHAR): só
   **INCOME ativos** do próprio `clientId` (SC-010); **NÃO** retorna despesas, lançamentos de outro
   cliente, anônimos (`clientId=null`) nem inativos; **keyset idêntico** ao razão; `clientId` **sempre
   da sessão** — a action **não possui** o parâmetro (SC-011); visitante não autenticado recusado na
@@ -221,22 +221,22 @@ anônimos nem inativos; id no input é ignorado.
 
 ### Implementation
 
-- [ ] T020 [US5] Implementar core `listClientHistory` em `src/server/ledger/client-history.ts`:
+- [X] T020 [US5] Implementar core `listClientHistory` em `src/server/ledger/client-history.ts`:
   `where { clientId: input.userId, type: 'INCOME', isActive: true }`, mesmo keyset/`take = pageSize+1`,
   `select` enxuto (sem type/origin/paymentMethod) + `include items`; mesmo **comentário de precisão**
   do cursor. (US5, FR-019/FR-020, D11)
-- [ ] T021 [US5] Implementar Server Action `src/server/actions/list-my-ledger.ts`: `const user =
+- [X] T021 [US5] Implementar Server Action `src/server/actions/list-my-ledger.ts`: `const user =
   await requireUser()` (**não** `requireOwner`); `userId = user.id`; **sem parâmetro `clientId`** na
   assinatura (só `cursor` opcional validado no servidor — FR-021); delega ao core; serializa
   `ClientHistoryPageDTO` (Decimal→string). (US5, FR-019/FR-021)
-- [ ] T022 [US5] Rodar `client-history.test.ts` até **verde** (não-vazamento e filtro-da-sessão —
+- [X] T022 [US5] Rodar `client-history.test.ts` até **verde** (não-vazamento e filtro-da-sessão —
   SC-010/SC-011).
 
 ### UI
 
-- [ ] T023 [P] [US5] Criar ilha client `src/components/client/my-spending-list.tsx`: "carregar mais"
+- [X] T023 [P] [US5] Criar ilha client `src/components/client/my-spending-list.tsx`: "carregar mais"
   (chama `listMyLedger`), exibe momento/descrição/itens/valor (sem sinal de despesa). (US5, FR-020)
-- [ ] T024 [US5] Criar Server Component `src/app/my-spending/page.tsx`: `requireUser` (redirect ao
+- [X] T024 [US5] Criar Server Component `src/app/my-spending/page.tsx`: `requireUser` (redirect ao
   login se visitante); resolve o fuso da barbearia (single-shop MVP) para formatar `occurredAt`;
   render da 1ª página + ilha `my-spending-list`. (US5, FR-019/FR-022)
 
@@ -246,20 +246,20 @@ anônimos nem inativos; id no input é ignorado.
 
 ## Phase 7: Polish & Cross-Cutting Concerns
 
-- [ ] T025 Navegação (F003): adicionar links na nav condicional — **/owner/finance** (só OWNER) e
+- [X] T025 Navegação (F003): adicionar links na nav condicional — **/owner/finance** (só OWNER) e
   **/my-spending** (autenticado) — no header/nav (`src/components/site-header.tsx` /
   `auth-buttons.tsx`, conforme a ilha da F003). Visibilidade é conveniência; a barreira é
   `requireOwner`/`requireUser`. (item 7, FR-022)
-- [ ] T026 Simplificar a **superfície de UI** da home do ledger da F005: em
+- [X] T026 Simplificar a **superfície de UI** da home do ledger da F005: em
   `src/app/owner/ledger/page.tsx` e `src/components/owner/ledger-manager.tsx`, remover/simplificar o
   banner de "último lançamento" (inativar migrou para a listagem — US4). **NÃO** tocar
   `deactivate-ledger-entry` (core/action) nem outros cores da F005. (item 7/16, FR-025)
-- [ ] T027 [P] README: documentar o **balancete** (caixa/breakdown por período) e o **histórico do
+- [X] T027 [P] README: documentar o **balancete** (caixa/breakdown por período) e o **histórico do
   cliente**, incluindo o fuso da barbearia e a paginação keyset. (Princípio V)
-- [ ] T028 Regressão: `npm test` (112+ verdes, suites 001–005 intactas) e `npx tsc --noEmit` limpo;
+- [X] T028 Regressão: `npm test` (112+ verdes, suites 001–005 intactas) e `npx tsc --noEmit` limpo;
   `git diff` confirma que **nenhum** core/action da F005 foi alterado (só a superfície de UI do
   T026). (FR-025)
-- [ ] T029 Smoke manual (roteiro do `quickstart.md`): caixa nas **4 granularidades** com navegação
+- [X] T029 Smoke manual (roteiro do `quickstart.md`): caixa nas **4 granularidades** com navegação
   anterior/próximo; borda de fuso visual (lançamento 22:30 local no dia certo); filtros combinados;
   "carregar mais" 2x; inativar um lançamento **antigo** e ver o caixa refletir; histórico do CLIENT
   sem vazamento (A não vê B/despesas/anônimos/inativos). (SC-001..SC-011)
