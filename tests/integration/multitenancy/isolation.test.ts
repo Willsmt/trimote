@@ -5,6 +5,7 @@ import { prisma } from "@/server/db/client";
 import { getCashSummaryForOwner } from "@/server/ledger/cash-summary";
 import { listLedgerForOwner } from "@/server/ledger/ledger-list";
 import { createBookingForUser } from "@/server/booking/create-booking";
+import { createService } from "@/server/owner/services";
 import { localDateTimeToUtc } from "@/domain/time";
 import {
   createTestBusiness,
@@ -49,6 +50,8 @@ beforeAll(async () => {
 afterEach(async () => {
   await prisma.ledgerEntry.deleteMany({ where: { businessId: { in: [BIZ_A, BIZ_B] } } });
   await prisma.booking.deleteMany({ where: { businessId: { in: [BIZ_A, BIZ_B] } } });
+  // Limpa serviços criados pelos testes (mantém os seeds SVC_A/SVC_B nomeados "Corte").
+  await prisma.service.deleteMany({ where: { businessId: { in: [BIZ_A, BIZ_B] }, name: "Sobrancelha" } });
 });
 
 afterAll(async () => {
@@ -88,5 +91,17 @@ describe("não-sobreposição particionada por negócio (US3, SC-008)", () => {
     const second = await createBookingForUser({ userId: CLIENT_ID, serviceId: SVC_A, startsAt: slot });
     expect(first.ok).toBe(true);
     expect(second).toEqual({ ok: false, reason: "slot_unavailable" });
+  });
+});
+
+describe("unicidade de nome de serviço é POR NEGÓCIO (US3, migration 3)", () => {
+  it("A e B podem ter um serviço com o MESMO nome; duplicar no MESMO negócio conflita", async () => {
+    const a = await createService({ businessId: BIZ_A, name: "Sobrancelha", price: "20.00", durationMinutes: 15 });
+    const b = await createService({ businessId: BIZ_B, name: "Sobrancelha", price: "20.00", durationMinutes: 15 });
+    expect(a.ok).toBe(true);
+    expect(b.ok).toBe(true); // mesmo nome, negócios diferentes → ok (unicidade por negócio)
+
+    const dup = await createService({ businessId: BIZ_A, name: "Sobrancelha", price: "20.00", durationMinutes: 15 });
+    expect(dup).toEqual({ ok: false, reason: "name_taken" }); // duplicado no mesmo negócio → conflito
   });
 });
