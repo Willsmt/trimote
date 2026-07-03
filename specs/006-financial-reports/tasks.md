@@ -259,7 +259,7 @@ anônimos nem inativos; id no input é ignorado.
 - [X] T028 Regressão: `npm test` (112+ verdes, suites 001–005 intactas) e `npx tsc --noEmit` limpo;
   `git diff` confirma que **nenhum** core/action da F005 foi alterado (só a superfície de UI do
   T026). (FR-025)
-- [ ] T029 Smoke manual (roteiro do `quickstart.md`): caixa nas **4 granularidades** com navegação
+- [X] T029 Smoke manual (roteiro do `quickstart.md`): caixa nas **4 granularidades** com navegação
   anterior/próximo; borda de fuso visual (lançamento 22:30 local no dia certo); filtros combinados;
   "carregar mais" 2x; inativar um lançamento **antigo** e ver o caixa refletir; histórico do CLIENT
   sem vazamento (A não vê B/despesas/anônimos/inativos). (SC-001..SC-011)
