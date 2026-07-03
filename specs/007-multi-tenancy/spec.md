@@ -314,7 +314,8 @@ perdido nem re-associado).
   a partir dele, toda administração ocorre pela própria plataforma (FR-005..FR-009).
 - **FR-023**: O **slug** DEVE ser validado **no servidor**: **formato URL-safe**
   (`^[a-z0-9]+(-[a-z0-9]+)*$`), **único** na plataforma, e **fora da lista de slugs reservados** (as
-  rotas do app — ex.: admin, api, b, booking, owner, login — NÃO podem virar slug). O slug DEVE ser
+  rotas do app — **no mínimo**: admin, api, b, booking, owner, login, my-bookings, my-spending — NÃO
+  podem virar slug). O slug DEVE ser
   **imutável pela UI** no MVP (mudar slug quebraria QR codes impressos); qualquer alteração é decisão
   futura fora desta feature.
 - **FR-024**: A migração funcional DEVE fazer **backfill** preservando 100% dos dados: o negócio
