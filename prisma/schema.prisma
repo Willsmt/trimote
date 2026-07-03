@@ -20,9 +20,17 @@ datasource db {
 // Autenticação (NextAuth / Auth.js — Prisma adapter)
 // ---------------------------------------------------------------------------
 
-// Papel do usuário (feature 002). Default CLIENT; promoção a OWNER via seed/script.
+// Papel de PLATAFORMA do usuário. CLIENT default; ADMIN (F007) opera a plataforma (cria negócios,
+// promove donos). OWNER permanece por custo de migração (Postgres não remove valor de enum), mas
+// DEIXA de ser autoridade: a posse de negócio vive em BusinessMember (F007, research D4).
 enum Role {
   CLIENT
+  OWNER
+  ADMIN
+}
+
+// Papel do vínculo dono↔negócio (F007). Nasce só com OWNER; STAFF é aditivo no futuro (fora de escopo).
+enum BusinessRole {
   OWNER
 }
 
@@ -39,6 +47,9 @@ model User {
   // Financeiro (005): dois papéis distintos num lançamento — cliente e autor (OWNER).
   ledgerEntriesAsClient LedgerEntry[] @relation("LedgerClient")
   ledgerEntriesCreated  LedgerEntry[] @relation("LedgerCreatedBy")
+  // Multi-tenancy (007): vínculos dono↔negócio deste usuário, e vínculos que ele promoveu (auditoria).
+  memberships        BusinessMember[] @relation("Membership")
+  membershipsCreated BusinessMember[] @relation("MembershipCreatedBy")
   createdAt     DateTime  @default(now()) @db.Timestamptz(6)
 }
 
@@ -66,7 +77,11 @@ model Session {
   sessionToken String   @unique
   userId       String
   expires      DateTime
+  // Multi-tenancy (007): negócio ATIVO do dono, estado server-side (nunca do input — anti-IDOR).
+  // Revalidado por request (é membro OWNER?). SetNull se o negócio for removido.
+  activeBusinessId String?
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  activeBusiness Business? @relation(fields: [activeBusinessId], references: [id], onDelete: SetNull)
 }
 
 model VerificationToken {
@@ -84,6 +99,8 @@ model VerificationToken {
 model Business {
   id        String              @id @default(cuid())
   name      String
+  // Slug único e URL-safe (F007): porta pública em /b/[slug]. Imutável pela UI no MVP.
+  slug      String              @unique
   // Fuso usado pela camada de domínio para derivar disponibilidade (default America/Sao_Paulo).
   timezone  String              @default("America/Sao_Paulo")
   // Vertical do negocio (F007). Sem ramificacao de comportamento no MVP (multi-vertical fora de escopo).
@@ -92,7 +109,30 @@ model Business {
   services  Service[]
   bookings  Booking[]
   ledgerEntries LedgerEntry[]
+  // Multi-tenancy (007): membros (donos) e sessões com este negócio ativo.
+  members       BusinessMember[]
+  activeSessions Session[]
+  // Auditoria da criação (F007): quem (ADMIN) e quando. Nullable p/ o negócio de backfill.
+  createdBy String?
   createdAt DateTime            @default(now()) @db.Timestamptz(6)
+}
+
+// Vínculo N:N dono↔negócio (007). Fonte de verdade da posse (requireOwner consulta aqui). Unicidade
+// (userId, businessId) torna vínculo duplicado impossível no dado (Princípio II). Duas FKs p/ User:
+// o membro (userId) e quem promoveu (createdBy) — relations nomeadas (mesmo cuidado da F005).
+model BusinessMember {
+  id         String       @id @default(cuid())
+  userId     String
+  businessId String
+  role       BusinessRole @default(OWNER)
+  createdAt  DateTime     @default(now()) @db.Timestamptz(6)
+  createdBy  String
+
+  user     User     @relation("Membership", fields: [userId], references: [id], onDelete: Cascade)
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  creator  User     @relation("MembershipCreatedBy", fields: [createdBy], references: [id])
+
+  @@unique([userId, businessId])
 }
 
 model OpeningHours {

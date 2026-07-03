@@ -84,25 +84,25 @@ entre elas. Dentro da onda 2, por user story.
 
 **Purpose**: schema funcional + backfill sem perda. Bloqueia as histórias.
 
-- [ ] T010 [US6] Editar `prisma/schema.prisma` (onda 2): `enum Role { CLIENT, OWNER, ADMIN }`
+- [X] T010 [US6] Editar `prisma/schema.prisma` (onda 2): `enum Role { CLIENT, OWNER, ADMIN }`
   (ADMIN aditivo); `enum BusinessRole { OWNER }`; `model BusinessMember { id cuid, userId FK (relation
   "Membership"), businessId FK, role BusinessRole, createdAt Timestamptz(6), createdBy FK (relation
   "MembershipCreatedBy"), @@unique([userId, businessId]) }`; `Business.slug String @unique` +
   `createdBy String?`/`createdAt`; `Session.activeBusinessId String?` FK→Business `onDelete: SetNull`;
   relations em User (`memberships`, `membershipsCreated`). (FR-004/FR-011/FR-012/FR-023, US2/US6)
-- [ ] T011 [US6] Gerar a migration 2 (`--name multitenancy`) e escrever o **backfill** no corpo dela
+- [X] T011 [US6] Gerar a migration 2 (`--name multitenancy`) e escrever o **backfill** no corpo dela
   (SQL) ou script acoplado: business existente ganha `slug` derivado do nome via `slugify`, validado
   contra a **regra completa** (regex + unicidade + `RESERVED_SLUGS`) com **fallback determinístico**
   (sufixo, ex.: `-1`/id curto) se o derivado for reservado ou colidir; cada `User` com `role='OWNER'`
   ganha `BusinessMember(…, OWNER, createdBy=self)` e é **rebaixado** a `CLIENT`. (FR-024/FR-023, US6)
   — ver research D4.
-- [ ] T012 [US6] Bootstrap do 1º ADMIN em `prisma/seed.*` (idempotente, documentado): promover
+- [X] T012 [US6] Bootstrap do 1º ADMIN em `prisma/seed.*` (idempotente, documentado): promover
   `willmarthins@gmail.com` a `Role.ADMIN`. Aplicar migration + seed. (FR-022, US1/US6)
-- [ ] T013 [US6] Estender as fixtures de teste `tests/integration/multitenancy/fixtures.ts`: helper p/
+- [X] T013 [US6] Estender as fixtures de teste `tests/integration/multitenancy/fixtures.ts`: helper p/
   criar **Business** + **BusinessMember(OWNER)**, um **2º business** (+ 2º owner) para os testes de
   isolamento, e helper p/ setar `Session.activeBusinessId`. Reutiliza as fixtures renomeadas da onda 1.
   (bloqueia os testes de US1–US5)
-- [ ] T014 [US6] Teste de **backfill** `tests/integration/multitenancy/backfill.test.ts` (verificação
+- [X] T014 [US6] Teste de **backfill** `tests/integration/multitenancy/backfill.test.ts` (verificação
   **pós-migração** — não é RED-first, valida o resultado de T011): pós-M2, o business demo tem slug;
   bookings/lançamentos/serviços seguem com o **mesmo** `businessId` (contagens idênticas); owner atual
   tem `BusinessMember`; operador é ADMIN. (SC-005)
