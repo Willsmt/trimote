@@ -1,7 +1,7 @@
 "use server";
 
 import { requireOwner } from "@/server/auth/owner";
-import { getOwnerBarbershopId } from "@/server/owner/barbershop";
+import { getOwnerBusinessId } from "@/server/owner/business";
 import { createService as createServiceCore, type CreateServiceResult } from "@/server/owner/services";
 
 /** Server Action: cria um serviço (US1). Exige OWNER (FR-001). */
@@ -11,6 +11,6 @@ export async function createService(input: {
   durationMinutes: number;
 }): Promise<CreateServiceResult> {
   await requireOwner();
-  const barbershopId = await getOwnerBarbershopId();
-  return createServiceCore({ barbershopId, ...input });
+  const businessId = await getOwnerBusinessId();
+  return createServiceCore({ businessId, ...input });
 }

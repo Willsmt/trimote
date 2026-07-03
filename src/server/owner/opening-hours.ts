@@ -16,7 +16,7 @@ export type OpeningHoursFailureReason = "invalid_input";
 export type OpeningHoursMutationResult = { ok: true } | { ok: false; reason: OpeningHoursFailureReason };
 
 export interface SetOpeningHoursInput {
-  barbershopId: string;
+  businessId: string;
   weekday: number; // 0 = domingo .. 6 = sábado
   opensAtMinutes: number;
   closesAtMinutes: number;
@@ -33,7 +33,7 @@ function isValidMinute(minute: number): boolean {
 export async function setOpeningHours(
   input: SetOpeningHoursInput,
 ): Promise<OpeningHoursMutationResult> {
-  const { barbershopId, weekday, opensAtMinutes, closesAtMinutes } = input;
+  const { businessId, weekday, opensAtMinutes, closesAtMinutes } = input;
 
   if (
     !isValidWeekday(weekday) ||
@@ -45,9 +45,9 @@ export async function setOpeningHours(
   }
 
   await prisma.openingHours.upsert({
-    where: { barbershopId_weekday: { barbershopId, weekday } },
+    where: { businessId_weekday: { businessId, weekday } },
     update: { opensAtMinutes, closesAtMinutes },
-    create: { barbershopId, weekday, opensAtMinutes, closesAtMinutes },
+    create: { businessId, weekday, opensAtMinutes, closesAtMinutes },
   });
 
   return { ok: true };
@@ -58,14 +58,14 @@ export async function setOpeningHours(
  * um no-op de sucesso (FR-008).
  */
 export async function closeDay(input: {
-  barbershopId: string;
+  businessId: string;
   weekday: number;
 }): Promise<OpeningHoursMutationResult> {
   if (!isValidWeekday(input.weekday)) {
     return { ok: false, reason: "invalid_input" };
   }
   await prisma.openingHours.deleteMany({
-    where: { barbershopId: input.barbershopId, weekday: input.weekday },
+    where: { businessId: input.businessId, weekday: input.weekday },
   });
   return { ok: true };
 }
@@ -77,10 +77,10 @@ export interface OpeningHoursItem {
 }
 
 export async function listOpeningHours(input: {
-  barbershopId: string;
+  businessId: string;
 }): Promise<OpeningHoursItem[]> {
   const rows = await prisma.openingHours.findMany({
-    where: { barbershopId: input.barbershopId },
+    where: { businessId: input.businessId },
     orderBy: { weekday: "asc" },
     select: { weekday: true, opensAtMinutes: true, closesAtMinutes: true },
   });

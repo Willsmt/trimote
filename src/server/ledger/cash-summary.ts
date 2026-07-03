@@ -5,12 +5,12 @@ import { periodBoundsInZone, type Granularity } from "@/domain/time";
 
 /**
  * Núcleo do caixa + breakdown do balancete (006-financial-reports, US1/US2), testável com
- * `barbershopId`/`timeZone` explícitos. LEITURA PURA — nenhuma escrita.
+ * `businessId`/`timeZone` explícitos. LEITURA PURA — nenhuma escrita.
  *
  * Bucketização por RANGE em UTC: os limites `[startUtc, endUtc)` do período são derivados no fuso da
  * barbearia por `periodBoundsInZone` (Luxon — a fronteira única de fuso) e o WHERE compara
  * `occurredAt` a esses escalares. É range sobre a coluna nua, então usa o índice
- * `(barbershopId, occurredAt)` da F005; NÃO há `AT TIME ZONE`/`date_trunc` na query nem função sobre
+ * `(businessId, occurredAt)` da F005; NÃO há `AT TIME ZONE`/`date_trunc` na query nem função sobre
  * `occurredAt` (Clarify FR-003). Só lançamentos ativos contam (FR-004). Dinheiro em `Prisma.Decimal`,
  * nunca float (FR-023); `$queryRaw` TIPADO e PARAMETRIZADO (`Prisma.sql`), nunca interpolado.
  */
@@ -18,7 +18,7 @@ import { periodBoundsInZone, type Granularity } from "@/domain/time";
 export type { Granularity };
 
 export interface CashSummaryInput {
-  barbershopId: string;
+  businessId: string;
   timeZone: string;
   granularity: Granularity;
   /** 'YYYY-MM-DD' no fuso da barbearia — qualquer dia dentro do período visado. */
@@ -61,7 +61,7 @@ export async function getCashSummaryForOwner(input: CashSummaryInput): Promise<C
 
   // Filtro comum (range → índice; só ativos; escopo da barbearia). Valores como PARÂMETROS.
   const where = Prisma.sql`
-    "barbershopId" = ${input.barbershopId}
+    "businessId" = ${input.businessId}
     AND "isActive" = true
     AND "occurredAt" >= ${startUtc}
     AND "occurredAt" < ${endUtc}`;

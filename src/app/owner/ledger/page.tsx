@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 
 import { requireOwner, ForbiddenError } from "@/server/auth/owner";
 import { UnauthorizedError } from "@/server/auth/session";
-import { getOwnerBarbershopId } from "@/server/owner/barbershop";
+import { getOwnerBusinessId } from "@/server/owner/business";
 import { prisma } from "@/server/db/client";
 import { LedgerManager } from "@/components/owner/ledger-manager";
 
@@ -23,13 +23,13 @@ export default async function OwnerLedgerPage() {
     throw error;
   }
 
-  const barbershopId = await getOwnerBarbershopId();
+  const businessId = await getOwnerBusinessId();
 
   // Agenda ativa (para escolher qual atendimento concluir) e serviços ativos (para walk-in/extras).
   // NÃO há relatório/agregação/caixa aqui — isso é F006.
   const [bookings, services] = await Promise.all([
     prisma.booking.findMany({
-      where: { barbershopId, status: "ACTIVE" },
+      where: { businessId, status: "ACTIVE" },
       orderBy: { startsAt: "asc" },
       select: {
         id: true,
@@ -38,8 +38,8 @@ export default async function OwnerLedgerPage() {
         user: { select: { name: true, email: true } },
       },
     }),
-    prisma.barbershopService.findMany({
-      where: { barbershopId, isActive: true },
+    prisma.service.findMany({
+      where: { businessId, isActive: true },
       orderBy: { name: "asc" },
       select: { id: true, name: true, price: true },
     }),

@@ -11,7 +11,7 @@ export default async function BookingPage() {
     redirect("/api/auth/signin?callbackUrl=/booking");
   }
 
-  const services = await prisma.barbershopService.findMany({
+  const services = await prisma.service.findMany({
     orderBy: { name: "asc" },
     select: { id: true, name: true, price: true, durationMinutes: true },
   });

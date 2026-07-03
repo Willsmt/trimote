@@ -61,19 +61,19 @@ export async function registerWalkInForOwner(
   }
 
   const items: LedgerItemInput[] = [];
-  // barbershopId derivado do serviço; para walk-in só-manual, resolve a barbearia única do MVP (D8).
-  let barbershopId: string | null = null;
+  // businessId derivado do serviço; para walk-in só-manual, resolve a barbearia única do MVP (D8).
+  let businessId: string | null = null;
 
   for (const item of input.items) {
     if (item.serviceId) {
-      const service = await prisma.barbershopService.findUnique({
+      const service = await prisma.service.findUnique({
         where: { id: item.serviceId },
-        select: { id: true, name: true, price: true, barbershopId: true },
+        select: { id: true, name: true, price: true, businessId: true },
       });
       if (!service) {
         return { ok: false, reason: "service_not_found" };
       }
-      barbershopId ??= service.barbershopId;
+      businessId ??= service.businessId;
       items.push(
         buildServiceItem({
           serviceId: service.id,
@@ -112,9 +112,9 @@ export async function registerWalkInForOwner(
     }
   }
 
-  if (barbershopId == null) {
-    const shop = await prisma.barbershop.findFirstOrThrow({ select: { id: true } });
-    barbershopId = shop.id;
+  if (businessId == null) {
+    const shop = await prisma.business.findFirstOrThrow({ select: { id: true } });
+    businessId = shop.id;
   }
 
   const amount = sumItems(items);
@@ -123,7 +123,7 @@ export async function registerWalkInForOwner(
   // Nested create é atômico (itens criados junto do lançamento); não há segunda operação.
   const entry = await prisma.ledgerEntry.create({
     data: {
-      barbershopId,
+      businessId,
       type: "INCOME",
       origin: "WALK_IN",
       amount,

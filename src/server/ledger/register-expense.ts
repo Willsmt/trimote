@@ -44,13 +44,13 @@ export async function registerExpenseForOwner(
     return { ok: false, reason: "invalid_description" };
   }
 
-  // Barbearia única do MVP (D8) — despesa não tem serviço de onde derivar o barbershopId.
-  const shop = await prisma.barbershop.findFirstOrThrow({ select: { id: true } });
+  // Barbearia única do MVP (D8) — despesa não tem serviço de onde derivar o businessId.
+  const shop = await prisma.business.findFirstOrThrow({ select: { id: true } });
   const occurredAt = input.occurredAt ?? new Date();
 
   const entry = await prisma.ledgerEntry.create({
     data: {
-      barbershopId: shop.id,
+      businessId: shop.id,
       type: "EXPENSE",
       origin: "EXPENSE",
       amount,

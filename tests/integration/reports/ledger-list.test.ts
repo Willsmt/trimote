@@ -17,7 +17,7 @@ import { listLedgerForOwner, type LedgerListInput } from "@/server/ledger/ledger
 import { listLedger } from "@/server/actions/list-ledger";
 import { getCashSummaryForOwner } from "@/server/ledger/cash-summary";
 import { deactivateLedgerEntryForOwner } from "@/server/ledger/deactivate-ledger-entry";
-import { BARBERSHOP_ID, SP, slotAt, seedLedgerEntry, upsertUsers, cleanupLedgerAndBookings } from "./fixtures";
+import { BUSINESS_ID, SP, slotAt, seedLedgerEntry, upsertUsers, cleanupLedgerAndBookings } from "./fixtures";
 import { SERVICE_CORTE, seedBooking } from "../ledger/fixtures";
 
 // Integração (Postgres) do razão paginado (US3) + consistência com o caixa (US1) e autorização da
@@ -52,7 +52,7 @@ afterAll(async () => {
 });
 
 const baseInput = (over: Partial<LedgerListInput> = {}): LedgerListInput => ({
-  barbershopId: BARBERSHOP_ID,
+  businessId: BUSINESS_ID,
   timeZone: SP,
   filter: { period: SEP },
   ...over,
@@ -183,7 +183,7 @@ describe("consistência caixa × listagem (US3/US1 — FR-024)", () => {
       cursor = page.nextCursor;
     }
 
-    const cash = await getCashSummaryForOwner({ barbershopId: BARBERSHOP_ID, timeZone: SP, granularity: "month", referenceLocalDate: "2032-09-15" });
+    const cash = await getCashSummaryForOwner({ businessId: BUSINESS_ID, timeZone: SP, granularity: "month", referenceLocalDate: "2032-09-15" });
     expect(cash.balance.equals(sum)).toBe(true); // 40.10 + 30.05 - 20.30 = 49.85
     expect(cash.balance.equals(D("49.85"))).toBe(true);
   });
@@ -193,7 +193,7 @@ describe("inativar a partir da listagem — reuso do soft delete da F005 (US4)",
   it("inativa um lançamento ANTIGO: sai da lista/caixa; booking de origem BOOKING segue COMPLETED (SC-009)", async () => {
     const OCT = { granularity: "month", referenceLocalDate: "2032-10-15" } as const;
     const cash = () =>
-      getCashSummaryForOwner({ barbershopId: BARBERSHOP_ID, timeZone: SP, granularity: "month", referenceLocalDate: "2032-10-15" });
+      getCashSummaryForOwner({ businessId: BUSINESS_ID, timeZone: SP, granularity: "month", referenceLocalDate: "2032-10-15" });
 
     // Booking concluído + lançamento de origem BOOKING (o "antigo").
     const bookingId = await seedBooking({ userId: CLIENT_ID, serviceId: SERVICE_CORTE, startsAt: slotAt("2032-10-05", 600), status: "COMPLETED" });

@@ -85,9 +85,9 @@ export async function rescheduleBookingForUser(
   }
 
   // 6. Carrega o serviço escolhido (com expediente da barbearia).
-  const service = await prisma.barbershopService.findUnique({
+  const service = await prisma.service.findUnique({
     where: { id: input.serviceId },
-    include: { barbershop: { include: { openingHours: true } } },
+    include: { business: { include: { openingHours: true } } },
   });
   if (!service) {
     return { ok: false, reason: "service_not_found" };
@@ -106,9 +106,9 @@ export async function rescheduleBookingForUser(
   }
 
   // 8. Encaixe no expediente do dia, no fuso da barbearia (Princípio VII).
-  const timeZone = service.barbershop.timezone;
+  const timeZone = service.business.timezone;
   const weekday = weekdayInZone(input.startsAt, timeZone);
-  const window = service.barbershop.openingHours.find((oh) => oh.weekday === weekday);
+  const window = service.business.openingHours.find((oh) => oh.weekday === weekday);
   if (!window) {
     return { ok: false, reason: "outside_opening_hours" };
   }

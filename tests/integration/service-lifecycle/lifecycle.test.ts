@@ -11,7 +11,7 @@ import { getAvailableSlots } from "@/server/actions/get-available-slots";
 import { localDateTimeToUtc } from "@/domain/time";
 
 // Teste de integração (toca Postgres) — ciclo de vida do serviço (FR-005/FR-006/FR-007/FR-012).
-const BARBERSHOP_ID = "barbershop-trimote";
+const BUSINESS_ID = "business-trimote";
 const USER_ID = "u-svc-lifecycle";
 const PREFIX = "ZZTEST-"; // prefixo p/ isolar e limpar os serviços de teste
 
@@ -28,12 +28,12 @@ beforeAll(async () => {
 
 afterEach(async () => {
   await prisma.booking.deleteMany({ where: { userId: USER_ID } });
-  await prisma.barbershopService.deleteMany({ where: { name: { startsWith: PREFIX } } });
+  await prisma.service.deleteMany({ where: { name: { startsWith: PREFIX } } });
 });
 
 afterAll(async () => {
   await prisma.booking.deleteMany({ where: { userId: USER_ID } });
-  await prisma.barbershopService.deleteMany({ where: { name: { startsWith: PREFIX } } });
+  await prisma.service.deleteMany({ where: { name: { startsWith: PREFIX } } });
   await prisma.user.delete({ where: { id: USER_ID } });
   await prisma.$disconnect();
 });
@@ -41,7 +41,7 @@ afterAll(async () => {
 describe("ciclo de vida do serviço", () => {
   it("desativar um serviço com agendamento ativo preserva o agendamento (FR-005/FR-006)", async () => {
     const created = await createService({
-      barbershopId: BARBERSHOP_ID,
+      businessId: BUSINESS_ID,
       name: `${PREFIX}Cut A`,
       price: "40.00",
       durationMinutes: 30,
@@ -58,7 +58,7 @@ describe("ciclo de vida do serviço", () => {
     const result = await deactivateService({ serviceId: created.serviceId });
     expect(result).toEqual({ ok: true });
 
-    const service = await prisma.barbershopService.findUnique({ where: { id: created.serviceId } });
+    const service = await prisma.service.findUnique({ where: { id: created.serviceId } });
     expect(service?.isActive).toBe(false);
 
     // O agendamento continua íntegro (nada de delete físico).
@@ -68,7 +68,7 @@ describe("ciclo de vida do serviço", () => {
 
   it("rejeita nome duplicado entre ativos e permite reusar nome de inativo (FR-012)", async () => {
     const first = await createService({
-      barbershopId: BARBERSHOP_ID,
+      businessId: BUSINESS_ID,
       name: `${PREFIX}Unique`,
       price: "30.00",
       durationMinutes: 30,
@@ -76,7 +76,7 @@ describe("ciclo de vida do serviço", () => {
     if (!first.ok) throw new Error("setup falhou");
 
     const dup = await createService({
-      barbershopId: BARBERSHOP_ID,
+      businessId: BUSINESS_ID,
       name: `${PREFIX}Unique`,
       price: "30.00",
       durationMinutes: 30,
@@ -86,7 +86,7 @@ describe("ciclo de vida do serviço", () => {
     // Desativar o primeiro libera o nome para um novo serviço ativo.
     await deactivateService({ serviceId: first.serviceId });
     const reused = await createService({
-      barbershopId: BARBERSHOP_ID,
+      businessId: BUSINESS_ID,
       name: `${PREFIX}Unique`,
       price: "30.00",
       durationMinutes: 30,
@@ -96,7 +96,7 @@ describe("ciclo de vida do serviço", () => {
 
   it("rejeita CRIAR agendamento em serviço desativado -> service_inactive, nada persiste (issue #1)", async () => {
     const created = await createService({
-      barbershopId: BARBERSHOP_ID,
+      businessId: BUSINESS_ID,
       name: `${PREFIX}Inactive`,
       price: "40.00",
       durationMinutes: 30,
@@ -116,7 +116,7 @@ describe("ciclo de vida do serviço", () => {
 
   it("permite criar agendamento em serviço ATIVO (regressão)", async () => {
     const created = await createService({
-      barbershopId: BARBERSHOP_ID,
+      businessId: BUSINESS_ID,
       name: `${PREFIX}Active`,
       price: "40.00",
       durationMinutes: 30,
@@ -133,7 +133,7 @@ describe("ciclo de vida do serviço", () => {
 
   it("getAvailableSlots recusa serviço desativado no fluxo de CRIAÇÃO (sem excludeBookingId) (issue #1)", async () => {
     const created = await createService({
-      barbershopId: BARBERSHOP_ID,
+      businessId: BUSINESS_ID,
       name: `${PREFIX}Slots Off`,
       price: "40.00",
       durationMinutes: 30,
@@ -147,7 +147,7 @@ describe("ciclo de vida do serviço", () => {
 
   it("getAvailableSlots ainda oferece horários na REMARCAÇÃO (com excludeBookingId) mesmo desativado (F004)", async () => {
     const created = await createService({
-      barbershopId: BARBERSHOP_ID,
+      businessId: BUSINESS_ID,
       name: `${PREFIX}Slots Resched`,
       price: "40.00",
       durationMinutes: 30,
@@ -167,7 +167,7 @@ describe("ciclo de vida do serviço", () => {
 
   it("editar a duração não altera o endsAt de agendamentos existentes (FR-007)", async () => {
     const created = await createService({
-      barbershopId: BARBERSHOP_ID,
+      businessId: BUSINESS_ID,
       name: `${PREFIX}Cut B`,
       price: "50.00",
       durationMinutes: 30,

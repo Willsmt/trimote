@@ -3,7 +3,7 @@ import { Prisma } from "@prisma/client";
 
 import { prisma } from "@/server/db/client";
 import { getCashSummaryForOwner } from "@/server/ledger/cash-summary";
-import { BARBERSHOP_ID, SP, slotAt, seedLedgerEntry, upsertUsers, cleanupLedgerAndBookings } from "./fixtures";
+import { BUSINESS_ID, SP, slotAt, seedLedgerEntry, upsertUsers, cleanupLedgerAndBookings } from "./fixtures";
 
 // Integração (Postgres) do caixa + breakdown (US1/US2). Bucketização por range em UTC no fuso da
 // barbearia (FR-003), só ativos (FR-004), zeros em período vazio (FR-005), saldo podendo ser negativo
@@ -44,7 +44,7 @@ describe("getCashSummaryForOwner — totais e saldo (US1)", () => {
   it("totais, saldo negativo e exclusão de inativo (mês julho/2031)", async () => {
     await seedJuly();
     const r = await getCashSummaryForOwner({
-      barbershopId: BARBERSHOP_ID,
+      businessId: BUSINESS_ID,
       timeZone: SP,
       granularity: "month",
       referenceLocalDate: "2031-07-15",
@@ -56,7 +56,7 @@ describe("getCashSummaryForOwner — totais e saldo (US1)", () => {
 
   it("período vazio → 0.00 em tudo, listas vazias, sem erro (SC-005)", async () => {
     const r = await getCashSummaryForOwner({
-      barbershopId: BARBERSHOP_ID,
+      businessId: BUSINESS_ID,
       timeZone: SP,
       granularity: "month",
       referenceLocalDate: "2031-03-15",
@@ -73,7 +73,7 @@ describe("getCashSummaryForOwner — breakdown (US2)", () => {
   it("por forma (null→UNSET) e por categoria (null preservado); soma dos baldes == total (SC-004)", async () => {
     await seedJuly();
     const r = await getCashSummaryForOwner({
-      barbershopId: BARBERSHOP_ID,
+      businessId: BUSINESS_ID,
       timeZone: SP,
       granularity: "month",
       referenceLocalDate: "2031-07-15",
@@ -96,14 +96,14 @@ describe("getCashSummaryForOwner — borda de fuso nas 4 granularidades (SC-003)
   it("22:30 local de 13/07 (= 2031-07-14T01:30Z) conta em 13/07, não em 14/07", async () => {
     const occurredAt = new Date("2031-07-14T01:30:00.000Z"); // 22:30 de 13/07 em SP
     await seedLedgerEntry({ createdBy: OWNER_ID, type: "INCOME", origin: "WALK_IN", amount: "50.00", occurredAt, paymentMethod: "CARD" });
-    const shopId = BARBERSHOP_ID;
+    const shopId = BUSINESS_ID;
 
     for (const granularity of ["day", "week", "month", "year"] as const) {
-      const inPeriod = await getCashSummaryForOwner({ barbershopId: shopId, timeZone: SP, granularity, referenceLocalDate: "2031-07-13" });
+      const inPeriod = await getCashSummaryForOwner({ businessId: shopId, timeZone: SP, granularity, referenceLocalDate: "2031-07-13" });
       expect(inPeriod.income.equals(D("50.00"))).toBe(true);
     }
     // Dia seguinte (14/07 local) NÃO contém o lançamento.
-    const nextDay = await getCashSummaryForOwner({ barbershopId: shopId, timeZone: SP, granularity: "day", referenceLocalDate: "2031-07-14" });
+    const nextDay = await getCashSummaryForOwner({ businessId: shopId, timeZone: SP, granularity: "day", referenceLocalDate: "2031-07-14" });
     expect(nextDay.income.equals(D("0"))).toBe(true);
   });
 });

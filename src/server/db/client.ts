@@ -31,10 +31,10 @@ function createPrismaClient(): PrismaClient {
     // Conflito de nome entre serviços ATIVOS (feature 002) — também esperado, traduzido em
     // name_taken. O Prisma mapeia o índice parcial para P2002 sem expor o nome do índice, então
     // filtramos por operação + campo. NÃO silencia outras unique violations: e-mail duplicado, por
-    // exemplo, tem target "user.*" e fields (`email`). Cobre create e update de BarbershopService.
+    // exemplo, tem target "user.*" e fields (`email`). Cobre create e update de Service.
     const target = String(event.target ?? "");
     if (
-      target.startsWith("barbershopService.") &&
+      target.startsWith("service.") &&
       message.includes("Unique constraint failed on the fields: (`name`)")
     ) {
       return;

@@ -35,7 +35,7 @@ entre elas. Dentro da onda 2, por user story.
 
 ## Phase 1: Setup
 
-- [ ] T001 Criar branch `007-multi-tenancy` a partir de `main` e o diretório `tests/integration/multitenancy/`.
+- [X] T001 Criar branch `007-multi-tenancy` a partir de `main` e o diretório `tests/integration/multitenancy/`.
   Confirmar base atual (um negócio de seed + dados F001–F006) e 139 testes verdes como ponto de partida.
 
 ---
@@ -45,34 +45,34 @@ entre elas. Dentro da onda 2, por user story.
 **Purpose**: `Barbershop→Business`, `BarbershopService→Service`, `barbershopId→businessId`, + coluna
 `segment` — **sem mudar comportamento**. Termina no GATE (139 verdes).
 
-- [ ] T002 Editar `prisma/schema.prisma`: renomear model `Barbershop`→`Business` (+ `segment String
+- [X] T002 Editar `prisma/schema.prisma`: renomear model `Barbershop`→`Business` (+ `segment String
   @default("barbershop")`), `BarbershopService`→`Service`, campo/relations `barbershopId`→`businessId`
   em `OpeningHours`/`Service`/`Booking`/`LedgerEntry` e `barbershop`→`business`; ajustar `@@unique`/
   `@@index` renomeados. (FR-001/FR-003)
-- [ ] T003 Gerar a migration **sem aplicar**: `npx prisma migrate dev --create-only --name
+- [X] T003 Gerar a migration **sem aplicar**: `npx prisma migrate dev --create-only --name
   rename_business`; **EDITAR À MÃO** o SQL em `prisma/migrations/<ts>_rename_business/migration.sql`
   para `ALTER TABLE "Barbershop" RENAME TO "Business"`, `ALTER TABLE "BarbershopService" RENAME TO
   "Service"`, `ALTER TABLE ... RENAME COLUMN "barbershopId" TO "businessId"` (Booking/OpeningHours/
   Service/LedgerEntry) e `ADD COLUMN "segment" text NOT NULL DEFAULT 'barbershop'`. **NUNCA** deixar
   DROP/CREATE de tabela. (FR-001/FR-002)
-- [ ] T004 Aplicar e regenerar o client: `npx prisma migrate dev` + `npx prisma generate`. (FR-001)
-- [ ] T005 **Validação da constraint (bloqueante)**: `pg_constraint` prova que `booking_no_overlap`
+- [X] T004 Aplicar e regenerar o client: `npx prisma migrate dev` + `npx prisma generate`. (FR-001)
+- [X] T005 **Validação da constraint (bloqueante)**: `pg_constraint` prova que `booking_no_overlap`
   existe e referencia `"businessId"` (`EXCLUDE USING gist ("businessId" WITH =, tstzrange(...) WITH
   &&) WHERE status='ACTIVE'`). Registrar o output no PR/commit. (FR-002/SC-008)
-- [ ] T006 Renomear as referências nos **cores/actions** do servidor: `prisma.barbershop`→
+- [X] T006 Renomear as referências nos **cores/actions** do servidor: `prisma.barbershop`→
   `prisma.business`, `prisma.barbershopService`→`prisma.service`, param/campo `barbershopId`→
   `businessId`, relation `barbershop`→`business` em `src/server/owner/{services,opening-hours,
   barbershop}.ts`, `src/server/booking/{create-booking,reschedule-booking}.ts`, `src/server/ledger/*`,
   `src/server/actions/*`, e `src/server/db/client.ts` (filtro do logger do Prisma:
   `target.startsWith("barbershopService.")` → `"service."` + comentário). **Zero mudança de lógica.**
   Critério: pós-onda-1, **zero hits** de `barbershop` em `src/` e `tests/`. (FR-001)
-- [ ] T007 [P] Renomear referências nas **pages/componentes**: `src/app/owner/**`, `src/app/booking/
+- [X] T007 [P] Renomear referências nas **pages/componentes**: `src/app/owner/**`, `src/app/booking/
   page.tsx`, `src/app/services/page.tsx`, `src/app/my-bookings/**`, `src/components/**` (só nomes de
   campo/relation/model). (FR-001)
-- [ ] T008 [P] Renomear as **fixtures e suites**: `BARBERSHOP_ID`→`BUSINESS_ID`, `prisma.
+- [X] T008 [P] Renomear as **fixtures e suites**: `BARBERSHOP_ID`→`BUSINESS_ID`, `prisma.
   barbershopService`→`prisma.service`, `barbershopId`→`businessId` em `tests/integration/**/fixtures.ts`
   e nas suites que os usam. **Mantém 1 business nesta onda.** (FR-001/FR-025)
-- [ ] T009 🔒 **GATE DA ONDA 1 (bloqueante)**: `npm test` = **139/139 verdes** e `npx tsc --noEmit`
+- [X] T009 🔒 **GATE DA ONDA 1 (bloqueante)**: `npm test` = **139/139 verdes** e `npx tsc --noEmit`
   limpo com os nomes novos; `git diff` confirma **só renomeação** (zero lógica). **Commit da onda 1
   fecha aqui.** Nenhuma task da onda 2 começa antes disto. (FR-025/SC-006)
 

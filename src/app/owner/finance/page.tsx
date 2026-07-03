@@ -54,8 +54,8 @@ export default async function OwnerFinancePage({
     throw error;
   }
 
-  const barbershop = await prisma.barbershop.findFirstOrThrow({ select: { id: true, timezone: true } });
-  const timeZone = barbershop.timezone;
+  const business = await prisma.business.findFirstOrThrow({ select: { id: true, timezone: true } });
+  const timeZone = business.timezone;
 
   const sp = await searchParams;
   const granularity = parseGranularity(sp.g);
@@ -64,8 +64,8 @@ export default async function OwnerFinancePage({
   const period = { granularity, referenceLocalDate };
 
   const [summary, ledgerFirst] = await Promise.all([
-    getCashSummaryForOwner({ barbershopId: barbershop.id, timeZone, granularity, referenceLocalDate }),
-    listLedgerForOwner({ barbershopId: barbershop.id, timeZone, filter: { period } }),
+    getCashSummaryForOwner({ businessId: business.id, timeZone, granularity, referenceLocalDate }),
+    listLedgerForOwner({ businessId: business.id, timeZone, filter: { period } }),
   ]);
 
   // Serializa a 1ª página do razão para a ilha (Decimal→string, datas→ISO — D5).

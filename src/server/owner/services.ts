@@ -7,7 +7,7 @@ import { prisma } from "@/server/db/client";
  * chamam `requireOwner` antes de delegar aqui.
  *
  * A unicidade de nome entre serviços ativos é garantida pelo **índice único parcial** no banco
- * (`barbershopservice_active_name_key`, WHERE isActive=true). Este core valida a entrada e traduz a
+ * (`businessservice_active_name_key`, WHERE isActive=true). Este core valida a entrada e traduz a
  * violação do índice em uma recusa de negócio `name_taken` — não reimplementa a unicidade na app.
  */
 
@@ -19,7 +19,7 @@ export type CreateServiceResult =
   | { ok: false; reason: ServiceFailureReason };
 
 export interface CreateServiceInput {
-  barbershopId: string;
+  businessId: string;
   name: string;
   price: string; // decimal em string (nunca float)
   durationMinutes: number;
@@ -36,10 +36,10 @@ export interface UpdateServiceInput {
 function isActiveNameConflict(error: unknown): boolean {
   if (error instanceof Prisma.PrismaClientKnownRequestError) {
     const text = `${error.code} ${error.message} ${JSON.stringify(error.meta ?? {})}`;
-    return text.includes("barbershopservice_active_name_key") || text.includes("23505") || error.code === "P2002";
+    return text.includes("businessservice_active_name_key") || text.includes("23505") || error.code === "P2002";
   }
   if (error instanceof Prisma.PrismaClientUnknownRequestError) {
-    return error.message.includes("barbershopservice_active_name_key") || error.message.includes("23505");
+    return error.message.includes("businessservice_active_name_key") || error.message.includes("23505");
   }
   return false;
 }
@@ -73,9 +73,9 @@ export async function createService(input: CreateServiceInput): Promise<CreateSe
   }
 
   try {
-    const service = await prisma.barbershopService.create({
+    const service = await prisma.service.create({
       data: {
-        barbershopId: input.barbershopId,
+        businessId: input.businessId,
         name,
         price,
         durationMinutes: duration,
@@ -100,7 +100,7 @@ export async function updateService(input: UpdateServiceInput): Promise<ServiceM
     return { ok: false, reason: "invalid_input" };
   }
 
-  const existing = await prisma.barbershopService.findUnique({
+  const existing = await prisma.service.findUnique({
     where: { id: input.serviceId },
     select: { id: true },
   });
@@ -108,7 +108,7 @@ export async function updateService(input: UpdateServiceInput): Promise<ServiceM
     return { ok: false, reason: "not_found" };
   }
 
-  const data: Prisma.BarbershopServiceUpdateInput = {};
+  const data: Prisma.ServiceUpdateInput = {};
   if (name !== null) data.name = name;
   if (price !== null) data.price = price;
   if (duration !== null) data.durationMinutes = duration;
@@ -116,7 +116,7 @@ export async function updateService(input: UpdateServiceInput): Promise<ServiceM
   try {
     // Editar a duração NÃO recalcula bookings existentes: o endsAt é materializado na reserva
     // (research.md D5). Apenas o serviço muda; agendamentos futuros usarão a nova duração.
-    await prisma.barbershopService.update({ where: { id: input.serviceId }, data });
+    await prisma.service.update({ where: { id: input.serviceId }, data });
     return { ok: true };
   } catch (error) {
     if (isActiveNameConflict(error)) {
@@ -127,7 +127,7 @@ export async function updateService(input: UpdateServiceInput): Promise<ServiceM
 }
 
 export async function deactivateService(input: { serviceId: string }): Promise<ServiceMutationResult> {
-  const existing = await prisma.barbershopService.findUnique({
+  const existing = await prisma.service.findUnique({
     where: { id: input.serviceId },
     select: { isActive: true },
   });
@@ -138,7 +138,7 @@ export async function deactivateService(input: { serviceId: string }): Promise<S
     return { ok: false, reason: "already_inactive" };
   }
   // Soft delete: nunca delete físico, preservando agendamentos e histórico (FR-005/FR-006).
-  await prisma.barbershopService.update({
+  await prisma.service.update({
     where: { id: input.serviceId },
     data: { isActive: false },
   });
@@ -146,7 +146,7 @@ export async function deactivateService(input: { serviceId: string }): Promise<S
 }
 
 export async function reactivateService(input: { serviceId: string }): Promise<ServiceMutationResult> {
-  const existing = await prisma.barbershopService.findUnique({
+  const existing = await prisma.service.findUnique({
     where: { id: input.serviceId },
     select: { id: true },
   });
@@ -154,7 +154,7 @@ export async function reactivateService(input: { serviceId: string }): Promise<S
     return { ok: false, reason: "not_found" };
   }
   try {
-    await prisma.barbershopService.update({
+    await prisma.service.update({
       where: { id: input.serviceId },
       data: { isActive: true },
     });
@@ -176,10 +176,10 @@ export interface OwnerServiceItem {
 }
 
 export async function listServicesForOwner(input: {
-  barbershopId: string;
+  businessId: string;
 }): Promise<OwnerServiceItem[]> {
-  const services = await prisma.barbershopService.findMany({
-    where: { barbershopId: input.barbershopId },
+  const services = await prisma.service.findMany({
+    where: { businessId: input.businessId },
     orderBy: [{ isActive: "desc" }, { name: "asc" }],
     select: { id: true, name: true, price: true, durationMinutes: true, isActive: true },
   });

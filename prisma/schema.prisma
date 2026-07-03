@@ -81,13 +81,15 @@ model VerificationToken {
 // Domínio da barbearia
 // ---------------------------------------------------------------------------
 
-model Barbershop {
+model Business {
   id        String              @id @default(cuid())
   name      String
   // Fuso usado pela camada de domínio para derivar disponibilidade (default America/Sao_Paulo).
   timezone  String              @default("America/Sao_Paulo")
+  // Vertical do negocio (F007). Sem ramificacao de comportamento no MVP (multi-vertical fora de escopo).
+  segment   String              @default("barbershop")
   openingHours OpeningHours[]
-  services  BarbershopService[]
+  services  Service[]
   bookings  Booking[]
   ledgerEntries LedgerEntry[]
   createdAt DateTime            @default(now()) @db.Timestamptz(6)
@@ -95,7 +97,7 @@ model Barbershop {
 
 model OpeningHours {
   id           String     @id @default(cuid())
-  barbershopId String
+  businessId String
   // 0 = domingo ... 6 = sábado.
   weekday      Int
   // Horário local de abertura/fechamento, em minutos desde a meia-noite no fuso da barbearia
@@ -103,15 +105,15 @@ model OpeningHours {
   opensAtMinutes  Int
   closesAtMinutes Int
 
-  barbershop Barbershop @relation(fields: [barbershopId], references: [id], onDelete: Cascade)
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
 
   // Uma janela contínua por dia no MVP.
-  @@unique([barbershopId, weekday])
+  @@unique([businessId, weekday])
 }
 
-model BarbershopService {
+model Service {
   id              String    @id @default(cuid())
-  barbershopId    String
+  businessId    String
   name            String
   // Preço monetário: NUMERIC, nunca float (Princípio II — precisão).
   price           Decimal   @db.Decimal(10, 2)
@@ -120,7 +122,7 @@ model BarbershopService {
   // Unicidade de nome entre ativos é garantida por índice único parcial (migration SQL manual).
   isActive        Boolean   @default(true)
 
-  barbershop Barbershop @relation(fields: [barbershopId], references: [id], onDelete: Cascade)
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
   bookings   Booking[]
   // Financeiro (005): itens de lançamento que referenciam este serviço (snapshot de preço).
   ledgerItems LedgerEntryItem[]
@@ -136,7 +138,7 @@ enum BookingStatus {
 
 model Booking {
   id           String        @id @default(cuid())
-  barbershopId String
+  businessId String
   userId       String
   serviceId    String
   // Instantes em UTC. endsAt é materializado (= startsAt + durationMinutes) na criação,
@@ -147,15 +149,15 @@ model Booking {
   createdAt    DateTime      @default(now()) @db.Timestamptz(6)
   cancelledAt  DateTime?     @db.Timestamptz(6)
 
-  barbershop Barbershop        @relation(fields: [barbershopId], references: [id])
+  business Business        @relation(fields: [businessId], references: [id])
   user       User              @relation(fields: [userId], references: [id])
-  service    BarbershopService @relation(fields: [serviceId], references: [id])
+  service    Service @relation(fields: [serviceId], references: [id])
   // Financeiro (005): bookingId nullable e SEM unicidade — um booking pode ter 1 lançamento ativo
   // + N inativados por soft delete (correção). Ver data-model.md D10.
   ledgerEntries LedgerEntry[]
 
   @@index([userId])
-  @@index([barbershopId, status])
+  @@index([businessId, status])
 }
 
 // ---------------------------------------------------------------------------
@@ -190,7 +192,7 @@ enum PaymentMethod {
 // dos itens (validada na aplicação, dentro da transação — FR-007), para despesa é informado direto.
 model LedgerEntry {
   id           String        @id @default(cuid())
-  barbershopId String
+  businessId String
   type         LedgerType
   origin       LedgerOrigin
   // Valor monetário: NUMERIC, nunca float (Princípio II). Sempre > 0 (FR-011).
@@ -210,14 +212,14 @@ model LedgerEntry {
   createdAt    DateTime      @default(now()) @db.Timestamptz(6)
   updatedAt    DateTime      @updatedAt @db.Timestamptz(6)
 
-  barbershop Barbershop         @relation(fields: [barbershopId], references: [id], onDelete: Cascade)
+  business Business         @relation(fields: [businessId], references: [id], onDelete: Cascade)
   booking    Booking?           @relation(fields: [bookingId], references: [id])
   client     User?              @relation("LedgerClient", fields: [clientId], references: [id])
   creator    User               @relation("LedgerCreatedBy", fields: [createdBy], references: [id])
   items      LedgerEntryItem[]
 
   // Ajuda a agregação por barbearia/período da F006 (data-model.md D8/item 13).
-  @@index([barbershopId, occurredAt])
+  @@index([businessId, occurredAt])
 }
 
 // Line item de um lançamento de receita (serviço agendado ou extra). A soma dos itens deve bater
@@ -227,9 +229,9 @@ model LedgerEntryItem {
   ledgerEntryId String
   serviceId     String?
   description   String
-  // Item de serviço = snapshot de BarbershopService.price no ato da captura (FR-002).
+  // Item de serviço = snapshot de Service.price no ato da captura (FR-002).
   amount        Decimal @db.Decimal(10, 2)
 
   ledgerEntry LedgerEntry        @relation(fields: [ledgerEntryId], references: [id], onDelete: Cascade)
-  service     BarbershopService? @relation(fields: [serviceId], references: [id])
+  service     Service? @relation(fields: [serviceId], references: [id])
 }

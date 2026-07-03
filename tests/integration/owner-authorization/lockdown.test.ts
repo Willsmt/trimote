@@ -21,7 +21,7 @@ import { setOpeningHours } from "@/server/actions/set-opening-hours";
 import { closeDay } from "@/server/actions/close-day";
 
 // Lockdown do painel (FR-001/SC-001): TODA operação de gestão nega CLIENT e admite OWNER.
-const BARBERSHOP_ID = "barbershop-trimote";
+const BUSINESS_ID = "business-trimote";
 const CLIENT_ID = "u-lockdown-client";
 const OWNER_ID = "u-lockdown-owner";
 const PREFIX = "ZZUS3-";
@@ -48,9 +48,9 @@ beforeAll(async () => {
 
 beforeEach(async () => {
   // Serviço alvo fresco (criado direto, fora das actions) para update/deactivate/reactivate.
-  const service = await prisma.barbershopService.create({
+  const service = await prisma.service.create({
     data: {
-      barbershopId: BARBERSHOP_ID,
+      businessId: BUSINESS_ID,
       name: `${PREFIX}target`,
       price: "30.00",
       durationMinutes: 30,
@@ -63,8 +63,8 @@ beforeEach(async () => {
 
 afterEach(async () => {
   actAs(null);
-  await prisma.barbershopService.deleteMany({ where: { name: { startsWith: PREFIX } } });
-  await prisma.openingHours.deleteMany({ where: { barbershopId: BARBERSHOP_ID, weekday: TEST_WEEKDAY } });
+  await prisma.service.deleteMany({ where: { name: { startsWith: PREFIX } } });
+  await prisma.openingHours.deleteMany({ where: { businessId: BUSINESS_ID, weekday: TEST_WEEKDAY } });
 });
 
 afterAll(async () => {
@@ -109,7 +109,7 @@ describe("lockdown do painel — CLIENT negado, OWNER admitido", () => {
 
   it("reactivateService", async () => {
     // Alvo inativo para reativar.
-    await prisma.barbershopService.update({
+    await prisma.service.update({
       where: { id: targetServiceId },
       data: { isActive: false },
     });

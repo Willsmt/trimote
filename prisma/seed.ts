@@ -5,7 +5,7 @@ import { PrismaClient, Prisma } from "@prisma/client";
 // Dados pré-cadastrados do MVP (sem painel do dono — escopo). Idempotente via ids fixos.
 const prisma = new PrismaClient();
 
-const BARBERSHOP_ID = "barbershop-trimote";
+const BUSINESS_ID = "business-trimote";
 
 // Expediente: segunda a sábado, 09:00–18:00 (em minutos desde a meia-noite, hora local).
 // Domingo (weekday 0) fica sem linha => fechado.
@@ -22,11 +22,11 @@ const SERVICES = [
 ];
 
 async function main() {
-  await prisma.barbershop.upsert({
-    where: { id: BARBERSHOP_ID },
+  await prisma.business.upsert({
+    where: { id: BUSINESS_ID },
     update: { name: "Trimote Barbearia" },
     create: {
-      id: BARBERSHOP_ID,
+      id: BUSINESS_ID,
       name: "Trimote Barbearia",
       timezone: "America/Sao_Paulo",
     },
@@ -34,14 +34,14 @@ async function main() {
 
   for (const oh of OPENING_HOURS) {
     await prisma.openingHours.upsert({
-      where: { barbershopId_weekday: { barbershopId: BARBERSHOP_ID, weekday: oh.weekday } },
+      where: { businessId_weekday: { businessId: BUSINESS_ID, weekday: oh.weekday } },
       update: { opensAtMinutes: oh.opensAtMinutes, closesAtMinutes: oh.closesAtMinutes },
-      create: { barbershopId: BARBERSHOP_ID, ...oh },
+      create: { businessId: BUSINESS_ID, ...oh },
     });
   }
 
   for (const s of SERVICES) {
-    await prisma.barbershopService.upsert({
+    await prisma.service.upsert({
       where: { id: s.id },
       update: {
         name: s.name,
@@ -50,7 +50,7 @@ async function main() {
       },
       create: {
         id: s.id,
-        barbershopId: BARBERSHOP_ID,
+        businessId: BUSINESS_ID,
         name: s.name,
         price: new Prisma.Decimal(s.price),
         durationMinutes: s.durationMinutes,

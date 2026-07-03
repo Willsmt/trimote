@@ -3,7 +3,7 @@ import { describe, it, expect, beforeAll, afterEach, afterAll } from "vitest";
 import { prisma } from "@/server/db/client";
 import { rescheduleBookingForUser } from "@/server/booking/reschedule-booking";
 import {
-  BARBERSHOP_ID,
+  BUSINESS_ID,
   SERVICE_CORTE,
   cleanupBookings,
   seedBooking,
@@ -23,12 +23,12 @@ const INACTIVE_SERVICE_ID = "service-it-inactive";
 
 beforeAll(async () => {
   await upsertUsers([{ id: USER, email: "resch-svcinactive@example.com" }]);
-  await prisma.barbershopService.upsert({
+  await prisma.service.upsert({
     where: { id: INACTIVE_SERVICE_ID },
     update: { isActive: false },
     create: {
       id: INACTIVE_SERVICE_ID,
-      barbershopId: BARBERSHOP_ID,
+      businessId: BUSINESS_ID,
       name: "Servico Inativo (IT)",
       price: "20.00",
       durationMinutes: 30,
@@ -43,7 +43,7 @@ afterEach(async () => {
 
 afterAll(async () => {
   await teardownUsers([USER]); // remove bookings do usuário antes do serviço (FK)
-  await prisma.barbershopService.deleteMany({ where: { id: INACTIVE_SERVICE_ID } });
+  await prisma.service.deleteMany({ where: { id: INACTIVE_SERVICE_ID } });
 });
 
 describe("rescheduleBookingForUser (service_inactive)", () => {

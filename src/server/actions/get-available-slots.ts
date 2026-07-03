@@ -18,9 +18,9 @@ export async function getAvailableSlots(input: {
   date: string; // YYYY-MM-DD no fuso da barbearia
   excludeBookingId?: string; // remarcação (004): exclui esse booking do cálculo de colisão
 }): Promise<GetAvailableSlotsResult> {
-  const service = await prisma.barbershopService.findUnique({
+  const service = await prisma.service.findUnique({
     where: { id: input.serviceId },
-    include: { barbershop: { include: { openingHours: true } } },
+    include: { business: { include: { openingHours: true } } },
   });
   if (!service) {
     return { ok: false, reason: "service_not_found" };
@@ -32,17 +32,17 @@ export async function getAvailableSlots(input: {
     return { ok: false, reason: "service_inactive" };
   }
 
-  const timeZone = service.barbershop.timezone;
+  const timeZone = service.business.timezone;
 
   // Limites do dia local (em UTC) para buscar apenas os agendamentos daquele dia.
   const dayStartUtc = localDateTimeToUtc(input.date, 0, timeZone);
   const dayEndUtc = new Date(dayStartUtc.getTime() + 24 * 60 * 60_000);
   const weekday = weekdayInZone(dayStartUtc, timeZone);
-  const window = service.barbershop.openingHours.find((oh) => oh.weekday === weekday) ?? null;
+  const window = service.business.openingHours.find((oh) => oh.weekday === weekday) ?? null;
 
   const activeBookings = await prisma.booking.findMany({
     where: {
-      barbershopId: service.barbershopId,
+      businessId: service.businessId,
       status: "ACTIVE",
       startsAt: { gte: dayStartUtc, lt: dayEndUtc },
       // Remarcação (004, D1): o booking sendo movido não deve bloquear o próprio horário/adjacências.
