@@ -24,16 +24,11 @@ export async function SiteHeader() {
         <Link href="/" className="font-bold">
           Trimote
         </Link>
-        <Link href="/services" className="text-sm hover:underline">
-          Serviços
-        </Link>
 
-        {/* Links de área logada (FR-005): visíveis a qualquer usuário autenticado. */}
+        {/* Links de área logada (FR-005): visíveis a qualquer usuário autenticado. Agendar é por
+            negócio (/b/[slug]); não há mais catálogo global (F007/US4). */}
         {user && (
           <>
-            <Link href="/booking" className="text-sm hover:underline">
-              Agendar
-            </Link>
             <Link href="/my-bookings" className="text-sm hover:underline">
               Meus agendamentos
             </Link>

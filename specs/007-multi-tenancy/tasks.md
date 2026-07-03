@@ -228,7 +228,7 @@ serviços de A não mostram B.
 
 ### Tests (test-first) ⚠️
 
-- [ ] T034 [P] [US4] `tests/integration/multitenancy/public-slug.test.ts` (deve FALHAR):
+- [X] T034 [P] [US4] `tests/integration/multitenancy/public-slug.test.ts` (deve FALHAR):
   `listServicesForBusiness(businessId)` retorna só serviços ativos **daquele** negócio; agendar no
   contexto do negócio cria booking com o `businessId` do slug; slugs de A e B isolam serviços.
   Além disso: `/services` e `/booking` **globais** não expõem serviço de nenhum negócio (removida/
@@ -236,18 +236,18 @@ serviços de A não mostram B.
 
 ### Implementation
 
-- [ ] T035 [US4] `src/server/actions/list-services.ts` → `listServicesForBusiness(businessId)`
+- [X] T035 [US4] `src/server/actions/list-services.ts` → `listServicesForBusiness(businessId)`
   (where `{ businessId, isActive }`), substituindo a leitura global. (FR-019)
-- [ ] T036 [US4] `src/app/b/[slug]/page.tsx`: resolve business por `slug` (`findUnique`), `notFound()`
+- [X] T036 [US4] `src/app/b/[slug]/page.tsx`: resolve business por `slug` (`findUnique`), `notFound()`
   se inexistente; lista serviços do negócio e entra no fluxo de agendamento **no contexto do negócio**
   (o serviço carrega o `businessId`). Lista vazia tratada. (FR-019/FR-020, US4)
-- [ ] T036a [US4] **Destino das rotas globais (R2 — anti-vazamento)**: `/booking` global
+- [X] T036a [US4] **Destino das rotas globais (R2 — anti-vazamento)**: `/booking` global
   (`src/app/booking/page.tsx`) → **redirect permanente para `/`** (agendar só existe em `/b/[slug]`);
   **remover** `/services` global (`src/app/services/page.tsx`) e a action global `listServices()`
   (`src/server/actions/list-services.ts` — substituída por `listServicesForBusiness` no T035); o
   catálogo é por negócio, exibido no próprio `/b/[slug]`. Atualizar links internos (nav/botões) que
   apontavam para `/booking`/`/services`. (FR-019, US4, R2)
-- [ ] T037 [US4] Rodar `public-slug.test.ts` até **verde**; validar `notFound()` para slug inexistente.
+- [X] T037 [US4] Rodar `public-slug.test.ts` até **verde**; validar `notFound()` para slug inexistente.
 
 **Checkpoint**: porta de entrada do cliente por negócio.
 
