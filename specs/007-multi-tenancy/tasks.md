@@ -204,17 +204,17 @@ serviços de A não mostram B.
 
 ### Tests (test-first) ⚠️
 
-- [ ] T030 [P] [US2] `tests/integration/multitenancy/switch-business.test.ts` (deve FALHAR): membro
+- [X] T030 [P] [US2] `tests/integration/multitenancy/switch-business.test.ts` (deve FALHAR): membro
   troca ok (grava `Session.activeBusinessId`); **não-membro** do alvo → `not_member` (não grava);
   `getActiveBusiness`: 1→`active`, 0→`empty`, N>1 sem escolha→`needs_selection`. (SC-010/FR-018)
 
 ### Implementation
 
-- [ ] T031 [US2] `src/server/business/switch-business.ts` (core) + action `src/server/actions/
+- [X] T031 [US2] `src/server/business/switch-business.ts` (core) + action `src/server/actions/
   switch-business.ts`: valida membership do alvo → `prisma.session.update({ where:{sessionToken},
   data:{activeBusinessId} })`; lê `sessionToken` do cookie. (FR-018, D5)
-- [ ] T032 [US2] Rodar `switch-business.test.ts` até **verde**.
-- [ ] T033 [US2] UI `src/components/owner/business-switcher.tsx` (ilha): lista os negócios do vínculo,
+- [X] T032 [US2] Rodar `switch-business.test.ts` até **verde**.
+- [X] T033 [US2] UI `src/components/owner/business-switcher.tsx` (ilha): lista os negócios do vínculo,
   troca via `switchBusiness` + `router.refresh()`; **oculto** se 1; **estado vazio** (orientar contato
   com ADMIN) se 0. Integrar nas áreas de dono. (US2, FR-018)
 

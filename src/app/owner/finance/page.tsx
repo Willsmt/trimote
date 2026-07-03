@@ -9,6 +9,7 @@ import { listLedgerForOwner } from "@/server/ledger/ledger-list";
 import { todayInZone, shiftPeriod, type Granularity } from "@/domain/time";
 import { CashSummaryView } from "@/components/owner/cash-summary-view";
 import { LedgerBrowser } from "@/components/owner/ledger-browser";
+import { BusinessSwitcher } from "@/components/owner/business-switcher";
 import type { LedgerPageDTO } from "@/server/actions/list-ledger";
 
 export const dynamic = "force-dynamic";
@@ -48,15 +49,25 @@ export default async function OwnerFinancePage({
 }) {
   let businessId: string;
   let timeZone: string;
+  let userId: string;
   try {
     const owner = await requireOwner();
     businessId = owner.businessId;
     timeZone = owner.timeZone;
+    userId = owner.user.id;
   } catch (error) {
     if (error instanceof UnauthorizedError) redirect("/api/auth/signin?callbackUrl=/owner/finance");
     if (error instanceof ForbiddenError) redirect("/");
     throw error;
   }
+
+  // Seletor de negócio ativo (US2): lista os negócios do dono (oculto se 1).
+  const memberships = await prisma.businessMember.findMany({
+    where: { userId, role: "OWNER" },
+    select: { business: { select: { id: true, name: true } } },
+    orderBy: { business: { name: "asc" } },
+  });
+  const ownerBusinesses = memberships.map((m) => m.business);
 
   const sp = await searchParams;
   const granularity = parseGranularity(sp.g);
@@ -93,6 +104,7 @@ export default async function OwnerFinancePage({
 
   return (
     <main className="mx-auto flex max-w-3xl flex-col gap-6 p-8">
+      <BusinessSwitcher businesses={ownerBusinesses} activeBusinessId={businessId} />
       <header>
         <h1 className="text-2xl font-bold">Balancete</h1>
         <p className="text-sm text-neutral-500">Caixa da barbearia por período (entradas, saídas e saldo).</p>
