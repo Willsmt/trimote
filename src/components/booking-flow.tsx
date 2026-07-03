@@ -17,6 +17,7 @@ const FAILURE_MESSAGES: Record<string, string> = {
   in_the_past: "Esse horário já passou.",
   outside_opening_hours: "Fora do horário de funcionamento.",
   service_not_found: "Serviço não encontrado.",
+  service_inactive: "Esse serviço não está mais disponível. Escolha outro.",
 };
 
 function formatSlot(iso: string): string {

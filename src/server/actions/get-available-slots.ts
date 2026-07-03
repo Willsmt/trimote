@@ -11,7 +11,7 @@ import { localDateTimeToUtc, weekdayInZone } from "@/domain/time";
  */
 export type GetAvailableSlotsResult =
   | { ok: true; slots: string[] }
-  | { ok: false; reason: "service_not_found" };
+  | { ok: false; reason: "service_not_found" | "service_inactive" };
 
 export async function getAvailableSlots(input: {
   serviceId: string;
@@ -24,6 +24,12 @@ export async function getAvailableSlots(input: {
   });
   if (!service) {
     return { ok: false, reason: "service_not_found" };
+  }
+  // No fluxo de CRIAÇÃO (sem excludeBookingId) não se oferece horário de serviço desativado (issue
+  // #1). Na REMARCAÇÃO (com excludeBookingId) permite-se: a F004 deixa remarcar mantendo um serviço
+  // que ficou inativo — bloquear aqui esconderia os horários e regrediria esse fluxo.
+  if (!service.isActive && !input.excludeBookingId) {
+    return { ok: false, reason: "service_inactive" };
   }
 
   const timeZone = service.barbershop.timezone;

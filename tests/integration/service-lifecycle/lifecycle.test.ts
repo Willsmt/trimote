@@ -7,6 +7,7 @@ import {
   deactivateService,
 } from "@/server/owner/services";
 import { createBookingForUser } from "@/server/booking/create-booking";
+import { getAvailableSlots } from "@/server/actions/get-available-slots";
 import { localDateTimeToUtc } from "@/domain/time";
 
 // Teste de integração (toca Postgres) — ciclo de vida do serviço (FR-005/FR-006/FR-007/FR-012).
@@ -91,6 +92,77 @@ describe("ciclo de vida do serviço", () => {
       durationMinutes: 30,
     });
     expect(reused.ok).toBe(true);
+  });
+
+  it("rejeita CRIAR agendamento em serviço desativado -> service_inactive, nada persiste (issue #1)", async () => {
+    const created = await createService({
+      barbershopId: BARBERSHOP_ID,
+      name: `${PREFIX}Inactive`,
+      price: "40.00",
+      durationMinutes: 30,
+    });
+    if (!created.ok) throw new Error("setup falhou");
+    await deactivateService({ serviceId: created.serviceId });
+
+    const before = await prisma.booking.count({ where: { userId: USER_ID } });
+    const result = await createBookingForUser({
+      userId: USER_ID,
+      serviceId: created.serviceId,
+      startsAt: slot,
+    });
+    expect(result).toEqual({ ok: false, reason: "service_inactive" });
+    expect(await prisma.booking.count({ where: { userId: USER_ID } })).toBe(before); // nada persiste
+  });
+
+  it("permite criar agendamento em serviço ATIVO (regressão)", async () => {
+    const created = await createService({
+      barbershopId: BARBERSHOP_ID,
+      name: `${PREFIX}Active`,
+      price: "40.00",
+      durationMinutes: 30,
+    });
+    if (!created.ok) throw new Error("setup falhou");
+
+    const result = await createBookingForUser({
+      userId: USER_ID,
+      serviceId: created.serviceId,
+      startsAt: slot,
+    });
+    expect(result.ok).toBe(true);
+  });
+
+  it("getAvailableSlots recusa serviço desativado no fluxo de CRIAÇÃO (sem excludeBookingId) (issue #1)", async () => {
+    const created = await createService({
+      barbershopId: BARBERSHOP_ID,
+      name: `${PREFIX}Slots Off`,
+      price: "40.00",
+      durationMinutes: 30,
+    });
+    if (!created.ok) throw new Error("setup falhou");
+    await deactivateService({ serviceId: created.serviceId });
+
+    const result = await getAvailableSlots({ serviceId: created.serviceId, date: "2026-12-16" });
+    expect(result).toEqual({ ok: false, reason: "service_inactive" });
+  });
+
+  it("getAvailableSlots ainda oferece horários na REMARCAÇÃO (com excludeBookingId) mesmo desativado (F004)", async () => {
+    const created = await createService({
+      barbershopId: BARBERSHOP_ID,
+      name: `${PREFIX}Slots Resched`,
+      price: "40.00",
+      durationMinutes: 30,
+    });
+    if (!created.ok) throw new Error("setup falhou");
+    const booking = await createBookingForUser({ userId: USER_ID, serviceId: created.serviceId, startsAt: slot });
+    if (!booking.ok) throw new Error("setup falhou");
+    await deactivateService({ serviceId: created.serviceId });
+
+    const result = await getAvailableSlots({
+      serviceId: created.serviceId,
+      date: "2026-12-16",
+      excludeBookingId: booking.bookingId,
+    });
+    expect(result.ok).toBe(true);
   });
 
   it("editar a duração não altera o endsAt de agendamentos existentes (FR-007)", async () => {

@@ -22,6 +22,7 @@ export interface CreateBookingInput {
 
 export type CreateBookingFailureReason =
   | "service_not_found"
+  | "service_inactive"
   | "in_the_past"
   | "outside_opening_hours"
   | "slot_unavailable";
@@ -55,6 +56,12 @@ export async function createBookingForUser(input: CreateBookingInput): Promise<C
   });
   if (!service) {
     return { ok: false, reason: "service_not_found" };
+  }
+  // Não se cria compromisso FUTURO com um serviço desativado (issue #1). Distinto de
+  // service_not_found (o serviço existe) e coerente com a F004, que já usa service_inactive. NÃO
+  // confundir com a conclusão (F005), onde o snapshot registra o que aconteceu, independente de isActive.
+  if (!service.isActive) {
+    return { ok: false, reason: "service_inactive" };
   }
 
   // FR-006: não aceitar agendamento no passado.
