@@ -276,7 +276,7 @@ serviços de A não mostram B.
 
 ## Phase 9: Navegação (cross-cutting — gap do mapa)
 
-- [ ] T041 Ajustar `src/server/auth/session.ts` (`getNavSession`) e `src/components/site-header.tsx`:
+- [X] T041 Ajustar `src/server/auth/session.ts` (`getNavSession`) e `src/components/site-header.tsx`:
   `isOwner` deixa de ler `User.role` e passa a consultar **membership** (≥1 vínculo OWNER via
   `BusinessMember`); adicionar link da área **/admin** visível **só** para `User.role === ADMIN`.
   Visibilidade é conveniência; a barreira é `requireOwner`/`requireAdmin`. (FR-013/FR-004, US1/US3)
