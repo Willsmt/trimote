@@ -9,6 +9,8 @@ import { prisma } from "@/server/db/client";
 export interface MyBooking {
   id: string;
   serviceName: string;
+  /** Nome do negócio (007, US5): a conta do cliente é global; cada agendamento identifica seu negócio. */
+  businessName: string;
   startsAt: Date;
   endsAt: Date;
   status: BookingStatus;
@@ -24,12 +26,14 @@ export async function listBookingsForUser(userId: string): Promise<MyBooking[]> 
       endsAt: true,
       status: true,
       service: { select: { name: true } },
+      business: { select: { name: true } },
     },
   });
 
   return bookings.map((booking) => ({
     id: booking.id,
     serviceName: booking.service.name,
+    businessName: booking.business.name,
     startsAt: booking.startsAt,
     endsAt: booking.endsAt,
     status: booking.status,

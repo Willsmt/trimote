@@ -16,6 +16,7 @@ export default async function MyBookingsPage() {
   const items = bookings.map((booking) => ({
     id: booking.id,
     serviceName: booking.serviceName,
+    businessName: booking.businessName,
     startsAtIso: booking.startsAt.toISOString(),
     endsAtIso: booking.endsAt.toISOString(),
     status: booking.status,

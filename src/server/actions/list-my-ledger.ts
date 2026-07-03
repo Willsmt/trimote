@@ -16,6 +16,7 @@ export interface ClientHistoryRowDTO {
   occurredAtIso: string;
   description: string;
   amount: string;
+  businessName: string;
   items: { description: string; amount: string }[];
 }
 
@@ -50,6 +51,7 @@ export async function listMyLedger(input: {
       occurredAtIso: r.occurredAt.toISOString(),
       description: r.description,
       amount: r.amount.toString(),
+      businessName: r.businessName,
       items: r.items.map((it) => ({ description: it.description, amount: it.amount.toString() })),
     })),
     nextCursor: result.nextCursor

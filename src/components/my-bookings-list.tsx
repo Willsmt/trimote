@@ -9,6 +9,7 @@ import { cancelBooking } from "@/server/actions/cancel-booking";
 interface BookingItem {
   id: string;
   serviceName: string;
+  businessName: string;
   startsAtIso: string;
   endsAtIso: string;
   status: "ACTIVE" | "CANCELLED" | "COMPLETED";
@@ -67,7 +68,7 @@ export function MyBookingsList({ items }: { items: BookingItem[] }) {
             className="flex items-center justify-between rounded border border-neutral-300 p-3"
           >
             <div>
-              <p className="font-medium">{item.serviceName}</p>
+              <p className="font-medium">{item.serviceName} · {item.businessName}</p>
               <p className="text-sm text-neutral-500">
                 {formatRange(item.startsAtIso, item.endsAtIso)}
               </p>

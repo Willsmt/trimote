@@ -259,16 +259,16 @@ serviços de A não mostram B.
 
 ### Tests (test-first) ⚠️
 
-- [ ] T038 [P] [US5] `tests/integration/multitenancy/client-global.test.ts` (deve FALHAR): cliente com
+- [X] T038 [P] [US5] `tests/integration/multitenancy/client-global.test.ts` (deve FALHAR): cliente com
   itens em 2 negócios vê os dois em `client-history` (e bookings), cada item com `business.name`;
   conta única (sem filtro por negócio). (SC-009/FR-021)
 
 ### Implementation
 
-- [ ] T039 [US5] Incluir `business: { name }` no `select`/DTO de `src/server/ledger/client-history.ts`
+- [X] T039 [US5] Incluir `business: { name }` no `select`/DTO de `src/server/ledger/client-history.ts`
   (e na listagem de bookings do cliente); UI de `src/app/my-spending/**` e `src/app/my-bookings/**`
   exibe o **nome do negócio** por item. Sem mudança de filtro (cliente global). (FR-021, US5)
-- [ ] T040 [US5] Rodar `client-global.test.ts` até **verde**.
+- [X] T040 [US5] Rodar `client-global.test.ts` até **verde**.
 
 **Checkpoint**: cliente único enxerga tudo, rotulado.
 

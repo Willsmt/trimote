@@ -27,6 +27,7 @@ export default async function MySpendingPage() {
       occurredAtIso: r.occurredAt.toISOString(),
       description: r.description,
       amount: r.amount.toString(),
+      businessName: r.businessName,
       items: r.items.map((it) => ({ description: it.description, amount: it.amount.toString() })),
     })),
     nextCursor: first.nextCursor
