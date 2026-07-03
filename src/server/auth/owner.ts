@@ -15,11 +15,19 @@ export class ForbiddenError extends Error {
   }
 }
 
-/** O usuário é dono de VÁRIOS negócios e ainda não escolheu o ativo (a UI mostra o seletor). */
+/**
+ * O usuário é dono de VÁRIOS negócios e ainda não escolheu o ativo. NÃO é falha de aplicação: é um
+ * ESTADO DE UI. Continua sendo LANÇADO (as Server Actions dependem disso — não têm superfície para
+ * renderizar um seletor e não podem operar sem negócio ativo), mas carrega as `options` (já
+ * computadas por resolveActiveBusiness) para que as PÁGINAS de dono capturem e renderizem a tela de
+ * seleção em vez de reconsultar o banco.
+ */
 export class NeedsBusinessSelectionError extends Error {
-  constructor(message = "Selecione o negócio ativo.") {
+  readonly options: { businessId: string; name: string }[];
+  constructor(options: { businessId: string; name: string }[] = [], message = "Selecione o negócio ativo.") {
     super(message);
     this.name = "NeedsBusinessSelectionError";
+    this.options = options;
   }
 }
 
@@ -43,7 +51,7 @@ export async function requireOwner(): Promise<{
     return { user: { id: user.id }, businessId: active.businessId, timeZone: active.timeZone };
   }
   if (active.state === "needs_selection") {
-    throw new NeedsBusinessSelectionError();
+    throw new NeedsBusinessSelectionError(active.options);
   }
   // empty: não é membro OWNER de nenhum negócio (inclui CLIENT e ADMIN-sem-vínculo — FR-010).
   throw new ForbiddenError();
