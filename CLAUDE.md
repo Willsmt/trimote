@@ -1,9 +1,26 @@
 <!-- SPECKIT START -->
 For additional context about technologies to be used, project structure,
 shell commands, and other important information, read the current plan:
-`specs/006-financial-reports/plan.md`
+`specs/007-multi-tenancy/plan.md`
 
-Active feature: 006-financial-reports — financeiro: balancete e histórico. LEITURA PURA sobre o razão
+Active feature: 007-multi-tenancy — negócios, donos e administração. Transforma o Trimote de barbearia
+única em plataforma multi-tenant. DUAS migrations em ordem: (1) RENAME PURO Barbershop→Business,
+BarbershopService→Service, barbershopId→businessId em todas as tabelas + coluna segment (SQL
+hand-edited via --create-only com ALTER TABLE RENAME — preserva dados/indices/exclusion constraint;
+o Prisma gerado ingenuamente faria DROP+CREATE), zero lógica; (2) FUNCIONAL: Role += ADMIN,
+BusinessMember (N:N, @@unique[userId,businessId], createdBy auditado, enum BusinessRole nasce só com
+OWNER), Business.slug @unique, Session.activeBusinessId, backfill (negócio existente ganha slug, OWNER
+atual ganha membership, willmarthins vira ADMIN via seed). GATE entre as etapas: pg_constraint prova
+booking_no_overlap por businessId + 139 testes verdes. Anti-escalação 5 camadas: sem caminho público
+p/ escrever User.role/BusinessMember; requireAdmin (User.role do banco) vs requireOwner (valida
+membership do negócio ATIVO); ADMIN só promove a OWNER; businessId NUNCA do input (deriva de
+getActiveBusiness = Session.activeBusinessId revalidado por request); ADMIN não opera negócios de
+terceiros. OWNER sai da autoridade do Role global (posse vive em BusinessMember; valor de enum
+permanece por custo de migração). Novo: /admin, /b/[slug] (notFound se invalido), seletor de negócio
+ativo, rótulo de negócio em /my-bookings e /my-spending. Regressão dos 139 é critério de DESIGN.
+Fora de escopo: STAFF real, visual, marketplace, cobrança, multi-vertical, edição de slug.
+
+Previous feature: 006-financial-reports — financeiro: balancete e histórico. LEITURA PURA sobre o razão
 da F005 (nenhuma migração, nenhuma entidade nova, nenhum write path). OWNER vê o caixa por período
 (entradas/saídas/saldo) + breakdown por forma de pagamento e por categoria (US1/US2), e navega o razão
 paginado por keyset com filtros combináveis (US3); cada linha ativa oferece inativar reutilizando o
