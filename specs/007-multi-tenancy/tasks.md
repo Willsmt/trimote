@@ -285,10 +285,10 @@ serviços de A não mostram B.
 
 ## Phase 10: Polish & Cross-Cutting
 
-- [ ] T042 [P] README: documentar multi-tenancy (negócio/serviço/membership), **bootstrap do 1º ADMIN**,
+- [X] T042 [P] README: documentar multi-tenancy (negócio/serviço/membership), **bootstrap do 1º ADMIN**,
   regras de slug (regex/reservados/imutável), seletor de negócio ativo e `/b/[slug]`. (FR-020/FR-023,
   Princípio V)
-- [ ] T043 Regressão final: `npm test` (**139 + novos** verdes; 001–006 intactas) e `npx tsc --noEmit`
+- [X] T043 Regressão final: `npm test` (**139 + novos** verdes; 001–006 intactas) e `npx tsc --noEmit`
   limpo; `git diff` confirma que a onda 1 foi só rename e que nenhum caminho público escreve
   `User.role`/`BusinessMember`. (FR-025/SC-004/SC-006)
 - [ ] T044 Smoke manual (roteiro do `quickstart.md`): como ADMIN criar 2 negócios e promover donos;
