@@ -18,7 +18,7 @@ import { listLedger } from "@/server/actions/list-ledger";
 import { getCashSummaryForOwner } from "@/server/ledger/cash-summary";
 import { deactivateLedgerEntryForOwner } from "@/server/ledger/deactivate-ledger-entry";
 import { BUSINESS_ID, SP, slotAt, seedLedgerEntry, upsertUsers, cleanupLedgerAndBookings } from "./fixtures";
-import { SERVICE_CORTE, seedBooking } from "../ledger/fixtures";
+import { SERVICE_CORTE, seedBooking, ensureOwnerMembership } from "../ledger/fixtures";
 
 // Integração (Postgres) do razão paginado (US3) + consistência com o caixa (US1) e autorização da
 // action. Ano 2032 isola do restante (a listagem é por barbearia). Keyset (occurredAt, id) desc,
@@ -38,6 +38,7 @@ beforeAll(async () => {
     { id: OWNER_ID, email: "list-owner@example.com", role: "OWNER" },
     { id: CLIENT_ID, email: "list-client@example.com", role: "CLIENT" },
   ]);
+  await ensureOwnerMembership(OWNER_ID);
 });
 
 afterEach(async () => {

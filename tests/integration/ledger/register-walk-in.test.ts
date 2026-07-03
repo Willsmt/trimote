@@ -15,7 +15,7 @@ import { prisma } from "@/server/db/client";
 import { ForbiddenError } from "@/server/auth/owner";
 import { registerWalkInForOwner } from "@/server/ledger/register-walk-in";
 import { registerWalkIn } from "@/server/actions/register-walk-in";
-import { SERVICE_CORTE, SERVICE_BARBA, upsertUsers, cleanupLedgerAndBookings } from "./fixtures";
+import { SERVICE_CORTE, SERVICE_BARBA, upsertUsers, cleanupLedgerAndBookings, BUSINESS_ID, ensureOwnerMembership } from "./fixtures";
 
 // Integração (Postgres) do atendimento avulso (US3): 3 modos de identificação, extras, sem tocar a
 // agenda, occurredAt/paymentMethod e recusas (FR-006..009/012/013/017, SC-005/SC-006/SC-009).
@@ -32,6 +32,7 @@ beforeAll(async () => {
     { id: OWNER_ID, email: "wi-owner@example.com", role: "OWNER" },
     { id: CLIENT_ID, email: "wi-client@example.com", role: "CLIENT" },
   ]);
+  await ensureOwnerMembership(OWNER_ID);
 });
 
 afterEach(async () => {
@@ -48,7 +49,7 @@ afterAll(async () => {
 describe("registerWalkInForOwner (core)", () => {
   it("cliente cadastrado: INCOME/WALK_IN sem bookingId, vinculado ao clientId (SC-006)", async () => {
     const result = await registerWalkInForOwner({
-      ownerId: OWNER_ID,
+      businessId: BUSINESS_ID, ownerId: OWNER_ID,
       clientId: CLIENT_ID,
       items: [{ serviceId: SERVICE_CORTE, description: "Corte" }],
     });
@@ -71,7 +72,7 @@ describe("registerWalkInForOwner (core)", () => {
 
   it("nome livre: registra clientName sem clientId (SC-006)", async () => {
     const result = await registerWalkInForOwner({
-      ownerId: OWNER_ID,
+      businessId: BUSINESS_ID, ownerId: OWNER_ID,
       clientName: "Fulano Avulso",
       items: [{ serviceId: SERVICE_CORTE, description: "Corte" }],
     });
@@ -84,7 +85,7 @@ describe("registerWalkInForOwner (core)", () => {
 
   it("anonimo: sem clientId e sem clientName (SC-006)", async () => {
     const result = await registerWalkInForOwner({
-      ownerId: OWNER_ID,
+      businessId: BUSINESS_ID, ownerId: OWNER_ID,
       items: [{ serviceId: SERVICE_CORTE, description: "Corte" }],
     });
     expect(result.ok).toBe(true);
@@ -96,7 +97,7 @@ describe("registerWalkInForOwner (core)", () => {
 
   it("nao toca a agenda: nenhum Booking e criado (SC-006)", async () => {
     await registerWalkInForOwner({
-      ownerId: OWNER_ID,
+      businessId: BUSINESS_ID, ownerId: OWNER_ID,
       clientId: CLIENT_ID,
       items: [{ serviceId: SERVICE_CORTE, description: "Corte" }],
     });
@@ -105,7 +106,7 @@ describe("registerWalkInForOwner (core)", () => {
 
   it("extras: item de servico (snapshot) + item manual; amount == soma (SC-005)", async () => {
     const result = await registerWalkInForOwner({
-      ownerId: OWNER_ID,
+      businessId: BUSINESS_ID, ownerId: OWNER_ID,
       items: [
         { serviceId: SERVICE_CORTE, description: "Corte" }, // 40.00
         { serviceId: SERVICE_BARBA, description: "Barba" }, // 30.00
@@ -125,7 +126,7 @@ describe("registerWalkInForOwner (core)", () => {
   it("occurredAt e paymentMethod: persistidos como informados, sem inferir origin (FR-012/013/017)", async () => {
     const occurredAt = new Date("2026-02-10T09:00:00.000Z");
     const result = await registerWalkInForOwner({
-      ownerId: OWNER_ID,
+      businessId: BUSINESS_ID, ownerId: OWNER_ID,
       items: [{ serviceId: SERVICE_CORTE, description: "Corte" }],
       occurredAt,
       paymentMethod: "CASH",
@@ -139,13 +140,13 @@ describe("registerWalkInForOwner (core)", () => {
   });
 
   it("sem itens -> no_items", async () => {
-    const result = await registerWalkInForOwner({ ownerId: OWNER_ID, items: [] });
+    const result = await registerWalkInForOwner({ businessId: BUSINESS_ID, ownerId: OWNER_ID, items: [] });
     expect(result).toEqual({ ok: false, reason: "no_items" });
   });
 
   it("item manual com amount <= 0 -> invalid_amount", async () => {
     const result = await registerWalkInForOwner({
-      ownerId: OWNER_ID,
+      businessId: BUSINESS_ID, ownerId: OWNER_ID,
       items: [{ description: "Zero", amount: 0 }],
     });
     expect(result).toEqual({ ok: false, reason: "invalid_amount" });
@@ -153,7 +154,7 @@ describe("registerWalkInForOwner (core)", () => {
 
   it("item manual com description vazia -> invalid_description", async () => {
     const result = await registerWalkInForOwner({
-      ownerId: OWNER_ID,
+      businessId: BUSINESS_ID, ownerId: OWNER_ID,
       items: [{ description: "", amount: 25 }],
     });
     expect(result).toEqual({ ok: false, reason: "invalid_description" });
@@ -161,7 +162,7 @@ describe("registerWalkInForOwner (core)", () => {
 
   it("item manual com description so espacos -> invalid_description", async () => {
     const result = await registerWalkInForOwner({
-      ownerId: OWNER_ID,
+      businessId: BUSINESS_ID, ownerId: OWNER_ID,
       items: [{ description: "   ", amount: 25 }],
     });
     expect(result).toEqual({ ok: false, reason: "invalid_description" });
@@ -169,7 +170,7 @@ describe("registerWalkInForOwner (core)", () => {
 
   it("item manual com description valida com espacos -> persiste com trim", async () => {
     const result = await registerWalkInForOwner({
-      ownerId: OWNER_ID,
+      businessId: BUSINESS_ID, ownerId: OWNER_ID,
       items: [{ description: "  Produto  ", amount: 25 }],
     });
     expect(result.ok).toBe(true);
@@ -184,7 +185,7 @@ describe("registerWalkInForOwner (core)", () => {
 
   it("item de servico inexistente -> service_not_found", async () => {
     const result = await registerWalkInForOwner({
-      ownerId: OWNER_ID,
+      businessId: BUSINESS_ID, ownerId: OWNER_ID,
       items: [{ serviceId: "nope", description: "Fantasma" }],
     });
     expect(result).toEqual({ ok: false, reason: "service_not_found" });
@@ -192,7 +193,7 @@ describe("registerWalkInForOwner (core)", () => {
 
   it("clientId inexistente -> client_not_found", async () => {
     const result = await registerWalkInForOwner({
-      ownerId: OWNER_ID,
+      businessId: BUSINESS_ID, ownerId: OWNER_ID,
       clientId: "client-does-not-exist",
       items: [{ serviceId: SERVICE_CORTE, description: "Corte" }],
     });

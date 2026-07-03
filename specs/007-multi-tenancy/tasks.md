@@ -167,31 +167,31 @@ serviços de A não mostram B.
 
 ### Tests (test-first — RED antes) ⚠️
 
-- [ ] T024 [P] [US3] `tests/integration/multitenancy/guards.test.ts` (deve FALHAR): `requireOwner`
+- [X] T024 [P] [US3] `tests/integration/multitenancy/guards.test.ts` (deve FALHAR): `requireOwner`
   admite membro OWNER do negócio ativo e **recusa não-membro**; deriva `businessId` do vínculo (não de
   input). **Inclui o caso de segurança da camada 5**: um usuário `Role=ADMIN` **sem membership** →
   `requireOwner` **recusa** (ADMIN não opera negócios de terceiros: 0 acesso a caixa/ledger/painel).
   (SC-002/FR-010/FR-013/FR-014/FR-015)
-- [ ] T025 [P] [US3] `tests/integration/multitenancy/isolation.test.ts` (deve FALHAR — **lógica
+- [X] T025 [P] [US3] `tests/integration/multitenancy/isolation.test.ts` (deve FALHAR — **lógica
   crítica**): booking de A no **mesmo horário** de B **não** conflita (exclusion por business);
   `getCashSummaryForOwner`/`listLedgerForOwner` de A **não** somam/listam `LedgerEntry` de B; serviços
   de A não listam os de B. (SC-001/SC-008/FR-015/FR-016)
 
 ### Implementation
 
-- [ ] T026 [US3] `src/server/business/active-business.ts`: `getActiveBusiness(userId)` → `active`
+- [X] T026 [US3] `src/server/business/active-business.ts`: `getActiveBusiness(userId)` → `active`
   (1 negócio auto; N com `Session.activeBusinessId` válido) / `needs_selection` / `empty`; **revalida
   membership por request**. (FR-018, D5, US2/US3)
-- [ ] T027 [US3] Redefinir `src/server/auth/owner.ts`: `requireOwner()` = sessão + `getActiveBusiness`
+- [X] T027 [US3] Redefinir `src/server/auth/owner.ts`: `requireOwner()` = sessão + `getActiveBusiness`
   + confirma membro OWNER; retorna `{ user, businessId, timeZone }`. Remove `assertOwnerRole` (lia
   `User.role`). (FR-013, D9)
-- [ ] T028 [US3] Re-origem do `businessId` nas **actions de dono**: trocar `getOwnerBarbershopId()` /
+- [X] T028 [US3] Re-origem do `businessId` nas **actions de dono**: trocar `getOwnerBarbershopId()` /
   `business.findFirstOrThrow()` por `requireOwner()` em `create-service`, `list-services-for-owner`,
   `set-opening-hours`, `list-opening-hours-for-owner`, `close-day`, `list-ledger`, e nas pages
   `owner/finance/page.tsx`/`owner/ledger/page.tsx`; `register-expense`/`register-walk-in` recebem
   `businessId` da action. **Remover** `src/server/owner/barbershop.ts` (`getOwnerBarbershopId`).
   (FR-014/FR-017, SC-002)
-- [ ] T029 [US3] Rodar `guards.test.ts`/`isolation.test.ts` até **verde**; confirmar 0% de derivação
+- [X] T029 [US3] Rodar `guards.test.ts`/`isolation.test.ts` até **verde**; confirmar 0% de derivação
   do input. (SC-001/SC-002)
 
 **Checkpoint**: isolamento por negócio provado (não-vazamento A×B).

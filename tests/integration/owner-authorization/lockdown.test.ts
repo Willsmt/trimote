@@ -44,6 +44,12 @@ beforeAll(async () => {
     update: { role: "OWNER" },
     create: { id: OWNER_ID, email: "lockdown-owner@example.com", role: "OWNER" },
   });
+  // F007: requireOwner é por membership — o dono de teste precisa de um vínculo ao negócio demo.
+  await prisma.businessMember.upsert({
+    where: { userId_businessId: { userId: OWNER_ID, businessId: BUSINESS_ID } },
+    update: {},
+    create: { userId: OWNER_ID, businessId: BUSINESS_ID, role: "OWNER", createdBy: OWNER_ID },
+  });
 });
 
 beforeEach(async () => {

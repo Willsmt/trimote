@@ -21,7 +21,8 @@ export async function registerExpense(input: {
 }): Promise<RegisterExpenseResult> {
   const owner = await requireOwner();
   return registerExpenseForOwner({
-    ownerId: owner.id,
+    businessId: owner.businessId,
+    ownerId: owner.user.id,
     amount: input.amount,
     description: input.description,
     category: input.category,

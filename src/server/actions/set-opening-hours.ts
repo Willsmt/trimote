@@ -1,7 +1,6 @@
 "use server";
 
 import { requireOwner } from "@/server/auth/owner";
-import { getOwnerBusinessId } from "@/server/owner/business";
 import {
   setOpeningHours as setOpeningHoursCore,
   type OpeningHoursMutationResult,
@@ -13,7 +12,6 @@ export async function setOpeningHours(input: {
   opensAtMinutes: number;
   closesAtMinutes: number;
 }): Promise<OpeningHoursMutationResult> {
-  await requireOwner();
-  const businessId = await getOwnerBusinessId();
+  const { businessId } = await requireOwner();
   return setOpeningHoursCore({ businessId, ...input });
 }

@@ -16,7 +16,7 @@ import { completeBookingForOwner } from "@/server/ledger/complete-booking";
 import { registerWalkInForOwner } from "@/server/ledger/register-walk-in";
 import { deactivateLedgerEntryForOwner } from "@/server/ledger/deactivate-ledger-entry";
 import { deactivateLedgerEntry } from "@/server/actions/deactivate-ledger-entry";
-import { SERVICE_CORTE, seedBooking, slotAt, upsertUsers, cleanupLedgerAndBookings } from "./fixtures";
+import { SERVICE_CORTE, seedBooking, slotAt, upsertUsers, cleanupLedgerAndBookings, BUSINESS_ID, ensureOwnerMembership } from "./fixtures";
 
 // Integração (Postgres) do soft delete (US5): correção sem apagar, sem reabrir booking, idempotência
 // e autorização (FR-015/FR-016, SC-008/SC-009).
@@ -30,6 +30,7 @@ function actAs(userId: string | null) {
 
 async function newWalkInEntryId(): Promise<string> {
   const result = await registerWalkInForOwner({
+    businessId: BUSINESS_ID,
     ownerId: OWNER_ID,
     items: [{ serviceId: SERVICE_CORTE, description: "Corte" }],
   });
@@ -42,6 +43,7 @@ beforeAll(async () => {
     { id: OWNER_ID, email: "del-owner@example.com", role: "OWNER" },
     { id: CLIENT_ID, email: "del-client@example.com", role: "CLIENT" },
   ]);
+  await ensureOwnerMembership(OWNER_ID);
 });
 
 afterEach(async () => {

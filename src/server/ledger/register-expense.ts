@@ -13,6 +13,8 @@ import { normalizeDescription } from "./ledger-items";
  */
 
 export interface RegisterExpenseInput {
+  /** Negócio ativo do dono (007) — derivado do vínculo da sessão pela action, NUNCA do input. */
+  businessId: string;
   /** OWNER que registra (createdBy — auditoria). */
   ownerId: string;
   /** Valor da despesa; sempre > 0 (o sinal de saída vem do type EXPENSE — FR-011). */
@@ -44,13 +46,12 @@ export async function registerExpenseForOwner(
     return { ok: false, reason: "invalid_description" };
   }
 
-  // Barbearia única do MVP (D8) — despesa não tem serviço de onde derivar o businessId.
-  const shop = await prisma.business.findFirstOrThrow({ select: { id: true } });
+  // Negócio ativo (007): a despesa é registrada no negócio do dono da sessão.
   const occurredAt = input.occurredAt ?? new Date();
 
   const entry = await prisma.ledgerEntry.create({
     data: {
-      businessId: shop.id,
+      businessId: input.businessId,
       type: "EXPENSE",
       origin: "EXPENSE",
       amount,

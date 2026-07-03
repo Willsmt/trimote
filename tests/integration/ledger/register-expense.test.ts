@@ -15,7 +15,7 @@ import { prisma } from "@/server/db/client";
 import { ForbiddenError } from "@/server/auth/owner";
 import { registerExpenseForOwner } from "@/server/ledger/register-expense";
 import { registerExpense } from "@/server/actions/register-expense";
-import { upsertUsers, cleanupLedgerAndBookings } from "./fixtures";
+import { upsertUsers, cleanupLedgerAndBookings, BUSINESS_ID, ensureOwnerMembership } from "./fixtures";
 
 // Integração (Postgres) da despesa (US4): EXPENSE/EXPENSE sem itens e sem cliente, paymentMethod,
 // occurredAt e recusa de valor (FR-010/011/012/013/017, SC-007/SC-009).
@@ -32,6 +32,7 @@ beforeAll(async () => {
     { id: OWNER_ID, email: "exp-owner@example.com", role: "OWNER" },
     { id: CLIENT_ID, email: "exp-client@example.com", role: "CLIENT" },
   ]);
+  await ensureOwnerMembership(OWNER_ID);
 });
 
 afterEach(async () => {
@@ -48,7 +49,7 @@ afterAll(async () => {
 describe("registerExpenseForOwner (core)", () => {
   it("EXPENSE/EXPENSE sem itens e sem cliente (SC-007)", async () => {
     const result = await registerExpenseForOwner({
-      ownerId: OWNER_ID,
+      businessId: BUSINESS_ID, ownerId: OWNER_ID,
       amount: 100,
       description: "Aluguel",
       category: "fixo",
@@ -74,7 +75,7 @@ describe("registerExpenseForOwner (core)", () => {
   it("occurredAt e paymentMethod persistidos como informados, sem inferir origin (FR-012/013/017)", async () => {
     const occurredAt = new Date("2026-03-05T18:30:00.000Z");
     const withPm = await registerExpenseForOwner({
-      ownerId: OWNER_ID,
+      businessId: BUSINESS_ID, ownerId: OWNER_ID,
       amount: 50,
       description: "Produtos",
       occurredAt,
@@ -89,7 +90,7 @@ describe("registerExpenseForOwner (core)", () => {
     }
 
     const withoutPm = await registerExpenseForOwner({
-      ownerId: OWNER_ID,
+      businessId: BUSINESS_ID, ownerId: OWNER_ID,
       amount: 20,
       description: "Cafe",
     });
@@ -101,25 +102,25 @@ describe("registerExpenseForOwner (core)", () => {
   });
 
   it("amount <= 0 -> invalid_amount (zero e negativo)", async () => {
-    const zero = await registerExpenseForOwner({ ownerId: OWNER_ID, amount: 0, description: "x" });
+    const zero = await registerExpenseForOwner({ businessId: BUSINESS_ID, ownerId: OWNER_ID, amount: 0, description: "x" });
     expect(zero).toEqual({ ok: false, reason: "invalid_amount" });
-    const neg = await registerExpenseForOwner({ ownerId: OWNER_ID, amount: -5, description: "x" });
+    const neg = await registerExpenseForOwner({ businessId: BUSINESS_ID, ownerId: OWNER_ID, amount: -5, description: "x" });
     expect(neg).toEqual({ ok: false, reason: "invalid_amount" });
   });
 
   it("description vazia -> invalid_description", async () => {
-    const result = await registerExpenseForOwner({ ownerId: OWNER_ID, amount: 100, description: "" });
+    const result = await registerExpenseForOwner({ businessId: BUSINESS_ID, ownerId: OWNER_ID, amount: 100, description: "" });
     expect(result).toEqual({ ok: false, reason: "invalid_description" });
   });
 
   it("description so com espacos -> invalid_description", async () => {
-    const result = await registerExpenseForOwner({ ownerId: OWNER_ID, amount: 100, description: "   " });
+    const result = await registerExpenseForOwner({ businessId: BUSINESS_ID, ownerId: OWNER_ID, amount: 100, description: "   " });
     expect(result).toEqual({ ok: false, reason: "invalid_description" });
   });
 
   it("description valida com espacos nas pontas -> persiste com trim", async () => {
     const result = await registerExpenseForOwner({
-      ownerId: OWNER_ID,
+      businessId: BUSINESS_ID, ownerId: OWNER_ID,
       amount: 100,
       description: "  Aluguel  ",
     });

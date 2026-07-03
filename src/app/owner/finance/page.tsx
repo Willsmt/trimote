@@ -46,16 +46,17 @@ export default async function OwnerFinancePage({
 }: {
   searchParams: Promise<{ g?: string; d?: string }>;
 }) {
+  let businessId: string;
+  let timeZone: string;
   try {
-    await requireOwner();
+    const owner = await requireOwner();
+    businessId = owner.businessId;
+    timeZone = owner.timeZone;
   } catch (error) {
     if (error instanceof UnauthorizedError) redirect("/api/auth/signin?callbackUrl=/owner/finance");
     if (error instanceof ForbiddenError) redirect("/");
     throw error;
   }
-
-  const business = await prisma.business.findFirstOrThrow({ select: { id: true, timezone: true } });
-  const timeZone = business.timezone;
 
   const sp = await searchParams;
   const granularity = parseGranularity(sp.g);
@@ -64,8 +65,8 @@ export default async function OwnerFinancePage({
   const period = { granularity, referenceLocalDate };
 
   const [summary, ledgerFirst] = await Promise.all([
-    getCashSummaryForOwner({ businessId: business.id, timeZone, granularity, referenceLocalDate }),
-    listLedgerForOwner({ businessId: business.id, timeZone, filter: { period } }),
+    getCashSummaryForOwner({ businessId, timeZone, granularity, referenceLocalDate }),
+    listLedgerForOwner({ businessId, timeZone, filter: { period } }),
   ]);
 
   // Serializa a 1ª página do razão para a ilha (Decimal→string, datas→ISO — D5).

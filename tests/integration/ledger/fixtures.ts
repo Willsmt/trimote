@@ -13,6 +13,18 @@ import { localDateTimeToUtc } from "@/domain/time";
 export const SP = "America/Sao_Paulo";
 export const BUSINESS_ID = "business-trimote";
 
+/**
+ * F007: com requireOwner baseado em MEMBERSHIP, um "owner" de teste precisa de um vínculo OWNER ao
+ * negócio demo para que as Server Actions de dono passem (1 vínculo → negócio ativo auto-selecionado).
+ */
+export async function ensureOwnerMembership(userId: string): Promise<void> {
+  await prisma.businessMember.upsert({
+    where: { userId_businessId: { userId, businessId: BUSINESS_ID } },
+    update: {},
+    create: { userId, businessId: BUSINESS_ID, role: "OWNER", createdBy: userId },
+  });
+}
+
 // Serviços semeados (ver prisma/seed.ts).
 export const SERVICE_CORTE = "service-corte"; // 30min, 40.00
 export const SERVICE_BARBA = "service-barba"; // 30min, 30.00

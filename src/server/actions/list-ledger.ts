@@ -77,12 +77,11 @@ export async function listLedger(input: {
   filter?: LedgerListFilter;
   cursor?: { occurredAtIso: string; id: string };
 }): Promise<LedgerPageDTO> {
-  await requireOwner();
-  const business = await prisma.business.findFirstOrThrow({ select: { id: true, timezone: true } });
+  const { businessId, timeZone } = await requireOwner();
 
   const result = await listLedgerForOwner({
-    businessId: business.id,
-    timeZone: business.timezone,
+    businessId,
+    timeZone,
     filter: sanitizeFilter(input.filter),
     cursor: parseCursor(input.cursor),
   });

@@ -23,8 +23,7 @@ import {
   seedBooking,
   slotAt,
   upsertUsers,
-  cleanupLedgerAndBookings,
-} from "./fixtures";
+  cleanupLedgerAndBookings, ensureOwnerMembership } from "./fixtures";
 
 // Integração (Postgres) da conclusão de atendimento (US1): snapshot, atomicidade, estado terminal,
 // occurredAt, paymentMethod e autorização (SC-001/002/003/009, FR-001..004/012/013/017/019).
@@ -45,6 +44,7 @@ beforeAll(async () => {
     { id: OWNER_ID, email: "cb-owner@example.com", role: "OWNER" },
     { id: CLIENT_ID, email: "cb-client@example.com", role: "CLIENT" },
   ]);
+  await ensureOwnerMembership(OWNER_ID);
   const svc = await prisma.service.create({
     data: {
       businessId: BUSINESS_ID,

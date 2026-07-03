@@ -2,7 +2,6 @@ import { redirect } from "next/navigation";
 
 import { requireOwner, ForbiddenError } from "@/server/auth/owner";
 import { UnauthorizedError } from "@/server/auth/session";
-import { getOwnerBusinessId } from "@/server/owner/business";
 import { prisma } from "@/server/db/client";
 import { LedgerManager } from "@/components/owner/ledger-manager";
 
@@ -11,8 +10,9 @@ export const dynamic = "force-dynamic";
 // Guarda de dono no servidor (FR-018): visitante vai ao login; cliente comum é recusado. A captura
 // financeira (concluir/walk-in/despesa/inativar) só é oferecida ao OWNER; as Server Actions revalidam.
 export default async function OwnerLedgerPage() {
+  let businessId: string;
   try {
-    await requireOwner();
+    ({ businessId } = await requireOwner());
   } catch (error) {
     if (error instanceof UnauthorizedError) {
       redirect("/api/auth/signin?callbackUrl=/owner/ledger");
@@ -22,8 +22,6 @@ export default async function OwnerLedgerPage() {
     }
     throw error;
   }
-
-  const businessId = await getOwnerBusinessId();
 
   // Agenda ativa (para escolher qual atendimento concluir) e serviços ativos (para walk-in/extras).
   // NÃO há relatório/agregação/caixa aqui — isso é F006.

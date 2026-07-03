@@ -7,7 +7,7 @@ import { prisma } from "@/server/db/client";
  * chamam `requireOwner` antes de delegar aqui.
  *
  * A unicidade de nome entre serviços ativos é garantida pelo **índice único parcial** no banco
- * (`businessservice_active_name_key`, WHERE isActive=true). Este core valida a entrada e traduz a
+ * (`service_active_name_key`, WHERE isActive=true). Este core valida a entrada e traduz a
  * violação do índice em uma recusa de negócio `name_taken` — não reimplementa a unicidade na app.
  */
 
@@ -36,10 +36,10 @@ export interface UpdateServiceInput {
 function isActiveNameConflict(error: unknown): boolean {
   if (error instanceof Prisma.PrismaClientKnownRequestError) {
     const text = `${error.code} ${error.message} ${JSON.stringify(error.meta ?? {})}`;
-    return text.includes("businessservice_active_name_key") || text.includes("23505") || error.code === "P2002";
+    return text.includes("service_active_name_key") || text.includes("23505") || error.code === "P2002";
   }
   if (error instanceof Prisma.PrismaClientUnknownRequestError) {
-    return error.message.includes("businessservice_active_name_key") || error.message.includes("23505");
+    return error.message.includes("service_active_name_key") || error.message.includes("23505");
   }
   return false;
 }

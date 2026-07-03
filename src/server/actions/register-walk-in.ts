@@ -22,7 +22,8 @@ export async function registerWalkIn(input: {
 }): Promise<RegisterWalkInResult> {
   const owner = await requireOwner();
   return registerWalkInForOwner({
-    ownerId: owner.id,
+    businessId: owner.businessId,
+    ownerId: owner.user.id,
     items: input.items,
     occurredAt: input.occurredAt ? new Date(input.occurredAt) : undefined,
     paymentMethod: input.paymentMethod,
