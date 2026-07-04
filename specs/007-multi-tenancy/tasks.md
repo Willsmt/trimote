@@ -291,7 +291,7 @@ serviços de A não mostram B.
 - [X] T043 Regressão final: `npm test` (**139 + novos** verdes; 001–006 intactas) e `npx tsc --noEmit`
   limpo; `git diff` confirma que a onda 1 foi só rename e que nenhum caminho público escreve
   `User.role`/`BusinessMember`. (FR-025/SC-004/SC-006)
-- [ ] T044 Smoke manual (roteiro do `quickstart.md`): como ADMIN criar 2 negócios e promover donos;
+- [X] T044 Smoke manual (roteiro do `quickstart.md`): como ADMIN criar 2 negócios e promover donos;
   dono com 2 negócios **trocando** e vendo **caixas separados**; cliente agendando em `/b/slug-a` e
   `/b/slug-b` com a **mesma conta**; `/my-spending` rotulando os dois; tentativas de **acesso cruzado**
   (dono de A → B; CLIENT → /admin) **falhando**. (SC-001..SC-010)
