@@ -3,13 +3,11 @@ import { redirect } from "next/navigation";
 
 import { requireOwner, ForbiddenError, NeedsBusinessSelectionError } from "@/server/auth/owner";
 import { UnauthorizedError } from "@/server/auth/session";
-import { prisma } from "@/server/db/client";
 import { getCashSummaryForOwner } from "@/server/ledger/cash-summary";
 import { listLedgerForOwner } from "@/server/ledger/ledger-list";
 import { todayInZone, shiftPeriod, type Granularity } from "@/domain/time";
 import { CashSummaryView } from "@/components/owner/cash-summary-view";
 import { LedgerBrowser } from "@/components/owner/ledger-browser";
-import { BusinessSwitcher } from "@/components/owner/business-switcher";
 import { BusinessSelectionScreen } from "@/components/owner/business-selection-screen";
 import type { LedgerPageDTO } from "@/server/actions/list-ledger";
 
@@ -50,12 +48,10 @@ export default async function OwnerFinancePage({
 }) {
   let businessId: string;
   let timeZone: string;
-  let userId: string;
   try {
     const owner = await requireOwner();
     businessId = owner.businessId;
     timeZone = owner.timeZone;
-    userId = owner.user.id;
   } catch (error) {
     if (error instanceof UnauthorizedError) redirect("/api/auth/signin?callbackUrl=/owner/finance");
     // needs_selection é ESTADO DE UI (dono de 2+ negócios sem ativo): renderiza o seletor, não explode.
@@ -64,14 +60,7 @@ export default async function OwnerFinancePage({
     throw error;
   }
 
-  // Seletor de negócio ativo (US2): lista os negócios do dono (oculto se 1).
-  const memberships = await prisma.businessMember.findMany({
-    where: { userId, role: "OWNER" },
-    select: { business: { select: { id: true, name: true } } },
-    orderBy: { business: { name: "asc" } },
-  });
-  const ownerBusinesses = memberships.map((m) => m.business);
-
+  // O seletor de negócio ativo (US2) agora vive no layout de dono (src/app/owner/layout.tsx).
   const sp = await searchParams;
   const granularity = parseGranularity(sp.g);
   const referenceLocalDate = parseReference(sp.d, todayInZone(new Date(), timeZone));
@@ -107,7 +96,6 @@ export default async function OwnerFinancePage({
 
   return (
     <main className="mx-auto flex max-w-3xl flex-col gap-6 p-8">
-      <BusinessSwitcher businesses={ownerBusinesses} activeBusinessId={businessId} />
       <header>
         <h1 className="text-2xl font-bold">Balancete</h1>
         <p className="text-sm text-neutral-500">Caixa da barbearia por período (entradas, saídas e saldo).</p>
