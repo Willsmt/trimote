@@ -65,7 +65,7 @@ export async function completeBookingForOwner(
 ): Promise<CompleteBookingResult> {
   const booking = await prisma.booking.findUnique({
     where: { id: input.bookingId },
-    select: { id: true, status: true, barbershopId: true, serviceId: true, userId: true },
+    select: { id: true, status: true, businessId: true, serviceId: true, userId: true },
   });
 
   if (!booking) {
@@ -81,7 +81,7 @@ export async function completeBookingForOwner(
   }
 
   // Snapshot do preço do serviço agendado — SEM filtrar isActive (D5/FR-002).
-  const service = await prisma.barbershopService.findUnique({
+  const service = await prisma.service.findUnique({
     where: { id: booking.serviceId },
     select: { id: true, name: true, price: true },
   });
@@ -96,7 +96,7 @@ export async function completeBookingForOwner(
   // Extras (US2): serviço → snapshot do preço (SEM filtrar isActive); manual → valor informado.
   for (const extra of input.extras ?? []) {
     if (extra.serviceId) {
-      const extraService = await prisma.barbershopService.findUnique({
+      const extraService = await prisma.service.findUnique({
         where: { id: extra.serviceId },
         select: { id: true, name: true, price: true },
       });
@@ -140,7 +140,7 @@ export async function completeBookingForOwner(
     await tx.booking.update({ where: { id: booking.id }, data: { status: "COMPLETED" } });
     return tx.ledgerEntry.create({
       data: {
-        barbershopId: booking.barbershopId,
+        businessId: booking.businessId,
         type: "INCOME",
         origin: "BOOKING",
         amount,

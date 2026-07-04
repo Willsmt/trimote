@@ -2,7 +2,7 @@ import { Prisma, type PaymentMethod } from "@prisma/client";
 
 import { prisma } from "@/server/db/client";
 import {
-  BARBERSHOP_ID,
+  BUSINESS_ID,
   SP,
   slotAt,
   upsertUsers,
@@ -16,7 +16,7 @@ import {
  * inativos e de breakdown sem passar pelos caminhos de escrita da F005.
  */
 
-export { BARBERSHOP_ID, SP, slotAt, upsertUsers, cleanupLedgerAndBookings };
+export { BUSINESS_ID, SP, slotAt, upsertUsers, cleanupLedgerAndBookings };
 
 const D = (v: number | string) => new Prisma.Decimal(v);
 
@@ -41,7 +41,7 @@ export interface SeedLedgerEntryInput {
 export async function seedLedgerEntry(input: SeedLedgerEntryInput): Promise<string> {
   const entry = await prisma.ledgerEntry.create({
     data: {
-      barbershopId: BARBERSHOP_ID,
+      businessId: BUSINESS_ID,
       type: input.type,
       origin: input.origin,
       amount: D(input.amount),

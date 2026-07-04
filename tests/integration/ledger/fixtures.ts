@@ -4,14 +4,26 @@ import { localDateTimeToUtc } from "@/domain/time";
 /**
  * Fixtures compartilhadas dos testes de integração do financeiro (005-financial-ledger).
  *
- * Reusa a barbearia/serviços/expediente já semeados (`prisma db seed`): barbershop-trimote,
+ * Reusa a barbearia/serviços/expediente já semeados (`prisma db seed`): business-trimote,
  * serviços de 30min (Corte/Barba) e 60min (Corte + Barba), expediente seg–sáb 09:00–18:00.
  * Cada arquivo de teste usa usuários e um dia próprios para evitar colisão da exclusion
  * constraint (parcial em ACTIVE) entre arquivos rodando em paralelo.
  */
 
 export const SP = "America/Sao_Paulo";
-export const BARBERSHOP_ID = "barbershop-trimote";
+export const BUSINESS_ID = "business-trimote";
+
+/**
+ * F007: com requireOwner baseado em MEMBERSHIP, um "owner" de teste precisa de um vínculo OWNER ao
+ * negócio demo para que as Server Actions de dono passem (1 vínculo → negócio ativo auto-selecionado).
+ */
+export async function ensureOwnerMembership(userId: string): Promise<void> {
+  await prisma.businessMember.upsert({
+    where: { userId_businessId: { userId, businessId: BUSINESS_ID } },
+    update: {},
+    create: { userId, businessId: BUSINESS_ID, role: "OWNER", createdBy: userId },
+  });
+}
 
 // Serviços semeados (ver prisma/seed.ts).
 export const SERVICE_CORTE = "service-corte"; // 30min, 40.00
@@ -48,15 +60,15 @@ export async function seedBooking(input: {
   startsAt: Date;
   status?: "ACTIVE" | "CANCELLED" | "COMPLETED";
 }): Promise<string> {
-  const service = await prisma.barbershopService.findUniqueOrThrow({
+  const service = await prisma.service.findUniqueOrThrow({
     where: { id: input.serviceId },
-    select: { barbershopId: true, durationMinutes: true },
+    select: { businessId: true, durationMinutes: true },
   });
   const endsAt = new Date(input.startsAt.getTime() + service.durationMinutes * 60_000);
 
   const booking = await prisma.booking.create({
     data: {
-      barbershopId: service.barbershopId,
+      businessId: service.businessId,
       userId: input.userId,
       serviceId: input.serviceId,
       startsAt: input.startsAt,

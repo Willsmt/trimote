@@ -18,13 +18,12 @@ import { ForbiddenError } from "@/server/auth/owner";
 import { completeBookingForOwner } from "@/server/ledger/complete-booking";
 import { completeBooking } from "@/server/actions/complete-booking";
 import {
-  BARBERSHOP_ID,
+  BUSINESS_ID,
   SERVICE_CORTE,
   seedBooking,
   slotAt,
   upsertUsers,
-  cleanupLedgerAndBookings,
-} from "./fixtures";
+  cleanupLedgerAndBookings, ensureOwnerMembership } from "./fixtures";
 
 // Integração (Postgres) da conclusão de atendimento (US1): snapshot, atomicidade, estado terminal,
 // occurredAt, paymentMethod e autorização (SC-001/002/003/009, FR-001..004/012/013/017/019).
@@ -45,9 +44,10 @@ beforeAll(async () => {
     { id: OWNER_ID, email: "cb-owner@example.com", role: "OWNER" },
     { id: CLIENT_ID, email: "cb-client@example.com", role: "CLIENT" },
   ]);
-  const svc = await prisma.barbershopService.create({
+  await ensureOwnerMembership(OWNER_ID);
+  const svc = await prisma.service.create({
     data: {
-      barbershopId: BARBERSHOP_ID,
+      businessId: BUSINESS_ID,
       name: SNAP_SERVICE_NAME,
       price: "50.00",
       durationMinutes: 30,
@@ -65,7 +65,7 @@ afterEach(async () => {
 
 afterAll(async () => {
   await cleanupLedgerAndBookings([OWNER_ID, CLIENT_ID]);
-  await prisma.barbershopService.delete({ where: { id: snapServiceId } });
+  await prisma.service.delete({ where: { id: snapServiceId } });
   await prisma.user.deleteMany({ where: { id: { in: [OWNER_ID, CLIENT_ID] } } });
   await prisma.$disconnect();
 });
@@ -141,7 +141,7 @@ describe("completeBookingForOwner (core)", () => {
     if (!result.ok) return;
 
     // Preço vivo muda DEPOIS da captura.
-    await prisma.barbershopService.update({ where: { id: snapServiceId }, data: { price: "99.00" } });
+    await prisma.service.update({ where: { id: snapServiceId }, data: { price: "99.00" } });
 
     const entry = await prisma.ledgerEntry.findUniqueOrThrow({
       where: { id: result.ledgerEntryId },
@@ -151,13 +151,13 @@ describe("completeBookingForOwner (core)", () => {
     expect(D(entry.items[0].amount.toString()).equals(D("50.00"))).toBe(true);
 
     // Restaura para não afetar outros testes deste arquivo.
-    await prisma.barbershopService.update({ where: { id: snapServiceId }, data: { price: "50.00" } });
+    await prisma.service.update({ where: { id: snapServiceId }, data: { price: "50.00" } });
   });
 
   it("concluir booking cujo servico esta inativo e permitido (snapshot independe de isActive)", async () => {
-    const svc = await prisma.barbershopService.create({
+    const svc = await prisma.service.create({
       data: {
-        barbershopId: BARBERSHOP_ID,
+        businessId: BUSINESS_ID,
         name: "ZZ005-cb-inactive",
         price: "35.00",
         durationMinutes: 30,
@@ -170,7 +170,7 @@ describe("completeBookingForOwner (core)", () => {
       serviceId: svc.id,
       startsAt: slotAt(DATE, 14 * 60),
     });
-    await prisma.barbershopService.update({ where: { id: svc.id }, data: { isActive: false } });
+    await prisma.service.update({ where: { id: svc.id }, data: { isActive: false } });
 
     const result = await completeBookingForOwner({ ownerId: OWNER_ID, bookingId });
     expect(result.ok).toBe(true);
@@ -184,7 +184,7 @@ describe("completeBookingForOwner (core)", () => {
 
     // Limpeza local: remove booking+lançamento antes de apagar o serviço criado no teste.
     await cleanupLedgerAndBookings([OWNER_ID, CLIENT_ID]);
-    await prisma.barbershopService.delete({ where: { id: svc.id } });
+    await prisma.service.delete({ where: { id: svc.id } });
   });
 
   it("occurredAt: persiste o instante informado, nao derivado do endsAt (FR-017)", async () => {

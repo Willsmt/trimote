@@ -8,7 +8,7 @@ import { localDateTimeToUtc } from "@/domain/time";
 // concorrência (FR-008/FR-009) e a tradução do erro de exclusion constraint em slot_unavailable
 // (FR-015). Usa a barbearia/serviço semeados.
 const SP = "America/Sao_Paulo";
-const BARBERSHOP_ID = "barbershop-trimote";
+const BUSINESS_ID = "business-trimote";
 const SERVICE_ID = "service-corte"; // duração 30min no seed
 const TEST_USER_ID = "u-it-conflict";
 

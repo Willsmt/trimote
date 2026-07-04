@@ -50,9 +50,9 @@ export function isExclusionViolation(error: unknown): boolean {
 export async function createBookingForUser(input: CreateBookingInput): Promise<CreateBookingResult> {
   const now = input.now ?? new Date();
 
-  const service = await prisma.barbershopService.findUnique({
+  const service = await prisma.service.findUnique({
     where: { id: input.serviceId },
-    include: { barbershop: { include: { openingHours: true } } },
+    include: { business: { include: { openingHours: true } } },
   });
   if (!service) {
     return { ok: false, reason: "service_not_found" };
@@ -70,9 +70,9 @@ export async function createBookingForUser(input: CreateBookingInput): Promise<C
   }
 
   // Revalidação de expediente no servidor (FR-004/FR-005), no fuso da barbearia.
-  const timeZone = service.barbershop.timezone;
+  const timeZone = service.business.timezone;
   const weekday = weekdayInZone(input.startsAt, timeZone);
-  const window = service.barbershop.openingHours.find((oh) => oh.weekday === weekday);
+  const window = service.business.openingHours.find((oh) => oh.weekday === weekday);
   if (!window) {
     return { ok: false, reason: "outside_opening_hours" };
   }
@@ -90,7 +90,7 @@ export async function createBookingForUser(input: CreateBookingInput): Promise<C
     const booking = await prisma.$transaction((tx) =>
       tx.booking.create({
         data: {
-          barbershopId: service.barbershopId,
+          businessId: service.businessId,
           userId: input.userId,
           serviceId: service.id,
           startsAt: input.startsAt,

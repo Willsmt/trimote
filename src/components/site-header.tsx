@@ -15,8 +15,8 @@ import { SignInButton, SignOutButton } from "@/components/auth-buttons";
  * reconhecido cai no menor privilégio (CLIENT-equivalente), nunca expondo o Painel.
  */
 export async function SiteHeader() {
-  const { user, role } = await getNavSession();
-  const isOwner = role === Role.OWNER;
+  const { user, role, isOwner } = await getNavSession();
+  const isAdmin = role === Role.ADMIN;
 
   return (
     <header className="border-b border-neutral-200">
@@ -24,16 +24,11 @@ export async function SiteHeader() {
         <Link href="/" className="font-bold">
           Trimote
         </Link>
-        <Link href="/services" className="text-sm hover:underline">
-          Serviços
-        </Link>
 
-        {/* Links de área logada (FR-005): visíveis a qualquer usuário autenticado. */}
+        {/* Links de área logada (FR-005): visíveis a qualquer usuário autenticado. Agendar é por
+            negócio (/b/[slug]); não há mais catálogo global (F007/US4). */}
         {user && (
           <>
-            <Link href="/booking" className="text-sm hover:underline">
-              Agendar
-            </Link>
             <Link href="/my-bookings" className="text-sm hover:underline">
               Meus agendamentos
             </Link>
@@ -44,18 +39,24 @@ export async function SiteHeader() {
           </>
         )}
 
-        {/* Painel do dono (FR-006): só OWNER. Esconder é conveniência de UI; a barreira real é o
-            servidor (requireOwner), que permanece inalterado (FR-010/FR-011). */}
+        {/* Painel do dono: só quem tem vínculo OWNER (F007 — posse por membership, não papel global).
+            Esconder é conveniência; a barreira real é requireOwner no servidor. */}
         {isOwner && (
           <>
             <Link href="/owner" className="text-sm hover:underline">
               Painel
             </Link>
-            {/* Balancete/razão (006, US1-US4): só OWNER. Esconder é conveniência; a barreira é requireOwner. */}
             <Link href="/owner/finance" className="text-sm hover:underline">
               Financeiro
             </Link>
           </>
+        )}
+
+        {/* Área ADMIN (F007, US1): só Role ADMIN. A barreira real é requireAdmin no servidor. */}
+        {isAdmin && (
+          <Link href="/admin" className="text-sm hover:underline">
+            Admin
+          </Link>
         )}
 
         <div className="ml-auto flex items-center gap-3">

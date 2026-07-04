@@ -21,8 +21,9 @@ export async function completeBooking(input: {
   extras?: CompleteBookingExtraInput[];
 }): Promise<CompleteBookingResult> {
   const owner = await requireOwner();
+  // Escopo por negócio: só o dono do negócio ATIVO conclui; o businessId vem do vínculo, não do input.
   return completeBookingForOwner({
-    ownerId: owner.id,
+    ownerId: owner.user.id,
     bookingId: input.bookingId,
     occurredAt: input.occurredAt ? new Date(input.occurredAt) : undefined,
     paymentMethod: input.paymentMethod,

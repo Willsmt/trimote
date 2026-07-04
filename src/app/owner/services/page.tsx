@@ -1,9 +1,10 @@
 import { redirect } from "next/navigation";
 
-import { requireOwner, ForbiddenError } from "@/server/auth/owner";
+import { requireOwner, ForbiddenError, NeedsBusinessSelectionError } from "@/server/auth/owner";
 import { UnauthorizedError } from "@/server/auth/session";
 import { listServicesForOwner } from "@/server/actions/list-services-for-owner";
 import { ServicesManager } from "@/components/owner/services-manager";
+import { BusinessSelectionScreen } from "@/components/owner/business-selection-screen";
 
 export const dynamic = "force-dynamic";
 
@@ -14,6 +15,10 @@ export default async function OwnerServicesPage() {
   } catch (error) {
     if (error instanceof UnauthorizedError) {
       redirect("/api/auth/signin?callbackUrl=/owner/services");
+    }
+    // needs_selection é ESTADO DE UI (dono de 2+ negócios sem ativo): renderiza o seletor, não explode.
+    if (error instanceof NeedsBusinessSelectionError) {
+      return <BusinessSelectionScreen options={error.options} />;
     }
     if (error instanceof ForbiddenError) {
       redirect("/");

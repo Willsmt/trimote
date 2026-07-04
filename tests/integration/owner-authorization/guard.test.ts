@@ -1,42 +1,54 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 
 import { prisma } from "@/server/db/client";
-import { assertOwnerRole, ForbiddenError } from "@/server/auth/owner";
-import { UnauthorizedError } from "@/server/auth/session";
+import { resolveActiveBusiness } from "@/server/business/active-business";
 
-// Teste de integração (toca Postgres) — guard de autorização por role (FR-001/Princípio I).
-// Verifica a fonte de verdade no banco: CLIENT é barrado, OWNER é admitido.
-const CLIENT_ID = "u-guard-client";
-const OWNER_ID = "u-guard-owner";
+// Teste de integração — guard de DONO por MEMBERSHIP (007, reescrito da F002). A fonte de verdade da
+// posse é BusinessMember, lida do banco; um não-membro (CLIENT) não resolve negócio ativo, um membro
+// OWNER sim. (Princípio I / FR-013)
+const NON_MEMBER_ID = "u-guard-nonmember";
+const MEMBER_ID = "u-guard-member";
+const BIZ_ID = "biz-guard-authz";
 
 beforeAll(async () => {
-  await prisma.user.upsert({
-    where: { id: CLIENT_ID },
-    update: { role: "CLIENT" },
-    create: { id: CLIENT_ID, email: "guard-client@example.com", role: "CLIENT" },
+  await prisma.user.createMany({
+    data: [
+      { id: NON_MEMBER_ID, email: "guard-nonmember@example.com", role: "CLIENT" },
+      { id: MEMBER_ID, email: "guard-member@example.com", role: "CLIENT" },
+    ],
+    skipDuplicates: true,
   });
-  await prisma.user.upsert({
-    where: { id: OWNER_ID },
-    update: { role: "OWNER" },
-    create: { id: OWNER_ID, email: "guard-owner@example.com", role: "OWNER" },
+  await prisma.business.upsert({
+    where: { id: BIZ_ID },
+    update: {},
+    create: { id: BIZ_ID, name: "Guard Biz", slug: "guard-authz", timezone: "America/Sao_Paulo" },
+  });
+  await prisma.businessMember.upsert({
+    where: { userId_businessId: { userId: MEMBER_ID, businessId: BIZ_ID } },
+    update: {},
+    create: { userId: MEMBER_ID, businessId: BIZ_ID, role: "OWNER", createdBy: MEMBER_ID },
   });
 });
 
 afterAll(async () => {
-  await prisma.user.deleteMany({ where: { id: { in: [CLIENT_ID, OWNER_ID] } } });
+  await prisma.business.deleteMany({ where: { id: BIZ_ID } });
+  await prisma.user.deleteMany({ where: { id: { in: [NON_MEMBER_ID, MEMBER_ID] } } });
   await prisma.$disconnect();
 });
 
-describe("assertOwnerRole (guard de role)", () => {
-  it("nega um usuário CLIENT (ForbiddenError)", async () => {
-    await expect(assertOwnerRole(CLIENT_ID)).rejects.toBeInstanceOf(ForbiddenError);
+describe("guard de dono por membership (resolveActiveBusiness)", () => {
+  it("nega um não-membro (CLIENT) — estado empty (sem negócio ativo)", async () => {
+    const r = await resolveActiveBusiness(NON_MEMBER_ID, null);
+    expect(r.state).toBe("empty");
   });
 
-  it("admite um usuário OWNER", async () => {
-    await expect(assertOwnerRole(OWNER_ID)).resolves.toBeUndefined();
+  it("admite um membro OWNER — negócio ativo resolvido a partir do vínculo", async () => {
+    const r = await resolveActiveBusiness(MEMBER_ID, null);
+    expect(r).toMatchObject({ state: "active", businessId: BIZ_ID });
   });
 
-  it("trata usuário inexistente como não autorizado (UnauthorizedError)", async () => {
-    await expect(assertOwnerRole("u-does-not-exist")).rejects.toBeInstanceOf(UnauthorizedError);
+  it("trata usuário sem vínculo como sem acesso operacional (empty)", async () => {
+    const r = await resolveActiveBusiness("u-does-not-exist", null);
+    expect(r.state).toBe("empty");
   });
 });

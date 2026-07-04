@@ -33,29 +33,27 @@ export async function requireUser() {
 /** Usuário autenticado da sessão (no servidor) — campos usados pela navegação. */
 type NavUser = NonNullable<Awaited<ReturnType<typeof getCurrentUser>>>;
 
-/** Estado de navegação derivado da sessão: visitante (null) ou autenticado com o seu papel atual. */
+/** Estado de navegação derivado da sessão: visitante (null) ou autenticado com papel + posse atuais. */
 export type NavSession =
-  | { user: null; role: null }
-  | { user: NavUser; role: Role | null };
+  | { user: null; role: null; isOwner: false }
+  | { user: NavUser; role: Role | null; isOwner: boolean };
 
 /**
- * Lê a sessão e o papel para decidir a NAVEGAÇÃO (003-nav-session, FR-003/FR-007/FR-009).
- *
- * O `role` é lido do BANCO por requisição — a MESMA fonte de verdade usada por `requireOwner`
- * (src/server/auth/owner.ts) — para refletir o papel atual e não um claim de sessão obsoleto após
- * promoção/rebaixamento. É leitura apenas para EXIBIÇÃO: NÃO decide autorização; a barreira real das
- * áreas restritas continua sendo `requireOwner` (FR-010/FR-011). Sem sessão, retorna visitante.
+ * Lê a sessão para decidir a NAVEGAÇÃO (003-nav-session; atualizado na F007). Tudo do BANCO por
+ * requisição: `role` (papel de plataforma, p/ o link ADMIN) e `isOwner` = tem ≥1 vínculo OWNER
+ * (BusinessMember) — a posse deixou de ser um papel global (F007/D4). É leitura só p/ EXIBIÇÃO: NÃO
+ * decide autorização; a barreira real continua em `requireAdmin`/`requireOwner`. Sem sessão → visitante.
  */
 export async function getNavSession(): Promise<NavSession> {
   const user = await getCurrentUser();
   if (!user?.id) {
-    return { user: null, role: null };
+    return { user: null, role: null, isOwner: false };
   }
 
-  const record = await prisma.user.findUnique({
-    where: { id: user.id },
-    select: { role: true },
-  });
+  const [record, ownerMemberships] = await Promise.all([
+    prisma.user.findUnique({ where: { id: user.id }, select: { role: true } }),
+    prisma.businessMember.count({ where: { userId: user.id, role: "OWNER" } }),
+  ]);
 
-  return { user, role: record?.role ?? null };
+  return { user, role: record?.role ?? null, isOwner: ownerMemberships > 0 };
 }

@@ -36,7 +36,9 @@ export function MySpendingList({ initialPage }: { initialPage: ClientHistoryPage
               <span className="font-medium">{row.description}</span>
               <span className="tabular-nums font-semibold">{BRL.format(Number(row.amount))}</span>
             </div>
-            <span className="text-xs text-neutral-500">{new Date(row.occurredAtIso).toLocaleString("pt-BR")}</span>
+            <span className="text-xs text-neutral-500">
+              {new Date(row.occurredAtIso).toLocaleString("pt-BR")} · {row.businessName}
+            </span>
             {row.items.length > 0 && (
               <ul className="mt-1 flex flex-col gap-1 pl-4 text-xs text-neutral-500">
                 {row.items.map((it, i) => (

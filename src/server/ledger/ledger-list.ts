@@ -25,7 +25,7 @@ export interface LedgerListFilter {
 }
 
 export interface LedgerListInput {
-  barbershopId: string;
+  businessId: string;
   timeZone: string;
   filter: LedgerListFilter;
   cursor?: LedgerCursor;
@@ -54,7 +54,7 @@ const DEFAULT_PAGE_SIZE = 10;
 /** Filtro base (barbearia + isActive + tipo/origem/forma/categoria/período), em conjunção. */
 function buildBaseWhere(input: LedgerListInput): Prisma.LedgerEntryWhereInput {
   const f = input.filter;
-  const where: Prisma.LedgerEntryWhereInput = { barbershopId: input.barbershopId };
+  const where: Prisma.LedgerEntryWhereInput = { businessId: input.businessId };
 
   if (!f.includeInactive) where.isActive = true;
   if (f.type) where.type = f.type;

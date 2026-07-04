@@ -222,6 +222,42 @@ reutilizado sem alteração. Dinheiro em `Decimal` (serializado como string na f
   sessão autenticada. Consistência: para o mesmo período, `saldo do caixa == Σ entradas − Σ saídas`
   da listagem. Sem gráficos/exportação/comparativos (fora de escopo).
 
+## Multi-tenancy (negócios, donos e administração)
+
+Plataforma multi-tenant: N negócios na mesma infra, cada um com serviços/agenda/financeiro e página
+pública própria. Feature: [`specs/007-multi-tenancy`](specs/007-multi-tenancy/). Nomes generalizados
+(**Business** ← Barbershop, **Service** ← BarbershopService; campo `segment`, default `barbershop`).
+
+- **Duas migrations**: (1) **rename puro** por `ALTER TABLE RENAME` (hand-edited — o Prisma geraria
+  DROP+CREATE e perderia dados/constraint); preserva a exclusion constraint `booking_no_overlap`, que
+  passa a particionar por `businessId`. (2) **funcional**: `Role += ADMIN`, `BusinessMember`,
+  `Business.slug @unique`, `Session.activeBusinessId`, + backfill. Gate entre elas: `pg_constraint` +
+  a suíte inteira verde.
+- **Papéis**: `ADMIN` é papel **de plataforma** (opera o `/admin`: cria negócios, promove donos). A
+  **posse** de um negócio é um **vínculo** `BusinessMember` (N:N, papel OWNER; STAFF é fundação
+  futura), **não** um papel global — `OWNER` saiu da autoridade do `Role` (fonte única = o vínculo).
+  Guards distintos: `requireAdmin` (papel de plataforma) vs `requireOwner` ("é membro OWNER do negócio
+  **ativo**").
+- **Anti-escalação (5 camadas)**: nenhuma Server Action pública escreve `User.role` ou cria
+  `BusinessMember`; role/vínculo lidos do banco por request; ADMIN só promove a OWNER (não existe
+  "promover a ADMIN" — o 2º ADMIN é bootstrap de seed); `businessId` **nunca** vem do input em operação
+  de dono (deriva do negócio ativo da sessão + revalidação de membership); ADMIN não opera negócios de
+  terceiros.
+- **Negócio ativo**: estado **server-side** (`Session.activeBusinessId`), revalidado por request. 1
+  negócio → auto-selecionado; N → seletor; 0 → estado vazio. `businessId` como parâmetro de request
+  seria a porta de IDOR (proibida).
+- **Slug**: informado pelo ADMIN (pré-preenchido do nome), validado no servidor — formato
+  `^[a-z0-9]+(-[a-z0-9]+)*$`, único e **fora dos reservados** (`RESERVED_SLUGS`: admin, api, b, booking,
+  owner, login, my-bookings, my-spending). Imutável pela UI (QR codes). Página pública em `/b/[slug]`
+  (slug inválido → 404); a rota global `/booking` redireciona e `/services` foi removida (catálogo é
+  por negócio).
+- **Cliente global**: conta única; `/my-bookings` e `/my-spending` agregam todos os negócios,
+  rotulando cada item. Unicidade de nome de serviço ativo passou a ser **por negócio**.
+- **Bootstrap do 1º ADMIN**: `OWNER_EMAIL=<email> npx tsx prisma/seed.ts` promove o operador a ADMIN e
+  o vincula como dono do negócio showroom (idempotente). É a única elevação feita fora da plataforma.
+- Fora de escopo: STAFF/agenda por profissional, personalização visual, marketplace, cobrança da
+  plataforma, multi-vertical real, edição de slug.
+
 ## Estrutura
 
 ```text

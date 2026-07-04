@@ -1,14 +1,14 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
-import { requireOwner, ForbiddenError } from "@/server/auth/owner";
+import { requireOwner, ForbiddenError, NeedsBusinessSelectionError } from "@/server/auth/owner";
 import { UnauthorizedError } from "@/server/auth/session";
-import { prisma } from "@/server/db/client";
 import { getCashSummaryForOwner } from "@/server/ledger/cash-summary";
 import { listLedgerForOwner } from "@/server/ledger/ledger-list";
 import { todayInZone, shiftPeriod, type Granularity } from "@/domain/time";
 import { CashSummaryView } from "@/components/owner/cash-summary-view";
 import { LedgerBrowser } from "@/components/owner/ledger-browser";
+import { BusinessSelectionScreen } from "@/components/owner/business-selection-screen";
 import type { LedgerPageDTO } from "@/server/actions/list-ledger";
 
 export const dynamic = "force-dynamic";
@@ -46,17 +46,21 @@ export default async function OwnerFinancePage({
 }: {
   searchParams: Promise<{ g?: string; d?: string }>;
 }) {
+  let businessId: string;
+  let timeZone: string;
   try {
-    await requireOwner();
+    const owner = await requireOwner();
+    businessId = owner.businessId;
+    timeZone = owner.timeZone;
   } catch (error) {
     if (error instanceof UnauthorizedError) redirect("/api/auth/signin?callbackUrl=/owner/finance");
+    // needs_selection é ESTADO DE UI (dono de 2+ negócios sem ativo): renderiza o seletor, não explode.
+    if (error instanceof NeedsBusinessSelectionError) return <BusinessSelectionScreen options={error.options} />;
     if (error instanceof ForbiddenError) redirect("/");
     throw error;
   }
 
-  const barbershop = await prisma.barbershop.findFirstOrThrow({ select: { id: true, timezone: true } });
-  const timeZone = barbershop.timezone;
-
+  // O seletor de negócio ativo (US2) agora vive no layout de dono (src/app/owner/layout.tsx).
   const sp = await searchParams;
   const granularity = parseGranularity(sp.g);
   const referenceLocalDate = parseReference(sp.d, todayInZone(new Date(), timeZone));
@@ -64,8 +68,8 @@ export default async function OwnerFinancePage({
   const period = { granularity, referenceLocalDate };
 
   const [summary, ledgerFirst] = await Promise.all([
-    getCashSummaryForOwner({ barbershopId: barbershop.id, timeZone, granularity, referenceLocalDate }),
-    listLedgerForOwner({ barbershopId: barbershop.id, timeZone, filter: { period } }),
+    getCashSummaryForOwner({ businessId, timeZone, granularity, referenceLocalDate }),
+    listLedgerForOwner({ businessId, timeZone, filter: { period } }),
   ]);
 
   // Serializa a 1ª página do razão para a ilha (Decimal→string, datas→ISO — D5).

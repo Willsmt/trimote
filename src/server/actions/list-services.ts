@@ -3,9 +3,9 @@
 import { prisma } from "@/server/db/client";
 
 /**
- * Server Action: lista os serviços oferecidos (FR-002). Pública — não exige autenticação.
- * O preço é serializado como string (Decimal não é serializável para o client); a formatação de
- * moeda ocorre na camada de UI.
+ * Lista os serviços ATIVOS de UM negócio (007, US4). Escopada por `businessId` (o negócio vem do slug
+ * da página pública `/b/[slug]`) — nunca global, para não vazar catálogo entre negócios (R2). O preço
+ * é serializado como string (Decimal não serializa para o client).
  */
 export interface ServiceListItem {
   id: string;
@@ -14,10 +14,9 @@ export interface ServiceListItem {
   durationMinutes: number;
 }
 
-export async function listServices(): Promise<ServiceListItem[]> {
-  const services = await prisma.barbershopService.findMany({
-    // Feature 002: a oferta pública mostra apenas serviços ativos (FR-006).
-    where: { isActive: true },
+export async function listServicesForBusiness(businessId: string): Promise<ServiceListItem[]> {
+  const services = await prisma.service.findMany({
+    where: { businessId, isActive: true },
     orderBy: { name: "asc" },
     select: { id: true, name: true, price: true, durationMinutes: true },
   });

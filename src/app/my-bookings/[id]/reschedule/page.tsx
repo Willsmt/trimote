@@ -25,7 +25,7 @@ export default async function ReschedulePage({
       userId: true,
       status: true,
       startsAt: true,
-      barbershopId: true,
+      businessId: true,
       service: { select: { id: true, name: true, durationMinutes: true } },
     },
   });
@@ -43,8 +43,8 @@ export default async function ReschedulePage({
   // Seletor (US2): apenas serviços ATIVOS. Se o serviço atual estiver inativo (soft delete da 002),
   // incluímos ele mesmo assim para o default ser selecionável e permitir MANTER o serviço atual
   // (o core não bloqueia manter — FR-014). A troca para inativo é recusada no servidor.
-  const activeServices = await prisma.barbershopService.findMany({
-    where: { barbershopId: booking.barbershopId, isActive: true },
+  const activeServices = await prisma.service.findMany({
+    where: { businessId: booking.businessId, isActive: true },
     orderBy: { name: "asc" },
     select: { id: true, name: true, durationMinutes: true },
   });

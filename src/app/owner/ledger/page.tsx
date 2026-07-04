@@ -1,21 +1,26 @@
 import { redirect } from "next/navigation";
 
-import { requireOwner, ForbiddenError } from "@/server/auth/owner";
+import { requireOwner, ForbiddenError, NeedsBusinessSelectionError } from "@/server/auth/owner";
 import { UnauthorizedError } from "@/server/auth/session";
-import { getOwnerBarbershopId } from "@/server/owner/barbershop";
 import { prisma } from "@/server/db/client";
 import { LedgerManager } from "@/components/owner/ledger-manager";
+import { BusinessSelectionScreen } from "@/components/owner/business-selection-screen";
 
 export const dynamic = "force-dynamic";
 
 // Guarda de dono no servidor (FR-018): visitante vai ao login; cliente comum é recusado. A captura
 // financeira (concluir/walk-in/despesa/inativar) só é oferecida ao OWNER; as Server Actions revalidam.
 export default async function OwnerLedgerPage() {
+  let businessId: string;
   try {
-    await requireOwner();
+    ({ businessId } = await requireOwner());
   } catch (error) {
     if (error instanceof UnauthorizedError) {
       redirect("/api/auth/signin?callbackUrl=/owner/ledger");
+    }
+    // needs_selection é ESTADO DE UI (dono de 2+ negócios sem ativo): renderiza o seletor, não explode.
+    if (error instanceof NeedsBusinessSelectionError) {
+      return <BusinessSelectionScreen options={error.options} />;
     }
     if (error instanceof ForbiddenError) {
       redirect("/");
@@ -23,13 +28,11 @@ export default async function OwnerLedgerPage() {
     throw error;
   }
 
-  const barbershopId = await getOwnerBarbershopId();
-
   // Agenda ativa (para escolher qual atendimento concluir) e serviços ativos (para walk-in/extras).
   // NÃO há relatório/agregação/caixa aqui — isso é F006.
   const [bookings, services] = await Promise.all([
     prisma.booking.findMany({
-      where: { barbershopId, status: "ACTIVE" },
+      where: { businessId, status: "ACTIVE" },
       orderBy: { startsAt: "asc" },
       select: {
         id: true,
@@ -38,8 +41,8 @@ export default async function OwnerLedgerPage() {
         user: { select: { name: true, email: true } },
       },
     }),
-    prisma.barbershopService.findMany({
-      where: { barbershopId, isActive: true },
+    prisma.service.findMany({
+      where: { businessId, isActive: true },
       orderBy: { name: "asc" },
       select: { id: true, name: true, price: true },
     }),

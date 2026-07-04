@@ -27,6 +27,8 @@ export interface ClientHistoryRow {
   occurredAt: Date;
   description: string;
   amount: Prisma.Decimal;
+  /** Nome do negócio do item (007, US5): a conta é global; cada item identifica seu negócio. */
+  businessName: string;
   items: { description: string; amount: Prisma.Decimal }[];
 }
 
@@ -69,6 +71,7 @@ export async function listClientHistory(input: ClientHistoryInput): Promise<Clie
       occurredAt: true,
       description: true,
       amount: true,
+      business: { select: { name: true } },
       items: { select: { description: true, amount: true } },
     },
   });
@@ -78,5 +81,15 @@ export async function listClientHistory(input: ClientHistoryInput): Promise<Clie
   const last = page[page.length - 1];
   const nextCursor = hasMore && last ? { occurredAt: last.occurredAt, id: last.id } : null;
 
-  return { rows: page, nextCursor };
+  return {
+    rows: page.map((r) => ({
+      id: r.id,
+      occurredAt: r.occurredAt,
+      description: r.description,
+      amount: r.amount,
+      businessName: r.business.name,
+      items: r.items,
+    })),
+    nextCursor,
+  };
 }
