@@ -22,9 +22,14 @@ import {
  * delete): item de serviço (snapshot do preço) ou item manual (valor informado). O `amount` do
  * lançamento é a soma dos itens (base + extras), validada dentro da transação (FR-006/FR-007).
  *
+ * Escopo por negócio (007, issue #6): o booking e cada serviço de extra são resolvidos contra o
+ * `businessId` do vínculo da sessão (derivado por `requireOwner`, NUNCA do input). Um booking/serviço
+ * de outro negócio cai em `booking_not_found`/`service_not_found` — sem oráculo de existência
+ * cross-tenant e sem write no razão alheio.
+ *
  * Ordem de verificação (curto-circuito; nenhuma recusa escreve nada):
- *   booking_not_found → already_completed → booking_cancelled → service_not_found →
- *   invalid_description (extra manual) → invalid_amount
+ *   booking_not_found (inexistente OU de outro negócio) → already_completed → booking_cancelled →
+ *   service_not_found → invalid_description (extra manual) → invalid_amount
  *   → $transaction(update COMPLETED + create LedgerEntry+itens)
  */
 
@@ -38,6 +43,8 @@ export interface CompleteBookingExtraInput {
 }
 
 export interface CompleteBookingInput {
+  /** Negócio ativo do dono (007) — derivado do vínculo da sessão pela action, NUNCA do input. */
+  businessId: string;
   /** OWNER que registra (createdBy — auditoria). Derivado da sessão pela Server Action. */
   ownerId: string;
   bookingId: string;
@@ -71,6 +78,13 @@ export async function completeBookingForOwner(
   if (!booking) {
     return { ok: false, reason: "booking_not_found" };
   }
+  // Escopo por negócio (007, issue #6): um booking de OUTRO negócio é indistinguível de inexistente
+  // para o dono do negócio ativo — MESMO reason `booking_not_found`, sem oráculo de existência
+  // cross-tenant. O `businessId` do lançamento gerado passa a ser garantidamente o do vínculo da
+  // sessão (é o mesmo do booking, já validado aqui).
+  if (booking.businessId !== input.businessId) {
+    return { ok: false, reason: "booking_not_found" };
+  }
   // Estado terminal: não se conclui duas vezes (FR-004) — reason distinto para a UI (D3).
   if (booking.status === "COMPLETED") {
     return { ok: false, reason: "already_completed" };
@@ -96,8 +110,10 @@ export async function completeBookingForOwner(
   // Extras (US2): serviço → snapshot do preço (SEM filtrar isActive); manual → valor informado.
   for (const extra of input.extras ?? []) {
     if (extra.serviceId) {
-      const extraService = await prisma.service.findUnique({
-        where: { id: extra.serviceId },
+      // Escopo por negócio (007, issue #6): um serviço de outro negócio não é encontrado dentro do
+      // negócio ativo — `service_not_found`, impedindo o snapshot de preço cross-tenant no razão.
+      const extraService = await prisma.service.findFirst({
+        where: { id: extra.serviceId, businessId: input.businessId },
         select: { id: true, name: true, price: true },
       });
       if (!extraService) {

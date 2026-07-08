@@ -61,7 +61,7 @@ describe("deactivateLedgerEntryForOwner (core)", () => {
   it("soft delete: marca isActive=false e NAO apaga o registro (SC-008)", async () => {
     const entryId = await newWalkInEntryId();
 
-    const result = await deactivateLedgerEntryForOwner({ ledgerEntryId: entryId });
+    const result = await deactivateLedgerEntryForOwner({ businessId: BUSINESS_ID, ledgerEntryId: entryId });
     expect(result).toEqual({ ok: true });
 
     const entry = await prisma.ledgerEntry.findUnique({ where: { id: entryId } });
@@ -75,11 +75,11 @@ describe("deactivateLedgerEntryForOwner (core)", () => {
       serviceId: SERVICE_CORTE,
       startsAt: slotAt(DATE, 10 * 60),
     });
-    const completed = await completeBookingForOwner({ ownerId: OWNER_ID, bookingId });
+    const completed = await completeBookingForOwner({ businessId: BUSINESS_ID, ownerId: OWNER_ID, bookingId });
     expect(completed.ok).toBe(true);
     if (!completed.ok) return;
 
-    const result = await deactivateLedgerEntryForOwner({ ledgerEntryId: completed.ledgerEntryId });
+    const result = await deactivateLedgerEntryForOwner({ businessId: BUSINESS_ID, ledgerEntryId: completed.ledgerEntryId });
     expect(result).toEqual({ ok: true });
 
     const booking = await prisma.booking.findUniqueOrThrow({ where: { id: bookingId } });
@@ -88,13 +88,13 @@ describe("deactivateLedgerEntryForOwner (core)", () => {
 
   it("inativar duas vezes -> already_inactive", async () => {
     const entryId = await newWalkInEntryId();
-    await deactivateLedgerEntryForOwner({ ledgerEntryId: entryId });
-    const second = await deactivateLedgerEntryForOwner({ ledgerEntryId: entryId });
+    await deactivateLedgerEntryForOwner({ businessId: BUSINESS_ID, ledgerEntryId: entryId });
+    const second = await deactivateLedgerEntryForOwner({ businessId: BUSINESS_ID, ledgerEntryId: entryId });
     expect(second).toEqual({ ok: false, reason: "already_inactive" });
   });
 
   it("lancamento inexistente -> entry_not_found", async () => {
-    const result = await deactivateLedgerEntryForOwner({ ledgerEntryId: "entry-does-not-exist" });
+    const result = await deactivateLedgerEntryForOwner({ businessId: BUSINESS_ID, ledgerEntryId: "entry-does-not-exist" });
     expect(result).toEqual({ ok: false, reason: "entry_not_found" });
   });
 });

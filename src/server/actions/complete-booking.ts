@@ -21,8 +21,11 @@ export async function completeBooking(input: {
   extras?: CompleteBookingExtraInput[];
 }): Promise<CompleteBookingResult> {
   const owner = await requireOwner();
-  // Escopo por negócio: só o dono do negócio ATIVO conclui; o businessId vem do vínculo, não do input.
+  // Escopo por negócio (007, issue #6): o core valida `booking.businessId === businessId` do vínculo
+  // (booking de outro negócio → booking_not_found), então o LedgerEntry gerado é garantidamente do
+  // negócio ATIVO — o businessId vem do vínculo da sessão, nunca do input nem do booking alheio.
   return completeBookingForOwner({
+    businessId: owner.businessId,
     ownerId: owner.user.id,
     bookingId: input.bookingId,
     occurredAt: input.occurredAt ? new Date(input.occurredAt) : undefined,

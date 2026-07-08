@@ -78,7 +78,7 @@ describe("completeBookingForOwner (core)", () => {
       startsAt: slotAt(DATE, 10 * 60),
     });
 
-    const result = await completeBookingForOwner({ ownerId: OWNER_ID, bookingId });
+    const result = await completeBookingForOwner({ businessId: BUSINESS_ID, ownerId: OWNER_ID, bookingId });
     expect(result.ok).toBe(true);
     if (!result.ok) return;
 
@@ -102,7 +102,7 @@ describe("completeBookingForOwner (core)", () => {
   });
 
   it("booking inexistente -> booking_not_found", async () => {
-    const result = await completeBookingForOwner({ ownerId: OWNER_ID, bookingId: "does-not-exist" });
+    const result = await completeBookingForOwner({ businessId: BUSINESS_ID, ownerId: OWNER_ID, bookingId: "does-not-exist" });
     expect(result).toEqual({ ok: false, reason: "booking_not_found" });
   });
 
@@ -113,7 +113,7 @@ describe("completeBookingForOwner (core)", () => {
       startsAt: slotAt(DATE, 11 * 60),
       status: "COMPLETED",
     });
-    const result = await completeBookingForOwner({ ownerId: OWNER_ID, bookingId });
+    const result = await completeBookingForOwner({ businessId: BUSINESS_ID, ownerId: OWNER_ID, bookingId });
     expect(result).toEqual({ ok: false, reason: "already_completed" });
     expect(await prisma.ledgerEntry.count({ where: { bookingId } })).toBe(0);
   });
@@ -125,7 +125,7 @@ describe("completeBookingForOwner (core)", () => {
       startsAt: slotAt(DATE, 12 * 60),
       status: "CANCELLED",
     });
-    const result = await completeBookingForOwner({ ownerId: OWNER_ID, bookingId });
+    const result = await completeBookingForOwner({ businessId: BUSINESS_ID, ownerId: OWNER_ID, bookingId });
     expect(result).toEqual({ ok: false, reason: "booking_cancelled" });
     expect(await prisma.ledgerEntry.count({ where: { bookingId } })).toBe(0);
   });
@@ -136,7 +136,7 @@ describe("completeBookingForOwner (core)", () => {
       serviceId: snapServiceId,
       startsAt: slotAt(DATE, 13 * 60),
     });
-    const result = await completeBookingForOwner({ ownerId: OWNER_ID, bookingId });
+    const result = await completeBookingForOwner({ businessId: BUSINESS_ID, ownerId: OWNER_ID, bookingId });
     expect(result.ok).toBe(true);
     if (!result.ok) return;
 
@@ -172,7 +172,7 @@ describe("completeBookingForOwner (core)", () => {
     });
     await prisma.service.update({ where: { id: svc.id }, data: { isActive: false } });
 
-    const result = await completeBookingForOwner({ ownerId: OWNER_ID, bookingId });
+    const result = await completeBookingForOwner({ businessId: BUSINESS_ID, ownerId: OWNER_ID, bookingId });
     expect(result.ok).toBe(true);
     if (result.ok) {
       const entry = await prisma.ledgerEntry.findUniqueOrThrow({
@@ -194,7 +194,7 @@ describe("completeBookingForOwner (core)", () => {
       startsAt: slotAt(DATE, 15 * 60),
     });
     const occurredAt = new Date("2026-01-15T12:34:56.000Z"); // distinto de endsAt e de agora
-    const result = await completeBookingForOwner({ ownerId: OWNER_ID, bookingId, occurredAt });
+    const result = await completeBookingForOwner({ businessId: BUSINESS_ID, ownerId: OWNER_ID, bookingId, occurredAt });
     expect(result.ok).toBe(true);
     if (!result.ok) return;
 
@@ -210,7 +210,7 @@ describe("completeBookingForOwner (core)", () => {
       serviceId: SERVICE_CORTE,
       startsAt: slotAt(DATE, 16 * 60),
     });
-    const r1 = await completeBookingForOwner({ ownerId: OWNER_ID, bookingId: b1, paymentMethod: "PIX" });
+    const r1 = await completeBookingForOwner({ businessId: BUSINESS_ID, ownerId: OWNER_ID, bookingId: b1, paymentMethod: "PIX" });
     expect(r1.ok).toBe(true);
     if (r1.ok) {
       const e1 = await prisma.ledgerEntry.findUniqueOrThrow({ where: { id: r1.ledgerEntryId } });
@@ -223,7 +223,7 @@ describe("completeBookingForOwner (core)", () => {
       serviceId: SERVICE_CORTE,
       startsAt: slotAt(DATE, 17 * 60),
     });
-    const r2 = await completeBookingForOwner({ ownerId: OWNER_ID, bookingId: b2 });
+    const r2 = await completeBookingForOwner({ businessId: BUSINESS_ID, ownerId: OWNER_ID, bookingId: b2 });
     expect(r2.ok).toBe(true);
     if (r2.ok) {
       const e2 = await prisma.ledgerEntry.findUniqueOrThrow({ where: { id: r2.ledgerEntryId } });
@@ -239,7 +239,7 @@ describe("completeBookingForOwner (core)", () => {
     });
     // ownerId inexistente viola a FK createdBy DENTRO da transação -> rollback de tudo.
     await expect(
-      completeBookingForOwner({ ownerId: "owner-does-not-exist", bookingId }),
+      completeBookingForOwner({ businessId: BUSINESS_ID, ownerId: "owner-does-not-exist", bookingId }),
     ).rejects.toThrow();
 
     const booking = await prisma.booking.findUniqueOrThrow({ where: { id: bookingId } });

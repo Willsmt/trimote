@@ -70,7 +70,9 @@ export async function registerWalkInForOwner(
         where: { id: item.serviceId },
         select: { id: true, name: true, price: true, businessId: true },
       });
-      if (!service) {
+      // Escopo por negócio (007, issue #6): um serviço de OUTRO negócio é indistinguível de
+      // inexistente aqui — `service_not_found`, impedindo o snapshot de preço cross-tenant no razão.
+      if (!service || service.businessId !== input.businessId) {
         return { ok: false, reason: "service_not_found" };
       }
       items.push(

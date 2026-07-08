@@ -7,6 +7,7 @@ import { deactivateService as deactivateServiceCore, type ServiceMutationResult 
 export async function deactivateService(input: {
   serviceId: string;
 }): Promise<ServiceMutationResult> {
-  await requireOwner();
-  return deactivateServiceCore(input);
+  // Escopo por negócio (007, issue #6): só desativa serviço do negócio ATIVO; businessId do vínculo.
+  const { businessId } = await requireOwner();
+  return deactivateServiceCore({ businessId, ...input });
 }
