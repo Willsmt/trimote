@@ -7,6 +7,7 @@ import { reactivateService as reactivateServiceCore, type ServiceMutationResult 
 export async function reactivateService(input: {
   serviceId: string;
 }): Promise<ServiceMutationResult> {
-  await requireOwner();
-  return reactivateServiceCore(input);
+  // Escopo por negócio (007, issue #6): só reativa serviço do negócio ATIVO; businessId do vínculo.
+  const { businessId } = await requireOwner();
+  return reactivateServiceCore({ businessId, ...input });
 }

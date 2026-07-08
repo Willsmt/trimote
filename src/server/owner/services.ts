@@ -6,6 +6,11 @@ import { prisma } from "@/server/db/client";
  * Core de gestão de serviços (US1). Testável de forma isolada; as Server Actions são wrappers que
  * chamam `requireOwner` antes de delegar aqui.
  *
+ * Toda mutação/leitura escopa o serviço pelo `businessId` do vínculo da sessão (007, issue #6): a
+ * resolução da entidade é `findFirst({ where: { id, businessId } })`, nunca por `id` só — um
+ * `serviceId` de outro negócio não é encontrado dentro do negócio ativo e cai em `not_found` (sem
+ * oráculo de existência cross-tenant). `requireOwner` prova a posse do negócio; não a posse da linha.
+ *
  * A unicidade de nome entre serviços ativos é garantida pelo **índice único parcial** no banco
  * (`service_active_name_key`, WHERE isActive=true). Este core valida a entrada e traduz a
  * violação do índice em uma recusa de negócio `name_taken` — não reimplementa a unicidade na app.
@@ -26,6 +31,8 @@ export interface CreateServiceInput {
 }
 
 export interface UpdateServiceInput {
+  /** Negócio ativo do dono (007) — derivado do vínculo da sessão pela action, NUNCA do input. */
+  businessId: string;
   serviceId: string;
   name?: string;
   price?: string;
@@ -100,8 +107,8 @@ export async function updateService(input: UpdateServiceInput): Promise<ServiceM
     return { ok: false, reason: "invalid_input" };
   }
 
-  const existing = await prisma.service.findUnique({
-    where: { id: input.serviceId },
+  const existing = await prisma.service.findFirst({
+    where: { id: input.serviceId, businessId: input.businessId },
     select: { id: true },
   });
   if (!existing) {
@@ -126,9 +133,12 @@ export async function updateService(input: UpdateServiceInput): Promise<ServiceM
   }
 }
 
-export async function deactivateService(input: { serviceId: string }): Promise<ServiceMutationResult> {
-  const existing = await prisma.service.findUnique({
-    where: { id: input.serviceId },
+export async function deactivateService(input: {
+  businessId: string;
+  serviceId: string;
+}): Promise<ServiceMutationResult> {
+  const existing = await prisma.service.findFirst({
+    where: { id: input.serviceId, businessId: input.businessId },
     select: { isActive: true },
   });
   if (!existing) {
@@ -145,9 +155,12 @@ export async function deactivateService(input: { serviceId: string }): Promise<S
   return { ok: true };
 }
 
-export async function reactivateService(input: { serviceId: string }): Promise<ServiceMutationResult> {
-  const existing = await prisma.service.findUnique({
-    where: { id: input.serviceId },
+export async function reactivateService(input: {
+  businessId: string;
+  serviceId: string;
+}): Promise<ServiceMutationResult> {
+  const existing = await prisma.service.findFirst({
+    where: { id: input.serviceId, businessId: input.businessId },
     select: { id: true },
   });
   if (!existing) {

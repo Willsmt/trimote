@@ -13,6 +13,7 @@ import {
 export async function deactivateLedgerEntry(input: {
   ledgerEntryId: string;
 }): Promise<DeactivateLedgerEntryResult> {
-  await requireOwner();
-  return deactivateLedgerEntryForOwner({ ledgerEntryId: input.ledgerEntryId });
+  // Escopo por negócio (007, issue #6): só inativa lançamento do negócio ATIVO; businessId do vínculo.
+  const { businessId } = await requireOwner();
+  return deactivateLedgerEntryForOwner({ businessId, ledgerEntryId: input.ledgerEntryId });
 }

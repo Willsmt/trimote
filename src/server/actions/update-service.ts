@@ -10,6 +10,8 @@ export async function updateService(input: {
   price?: string;
   durationMinutes?: number;
 }): Promise<ServiceMutationResult> {
-  await requireOwner();
-  return updateServiceCore(input);
+  // Escopo por negócio (007, issue #6): o serviço só é mutável dentro do negócio ATIVO do dono; o
+  // businessId vem do vínculo da sessão, nunca do input.
+  const { businessId } = await requireOwner();
+  return updateServiceCore({ businessId, ...input });
 }

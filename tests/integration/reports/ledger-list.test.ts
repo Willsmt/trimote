@@ -205,7 +205,7 @@ describe("inativar a partir da listagem — reuso do soft delete da F005 (US4)",
     expect((await cash()).income.equals(D("50.00"))).toBe(true);
 
     // Reusa o core de soft delete da F005 SEM mudança.
-    const res = await deactivateLedgerEntryForOwner({ ledgerEntryId: oldEntry });
+    const res = await deactivateLedgerEntryForOwner({ businessId: BUSINESS_ID, ledgerEntryId: oldEntry });
     expect(res.ok).toBe(true);
 
     const def = await listLedgerForOwner(baseInput({ filter: { period: OCT } }));

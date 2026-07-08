@@ -4,6 +4,7 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "@/server/db/client";
 import { completeBookingForOwner } from "@/server/ledger/complete-booking";
 import {
+  BUSINESS_ID,
   SERVICE_CORTE,
   SERVICE_BARBA,
   seedBooking,
@@ -45,6 +46,7 @@ describe("completeBookingForOwner — extras (US2)", () => {
     });
 
     const result = await completeBookingForOwner({
+      businessId: BUSINESS_ID,
       ownerId: OWNER_ID,
       bookingId,
       extras: [
@@ -79,6 +81,7 @@ describe("completeBookingForOwner — extras (US2)", () => {
     });
 
     const result = await completeBookingForOwner({
+      businessId: BUSINESS_ID,
       ownerId: OWNER_ID,
       bookingId,
       extras: [{ description: "Zero", amount: 0 }],
@@ -98,6 +101,7 @@ describe("completeBookingForOwner — extras (US2)", () => {
     });
 
     const result = await completeBookingForOwner({
+      businessId: BUSINESS_ID,
       ownerId: OWNER_ID,
       bookingId,
       extras: [{ description: "   ", amount: 10 }],
@@ -117,6 +121,7 @@ describe("completeBookingForOwner — extras (US2)", () => {
     });
 
     const result = await completeBookingForOwner({
+      businessId: BUSINESS_ID,
       ownerId: OWNER_ID,
       bookingId,
       extras: [{ description: "  Gorjeta  ", amount: 10 }],
@@ -140,6 +145,7 @@ describe("completeBookingForOwner — extras (US2)", () => {
     });
 
     const result = await completeBookingForOwner({
+      businessId: BUSINESS_ID,
       ownerId: OWNER_ID,
       bookingId,
       extras: [{ serviceId: "service-does-not-exist", description: "Fantasma" }],

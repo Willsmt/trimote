@@ -55,7 +55,7 @@ describe("ciclo de vida do serviço", () => {
     });
     if (!booking.ok) throw new Error("setup: createBookingForUser falhou");
 
-    const result = await deactivateService({ serviceId: created.serviceId });
+    const result = await deactivateService({ businessId: BUSINESS_ID, serviceId: created.serviceId });
     expect(result).toEqual({ ok: true });
 
     const service = await prisma.service.findUnique({ where: { id: created.serviceId } });
@@ -84,7 +84,7 @@ describe("ciclo de vida do serviço", () => {
     expect(dup).toEqual({ ok: false, reason: "name_taken" });
 
     // Desativar o primeiro libera o nome para um novo serviço ativo.
-    await deactivateService({ serviceId: first.serviceId });
+    await deactivateService({ businessId: BUSINESS_ID, serviceId: first.serviceId });
     const reused = await createService({
       businessId: BUSINESS_ID,
       name: `${PREFIX}Unique`,
@@ -102,7 +102,7 @@ describe("ciclo de vida do serviço", () => {
       durationMinutes: 30,
     });
     if (!created.ok) throw new Error("setup falhou");
-    await deactivateService({ serviceId: created.serviceId });
+    await deactivateService({ businessId: BUSINESS_ID, serviceId: created.serviceId });
 
     const before = await prisma.booking.count({ where: { userId: USER_ID } });
     const result = await createBookingForUser({
@@ -139,7 +139,7 @@ describe("ciclo de vida do serviço", () => {
       durationMinutes: 30,
     });
     if (!created.ok) throw new Error("setup falhou");
-    await deactivateService({ serviceId: created.serviceId });
+    await deactivateService({ businessId: BUSINESS_ID, serviceId: created.serviceId });
 
     const result = await getAvailableSlots({ serviceId: created.serviceId, date: "2026-12-16" });
     expect(result).toEqual({ ok: false, reason: "service_inactive" });
@@ -155,7 +155,7 @@ describe("ciclo de vida do serviço", () => {
     if (!created.ok) throw new Error("setup falhou");
     const booking = await createBookingForUser({ userId: USER_ID, serviceId: created.serviceId, startsAt: slot });
     if (!booking.ok) throw new Error("setup falhou");
-    await deactivateService({ serviceId: created.serviceId });
+    await deactivateService({ businessId: BUSINESS_ID, serviceId: created.serviceId });
 
     const result = await getAvailableSlots({
       serviceId: created.serviceId,
@@ -182,7 +182,7 @@ describe("ciclo de vida do serviço", () => {
     if (!booking.ok) throw new Error("setup falhou");
     const before = await prisma.booking.findUnique({ where: { id: booking.bookingId } });
 
-    const result = await updateService({ serviceId: created.serviceId, durationMinutes: 60 });
+    const result = await updateService({ businessId: BUSINESS_ID, serviceId: created.serviceId, durationMinutes: 60 });
     expect(result).toEqual({ ok: true });
 
     const after = await prisma.booking.findUnique({ where: { id: booking.bookingId } });
