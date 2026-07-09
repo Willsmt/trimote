@@ -47,3 +47,19 @@ requireOwner; soft delete via `isActive`; unicidade de nome entre ativos por ín
 Earlier feature: 001-barber-booking — agendamento com não-sobreposição por exclusion constraint
 (EXCLUDE USING gist on tstzrange, btree_gist). UTC no armazenamento; lógica no fuso da barbearia.
 <!-- SPECKIT END -->
+
+## Principios de design/produto
+
+- Navegacao minimalista e contextual. O menu global mostra so o essencial
+  por papel. Acoes aparecem no contexto onde sao usadas (ex.: apos concluir
+  um atendimento, link direto para o financeiro), nao acumuladas num menu
+  global. Cada feature nova deve manter as acoes principais a um clique sem
+  inflar a navegacao. Simplicidade e vantagem competitiva: contra apps
+  maiores, ganha-se na facilidade, nao na quantidade de opcoes.
+
+- Convencao na mecanica, autoral na identidade. Seguir padroes estabelecidos
+  de navegacao e interacao (nao reinventar onde o usuario ja sabe procurar:
+  menu, login, voltar, formularios). Investir originalidade no tom das
+  mensagens, na experiencia, na estetica e nas decisoes de produto - nao na
+  mecanica de UI. O "artesanal" do Trimote vive na execucao e nas decisoes,
+  nao em navegacao inventada.
