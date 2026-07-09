@@ -3,9 +3,11 @@ import { redirect } from "next/navigation";
 
 import { requireOwner, ForbiddenError, NeedsBusinessSelectionError } from "@/server/auth/owner";
 import { UnauthorizedError } from "@/server/auth/session";
+import { prisma } from "@/server/db/client";
 import { listTodayScheduleForOwner } from "@/server/booking/list-today-schedule";
 import { BusinessSelectionScreen } from "@/components/owner/business-selection-screen";
 import { TodaySchedule } from "@/components/owner/today-schedule";
+import { PublicPageCard } from "@/components/owner/public-page-card";
 
 export const dynamic = "force-dynamic";
 
@@ -31,6 +33,15 @@ export default async function OwnerHomePage() {
   // Agenda do dia (issue #13): businessId/timeZone vêm do vínculo (requireOwner), nunca do input.
   const { businessId, timeZone } = active;
   const schedule = await listTodayScheduleForOwner({ businessId, timeZone });
+
+  // Página pública do negócio (issue #15): slug do negócio ATIVO (nunca do input); URL montada no
+  // SERVER a partir de NEXTAUTH_URL (barra final normalizada) — a env não é exposta ao client.
+  const business = await prisma.business.findUnique({
+    where: { id: businessId },
+    select: { slug: true },
+  });
+  const baseUrl = (process.env.NEXTAUTH_URL ?? "").replace(/\/$/, "");
+  const publicUrl = business ? `${baseUrl}/b/${business.slug}` : null;
 
   return (
     <main className="mx-auto flex max-w-2xl flex-col gap-6 p-8">
@@ -58,6 +69,8 @@ export default async function OwnerHomePage() {
           Financeiro
         </Link>
       </nav>
+
+      {publicUrl && <PublicPageCard publicUrl={publicUrl} />}
     </main>
   );
 }
