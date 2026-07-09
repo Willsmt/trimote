@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { requireAdmin } from "@/server/auth/admin";
 import { ForbiddenError } from "@/server/auth/owner";
 import { UnauthorizedError } from "@/server/auth/session";
-import { prisma } from "@/server/db/client";
+import { listBusinessesForAdmin } from "@/server/business/list-businesses-for-admin";
 import { CreateBusinessForm } from "@/components/admin/create-business-form";
 import { PromoteOwnerForm } from "@/components/admin/promote-owner-form";
 
@@ -20,10 +20,7 @@ export default async function AdminPage() {
     throw error;
   }
 
-  const businesses = await prisma.business.findMany({
-    orderBy: { createdAt: "asc" },
-    select: { id: true, name: true, slug: true, _count: { select: { members: true } } },
-  });
+  const businesses = await listBusinessesForAdmin();
 
   return (
     <main className="mx-auto flex max-w-2xl flex-col gap-6 p-8">
@@ -44,9 +41,21 @@ export default async function AdminPage() {
             <li className="p-3 text-neutral-400">Nenhum negócio ainda.</li>
           ) : (
             businesses.map((b) => (
-              <li key={b.id} className="flex items-center justify-between p-3">
-                <span className="font-medium">{b.name}</span>
-                <span className="text-neutral-500">/b/{b.slug} · {b._count.members} dono(s)</span>
+              <li key={b.id} className="flex flex-col gap-1 p-3">
+                <div className="flex items-center justify-between">
+                  <span className="font-medium">{b.name}</span>
+                  <span className="text-neutral-500">/b/{b.slug} · {b.owners.length} dono(s)</span>
+                </div>
+                {b.owners.length > 0 && (
+                  <ul className="text-neutral-500">
+                    {b.owners.map((o, i) => (
+                      <li key={o.email ?? o.name ?? i}>
+                        {o.name ? `${o.name} — ` : ""}
+                        {o.email ?? "(sem email)"}
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </li>
             ))
           )}
