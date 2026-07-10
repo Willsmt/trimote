@@ -25,11 +25,13 @@ const ORIGIN_LABELS: Record<string, string> = {
   WALK_IN: "Avulso",
   EXPENSE: "Despesa",
 };
-// Mapa completo reason -> mensagem (pt-BR) da duplicação (issue #11). Nenhum reason órfão.
-const DUPLICATE_FAILURE_MESSAGES: Record<string, string> = {
+// Mapa completo reason -> mensagem (pt-BR) das ações por linha: duplicação (issue #11) e inativação
+// (issue #24 — antes falhava em silêncio). Nenhum reason órfão.
+const ACTION_FAILURE_MESSAGES: Record<string, string> = {
   entry_not_found: "Lançamento não encontrado.",
   entry_not_inactive: "Só um lançamento inativo pode ser duplicado.",
   booking_already_captured: "Este atendimento já tem um lançamento ativo no caixa.",
+  already_inactive: "Este lançamento já está inativo.",
 };
 
 interface LocalFilter {
@@ -90,16 +92,20 @@ export function LedgerBrowser({ initialPage, period }: LedgerBrowserProps) {
 
   // US4: inativa uma linha ativa reutilizando a MESMA action da F005 (deactivateLedgerEntry), sem
   // mudança. Após sucesso, recarrega a listagem (o inativado sai) e o caixa (router.refresh).
+  // Recusa exibida no mesmo padrão da duplicação (issue #24 — antes falhava em silêncio).
   function inactivate(id: string) {
     if (!confirm("Inativar este lançamento? Ele deixa de contar no caixa, mas fica registrado.")) return;
     startTransition(async () => {
       const res = await deactivateLedgerEntry({ ledgerEntryId: id });
       if (res.ok) {
+        setActionError(null);
         const page = await listLedger({ filter: toBackendFilter(filter) });
         setRows(page.rows);
         setCursor(page.nextCursor);
         router.refresh();
+        return;
       }
+      setActionError(ACTION_FAILURE_MESSAGES[res.reason]);
     });
   }
 
@@ -119,7 +125,7 @@ export function LedgerBrowser({ initialPage, period }: LedgerBrowserProps) {
         router.refresh();
         return;
       }
-      setActionError(DUPLICATE_FAILURE_MESSAGES[res.reason]);
+      setActionError(ACTION_FAILURE_MESSAGES[res.reason]);
     });
   }
 
