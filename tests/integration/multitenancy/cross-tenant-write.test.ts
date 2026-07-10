@@ -152,6 +152,34 @@ describe("isolamento cross-tenant de escrita (issue #6) — dono de A NAO alcanc
     expect(after.isActive).toBe(true);
   });
 
+  it("duplicateLedgerEntry com lancamento INATIVO de B -> entry_not_found; nada criado", async () => {
+    // RED (issue #11): import dinamico enquanto a action nao existe — nao derruba a coleta do
+    // arquivo (os demais casos seguem verdes). O commit GREEN promove para import estatico no topo.
+    const { duplicateLedgerEntry } = await import("@/server/actions/duplicate-ledger-entry");
+
+    // Alvo cross-tenant no estado DUPLICAVEL (inativo): a recusa deve ser entry_not_found (barreira
+    // de negocio ANTES do estado — nao vazar que a entidade de B existe), nunca entry_not_inactive.
+    const inactiveB = await prisma.ledgerEntry.create({
+      data: {
+        businessId: BIZ_B,
+        type: "INCOME",
+        origin: "WALK_IN",
+        amount: D("70.00"),
+        occurredAt: new Date(),
+        description: "Avulso B inativado",
+        createdBy: OWNER_B,
+        isActive: false,
+      },
+      select: { id: true },
+    });
+    const before = await prisma.ledgerEntry.count({ where: { businessId: { in: [BIZ_A, BIZ_B] } } });
+
+    const result = await duplicateLedgerEntry({ ledgerEntryId: inactiveB.id });
+    expect(result).toEqual({ ok: false, reason: "entry_not_found" });
+
+    expect(await prisma.ledgerEntry.count({ where: { businessId: { in: [BIZ_A, BIZ_B] } } })).toBe(before);
+  });
+
   it("completeBooking com bookingId de B -> booking_not_found; booking ACTIVE e sem lancamento", async () => {
     const result = await completeBooking({ bookingId: bookingB });
     expect(result).toEqual({ ok: false, reason: "booking_not_found" });
