@@ -42,6 +42,11 @@ export function MySpendingList({ initialPage }: { initialPage: ClientHistoryPage
         <p className="text-xl font-semibold text-neutral-900 tabular-nums">
           {BRL.format(sumDisplayed(rows))}
         </p>
+        {cursor && (
+          <p className="text-xs text-neutral-500">
+            Para ver o total completo, carregue todos os gastos.
+          </p>
+        )}
       </div>
 
       <ul className="flex flex-col divide-y divide-neutral-100 rounded-lg border border-neutral-200">
