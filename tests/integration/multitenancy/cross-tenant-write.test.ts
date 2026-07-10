@@ -177,6 +177,19 @@ describe("isolamento cross-tenant de escrita (issue #6) — dono de A NAO alcanc
     expect(await prisma.ledgerEntry.count({ where: { businessId: { in: [BIZ_A, BIZ_B] } } })).toBe(before);
   });
 
+  it("cancelBookingByOwner com bookingId de B -> not_found; booking de B segue ACTIVE", async () => {
+    // RED (issue #25): import dinamico enquanto a action nao existe — nao derruba a coleta do
+    // arquivo (os demais casos seguem verdes). O commit GREEN promove para import estatico no topo.
+    const { cancelBookingByOwner } = await import("@/server/actions/cancel-booking-owner");
+
+    const result = await cancelBookingByOwner({ bookingId: bookingB });
+    expect(result).toEqual({ ok: false, reason: "not_found" });
+
+    const after = await prisma.booking.findUniqueOrThrow({ where: { id: bookingB } });
+    expect(after.status).toBe("ACTIVE");
+    expect(after.cancelledAt).toBeNull();
+  });
+
   it("completeBooking com bookingId de B -> booking_not_found; booking ACTIVE e sem lancamento", async () => {
     const result = await completeBooking({ bookingId: bookingB });
     expect(result).toEqual({ ok: false, reason: "booking_not_found" });
