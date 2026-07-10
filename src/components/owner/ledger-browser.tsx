@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 
 import { listLedger, type LedgerPageDTO, type LedgerRowDTO } from "@/server/actions/list-ledger";
 import { deactivateLedgerEntry } from "@/server/actions/deactivate-ledger-entry";
+import { duplicateLedgerEntry } from "@/server/actions/duplicate-ledger-entry";
 import type { Granularity } from "@/domain/time";
 
 // Ilha client do razão (006, US3): filtros combináveis, "carregar mais" (keyset via nextCursor),
@@ -23,6 +24,12 @@ const ORIGIN_LABELS: Record<string, string> = {
   BOOKING: "Agendamento",
   WALK_IN: "Avulso",
   EXPENSE: "Despesa",
+};
+// Mapa completo reason -> mensagem (pt-BR) da duplicação (issue #11). Nenhum reason órfão.
+const DUPLICATE_FAILURE_MESSAGES: Record<string, string> = {
+  entry_not_found: "Lançamento não encontrado.",
+  entry_not_inactive: "Só um lançamento inativo pode ser duplicado.",
+  booking_already_captured: "Este atendimento já tem um lançamento ativo no caixa.",
 };
 
 interface LocalFilter {
@@ -48,6 +55,7 @@ export function LedgerBrowser({ initialPage, period }: LedgerBrowserProps) {
   const [cursor, setCursor] = useState(initialPage.nextCursor);
   const [filter, setFilter] = useState<LocalFilter>({});
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
+  const [actionError, setActionError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   const router = useRouter();
 
@@ -92,6 +100,26 @@ export function LedgerBrowser({ initialPage, period }: LedgerBrowserProps) {
         setCursor(page.nextCursor);
         router.refresh();
       }
+    });
+  }
+
+  // Issue #11: desfaz uma inativação acidental DUPLICANDO a linha inativa como lançamento novo
+  // (o original nunca reativa — trilha do soft delete preservada). Mesma mecânica do inactivate:
+  // confirm() nativo e, no sucesso, recarrega a listagem e o caixa (router.refresh).
+  function duplicate(id: string) {
+    if (!confirm("Duplicar este lançamento como um novo lançamento ativo? Ele volta a contar no caixa."))
+      return;
+    startTransition(async () => {
+      const res = await duplicateLedgerEntry({ ledgerEntryId: id });
+      if (res.ok) {
+        setActionError(null);
+        const page = await listLedger({ filter: toBackendFilter(filter) });
+        setRows(page.rows);
+        setCursor(page.nextCursor);
+        router.refresh();
+        return;
+      }
+      setActionError(DUPLICATE_FAILURE_MESSAGES[res.reason]);
     });
   }
 
@@ -150,6 +178,8 @@ export function LedgerBrowser({ initialPage, period }: LedgerBrowserProps) {
         </label>
       </div>
 
+      {actionError && <p className="text-sm font-medium text-red-600">{actionError}</p>}
+
       <ul className="flex flex-col divide-y divide-neutral-100 rounded-lg border border-neutral-200">
         {rows.length === 0 ? (
           <li className="p-3 text-sm text-neutral-400">Nenhum lançamento.</li>
@@ -176,7 +206,7 @@ export function LedgerBrowser({ initialPage, period }: LedgerBrowserProps) {
                       {expanded.has(row.id) ? "ocultar" : "itens"}
                     </button>
                   )}
-                  {row.isActive && (
+                  {row.isActive ? (
                     <button
                       type="button"
                       className="text-xs text-red-600 underline disabled:opacity-50"
@@ -184,6 +214,15 @@ export function LedgerBrowser({ initialPage, period }: LedgerBrowserProps) {
                       onClick={() => inactivate(row.id)}
                     >
                       Inativar (corrigir)
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      className="text-xs text-emerald-700 underline disabled:opacity-50"
+                      disabled={pending}
+                      onClick={() => duplicate(row.id)}
+                    >
+                      Duplicar
                     </button>
                   )}
                 </div>

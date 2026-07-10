@@ -18,6 +18,7 @@ import { updateService } from "@/server/actions/update-service";
 import { deactivateService } from "@/server/actions/deactivate-service";
 import { reactivateService } from "@/server/actions/reactivate-service";
 import { deactivateLedgerEntry } from "@/server/actions/deactivate-ledger-entry";
+import { duplicateLedgerEntry } from "@/server/actions/duplicate-ledger-entry";
 import { completeBooking } from "@/server/actions/complete-booking";
 import { registerWalkIn } from "@/server/actions/register-walk-in";
 import {
@@ -150,6 +151,30 @@ describe("isolamento cross-tenant de escrita (issue #6) — dono de A NAO alcanc
 
     const after = await prisma.ledgerEntry.findUniqueOrThrow({ where: { id: entryB } });
     expect(after.isActive).toBe(true);
+  });
+
+  it("duplicateLedgerEntry com lancamento INATIVO de B -> entry_not_found; nada criado", async () => {
+    // Alvo cross-tenant no estado DUPLICAVEL (inativo): a recusa deve ser entry_not_found (barreira
+    // de negocio ANTES do estado — nao vazar que a entidade de B existe), nunca entry_not_inactive.
+    const inactiveB = await prisma.ledgerEntry.create({
+      data: {
+        businessId: BIZ_B,
+        type: "INCOME",
+        origin: "WALK_IN",
+        amount: D("70.00"),
+        occurredAt: new Date(),
+        description: "Avulso B inativado",
+        createdBy: OWNER_B,
+        isActive: false,
+      },
+      select: { id: true },
+    });
+    const before = await prisma.ledgerEntry.count({ where: { businessId: { in: [BIZ_A, BIZ_B] } } });
+
+    const result = await duplicateLedgerEntry({ ledgerEntryId: inactiveB.id });
+    expect(result).toEqual({ ok: false, reason: "entry_not_found" });
+
+    expect(await prisma.ledgerEntry.count({ where: { businessId: { in: [BIZ_A, BIZ_B] } } })).toBe(before);
   });
 
   it("completeBooking com bookingId de B -> booking_not_found; booking ACTIVE e sem lancamento", async () => {
