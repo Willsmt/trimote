@@ -16,6 +16,8 @@ import { ForbiddenError } from "@/server/auth/owner";
 import { completeBookingForOwner } from "@/server/ledger/complete-booking";
 import { registerWalkInForOwner } from "@/server/ledger/register-walk-in";
 import { deactivateLedgerEntryForOwner } from "@/server/ledger/deactivate-ledger-entry";
+import { duplicateLedgerEntryForOwner } from "@/server/ledger/duplicate-ledger-entry";
+import { duplicateLedgerEntry } from "@/server/actions/duplicate-ledger-entry";
 import {
   SERVICE_CORTE,
   seedBooking,
@@ -31,20 +33,7 @@ import {
  * acidental = criar um lançamento NOVO copiando o inativado (fato novo no razão) — o original nunca
  * reativa (imutabilidade + trilha do soft delete). Guardas: só INATIVO é duplicável; origin BOOKING
  * recusa se já houver outro lançamento ATIVO do mesmo booking (invariante D10: 1 ativo + N inativos).
- *
- * TEST-FIRST (RED): o core e a action AINDA NÃO EXISTEM. Imports dinâmicos DENTRO dos casos fazem
- * cada um falhar individualmente (module not found) sem derrubar a coleta do arquivo — RED legível
- * caso a caso. O commit GREEN promove para imports estáticos no topo.
  */
-async function coreDuplicate() {
-  const mod = await import("@/server/ledger/duplicate-ledger-entry");
-  return mod.duplicateLedgerEntryForOwner;
-}
-async function actionDuplicate() {
-  const mod = await import("@/server/actions/duplicate-ledger-entry");
-  return mod.duplicateLedgerEntry;
-}
-
 const OWNER_ID = "u-it-dup-owner";
 const OWNER2_ID = "u-it-dup-owner2"; // autor do lançamento ORIGINAL (createdBy não deve ser copiado)
 const CLIENT_ID = "u-it-dup-client";
@@ -114,14 +103,13 @@ afterAll(async () => {
 
 describe("duplicateLedgerEntryForOwner (core)", () => {
   it("duplica walk-in inativado copiando campos, occurredAt e itens com o snapshot ORIGINAL", async () => {
-    const duplicate = await coreDuplicate();
     const originalId = await newInactiveWalkInId();
 
     // Preço do serviço muda ANTES da duplicação: a duplicata deve manter o snapshot do original
     // (25.00), nunca re-snapshotar o catálogo atual (99.00) — repõe o MESMO fato econômico.
     await prisma.service.update({ where: { id: SERVICE_DUP }, data: { price: D("99.00") } });
 
-    const result = await duplicate({
+    const result = await duplicateLedgerEntryForOwner({
       businessId: BUSINESS_ID,
       ownerId: OWNER_ID,
       ledgerEntryId: originalId,
@@ -164,7 +152,6 @@ describe("duplicateLedgerEntryForOwner (core)", () => {
   });
 
   it("NAO copia os proibidos: externalRef null, createdBy do duplicador, isActive true", async () => {
-    const duplicate = await coreDuplicate();
     const occurredAt = slotAt(DATE, 11 * 60);
     // Original inativo de OUTRO autor (OWNER2), com externalRef de pagamento e categoria.
     const original = await prisma.ledgerEntry.create({
@@ -184,7 +171,7 @@ describe("duplicateLedgerEntryForOwner (core)", () => {
       select: { id: true, createdAt: true },
     });
 
-    const result = await duplicate({
+    const result = await duplicateLedgerEntryForOwner({
       businessId: BUSINESS_ID,
       ownerId: OWNER_ID,
       ledgerEntryId: original.id,
@@ -207,7 +194,6 @@ describe("duplicateLedgerEntryForOwner (core)", () => {
   });
 
   it("duplicar lancamento ATIVO -> entry_not_inactive; nada criado", async () => {
-    const duplicate = await coreDuplicate();
     const active = await registerWalkInForOwner({
       businessId: BUSINESS_ID,
       ownerId: OWNER_ID,
@@ -215,7 +201,7 @@ describe("duplicateLedgerEntryForOwner (core)", () => {
     });
     if (!active.ok) throw new Error("setup falhou");
 
-    const result = await duplicate({
+    const result = await duplicateLedgerEntryForOwner({
       businessId: BUSINESS_ID,
       ownerId: OWNER_ID,
       ledgerEntryId: active.ledgerEntryId,
@@ -225,8 +211,7 @@ describe("duplicateLedgerEntryForOwner (core)", () => {
   });
 
   it("lancamento inexistente -> entry_not_found", async () => {
-    const duplicate = await coreDuplicate();
-    const result = await duplicate({
+    const result = await duplicateLedgerEntryForOwner({
       businessId: BUSINESS_ID,
       ownerId: OWNER_ID,
       ledgerEntryId: "entry-does-not-exist",
@@ -235,7 +220,6 @@ describe("duplicateLedgerEntryForOwner (core)", () => {
   });
 
   it("BOOKING: duplica inativado preservando bookingId; nova duplicacao -> booking_already_captured", async () => {
-    const duplicate = await coreDuplicate();
     const bookingId = await seedBooking({
       userId: CLIENT_ID,
       serviceId: SERVICE_CORTE,
@@ -253,7 +237,7 @@ describe("duplicateLedgerEntryForOwner (core)", () => {
     });
 
     // Duplicação repõe a receita do booking (o que completeBooking recusaria: already_completed).
-    const first = await duplicate({
+    const first = await duplicateLedgerEntryForOwner({
       businessId: BUSINESS_ID,
       ownerId: OWNER_ID,
       ledgerEntryId: completed.ledgerEntryId,
@@ -272,7 +256,7 @@ describe("duplicateLedgerEntryForOwner (core)", () => {
     expect(booking.status).toBe("COMPLETED");
 
     // Guarda D10: já existe lançamento ATIVO do mesmo booking -> segunda duplicação recusada.
-    const second = await duplicate({
+    const second = await duplicateLedgerEntryForOwner({
       businessId: BUSINESS_ID,
       ownerId: OWNER_ID,
       ledgerEntryId: completed.ledgerEntryId,
@@ -284,16 +268,15 @@ describe("duplicateLedgerEntryForOwner (core)", () => {
 
 describe("duplicateLedgerEntry (Server Action) — autorizacao por role", () => {
   it("nega CLIENT (ForbiddenError) e admite OWNER", async () => {
-    const duplicateAction = await actionDuplicate();
     const originalId = await newInactiveWalkInId();
 
     actAs(CLIENT_ID);
-    await expect(duplicateAction({ ledgerEntryId: originalId })).rejects.toBeInstanceOf(
+    await expect(duplicateLedgerEntry({ ledgerEntryId: originalId })).rejects.toBeInstanceOf(
       ForbiddenError,
     );
 
     actAs(OWNER_ID);
-    const result = await duplicateAction({ ledgerEntryId: originalId });
+    const result = await duplicateLedgerEntry({ ledgerEntryId: originalId });
     expect(result.ok).toBe(true);
   });
 });

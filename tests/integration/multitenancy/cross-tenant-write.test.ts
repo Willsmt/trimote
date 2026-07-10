@@ -18,6 +18,7 @@ import { updateService } from "@/server/actions/update-service";
 import { deactivateService } from "@/server/actions/deactivate-service";
 import { reactivateService } from "@/server/actions/reactivate-service";
 import { deactivateLedgerEntry } from "@/server/actions/deactivate-ledger-entry";
+import { duplicateLedgerEntry } from "@/server/actions/duplicate-ledger-entry";
 import { completeBooking } from "@/server/actions/complete-booking";
 import { registerWalkIn } from "@/server/actions/register-walk-in";
 import {
@@ -153,10 +154,6 @@ describe("isolamento cross-tenant de escrita (issue #6) — dono de A NAO alcanc
   });
 
   it("duplicateLedgerEntry com lancamento INATIVO de B -> entry_not_found; nada criado", async () => {
-    // RED (issue #11): import dinamico enquanto a action nao existe — nao derruba a coleta do
-    // arquivo (os demais casos seguem verdes). O commit GREEN promove para import estatico no topo.
-    const { duplicateLedgerEntry } = await import("@/server/actions/duplicate-ledger-entry");
-
     // Alvo cross-tenant no estado DUPLICAVEL (inativo): a recusa deve ser entry_not_found (barreira
     // de negocio ANTES do estado — nao vazar que a entidade de B existe), nunca entry_not_inactive.
     const inactiveB = await prisma.ledgerEntry.create({
