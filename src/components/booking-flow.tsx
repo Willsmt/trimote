@@ -50,7 +50,10 @@ export function BookingFlow({ services }: { services: ServiceOption[] }) {
     }
     setSlots(result.slots);
     if (result.slots.length === 0) {
-      setMessage("Nenhum horário livre nesse dia.");
+      // Dia fechado != dia lotado (issue #22): sem a distincao, fechado parecia agenda cheia.
+      setMessage(
+        result.emptyReason === "closed" ? "Fechado neste dia." : "Nenhum horário livre nesse dia.",
+      );
     }
   }
 

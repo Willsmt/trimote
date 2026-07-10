@@ -90,7 +90,10 @@ export function RescheduleFlow({
     }
     setSlots(result.slots);
     if (result.slots.length === 0) {
-      setMessage("Nenhum horário livre nesse dia.");
+      // Dia fechado != dia lotado (issue #22): mesma correcao do fluxo de criacao (booking-flow).
+      setMessage(
+        result.emptyReason === "closed" ? "Fechado neste dia." : "Nenhum horário livre nesse dia.",
+      );
     }
   }
 
