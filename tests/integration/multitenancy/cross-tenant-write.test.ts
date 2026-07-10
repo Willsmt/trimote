@@ -19,6 +19,7 @@ import { deactivateService } from "@/server/actions/deactivate-service";
 import { reactivateService } from "@/server/actions/reactivate-service";
 import { deactivateLedgerEntry } from "@/server/actions/deactivate-ledger-entry";
 import { duplicateLedgerEntry } from "@/server/actions/duplicate-ledger-entry";
+import { cancelBookingByOwner } from "@/server/actions/cancel-booking-owner";
 import { completeBooking } from "@/server/actions/complete-booking";
 import { registerWalkIn } from "@/server/actions/register-walk-in";
 import {
@@ -175,6 +176,15 @@ describe("isolamento cross-tenant de escrita (issue #6) — dono de A NAO alcanc
     expect(result).toEqual({ ok: false, reason: "entry_not_found" });
 
     expect(await prisma.ledgerEntry.count({ where: { businessId: { in: [BIZ_A, BIZ_B] } } })).toBe(before);
+  });
+
+  it("cancelBookingByOwner com bookingId de B -> not_found; booking de B segue ACTIVE", async () => {
+    const result = await cancelBookingByOwner({ bookingId: bookingB });
+    expect(result).toEqual({ ok: false, reason: "not_found" });
+
+    const after = await prisma.booking.findUniqueOrThrow({ where: { id: bookingB } });
+    expect(after.status).toBe("ACTIVE");
+    expect(after.cancelledAt).toBeNull();
   });
 
   it("completeBooking com bookingId de B -> booking_not_found; booking ACTIVE e sem lancamento", async () => {

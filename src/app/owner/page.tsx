@@ -32,8 +32,17 @@ export default async function OwnerHomePage() {
   }
 
   // Agenda do dia (issue #13): businessId/timeZone vêm do vínculo (requireOwner), nunca do input.
+  // Datas serializadas em ISO para a ilha client (issue #25: ações por linha), padrão das demais ilhas.
   const { businessId, timeZone } = active;
   const schedule = await listTodayScheduleForOwner({ businessId, timeZone });
+  const scheduleItems = schedule.map((item) => ({
+    id: item.id,
+    startsAtIso: item.startsAt.toISOString(),
+    endsAtIso: item.endsAt.toISOString(),
+    serviceName: item.serviceName,
+    clientName: item.clientName,
+    clientEmail: item.clientEmail,
+  }));
 
   // Página pública do negócio (issue #15): slug do negócio ATIVO (nunca do input); URL montada no
   // SERVER a partir de NEXTAUTH_URL (barra final normalizada) — a env não é exposta ao client.
@@ -67,7 +76,7 @@ export default async function OwnerHomePage() {
 
       <section className="flex flex-col gap-2">
         <h2 className="text-lg font-semibold">Agenda de hoje</h2>
-        <TodaySchedule items={schedule} timeZone={timeZone} />
+        <TodaySchedule items={scheduleItems} timeZone={timeZone} />
       </section>
 
       <nav className="flex flex-col gap-2">
