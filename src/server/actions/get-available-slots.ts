@@ -10,7 +10,9 @@ import { localDateTimeToUtc, weekdayInZone } from "@/domain/time";
  * ISO 8601 (UTC).
  */
 export type GetAvailableSlotsResult =
-  | { ok: true; slots: string[] }
+  // emptyReason (issue #22): presente APENAS com slots vazio — distingue dia fechado (weekday sem
+  // OpeningHours) de dia com expediente mas sem horario livre. Aditivo: consumidores antigos ignoram.
+  | { ok: true; slots: string[]; emptyReason?: "closed" | "no_slots" }
   | { ok: false; reason: "service_not_found" | "service_inactive" };
 
 export async function getAvailableSlots(input: {
@@ -62,5 +64,11 @@ export async function getAvailableSlots(input: {
     now: new Date(),
   });
 
-  return { ok: true, slots: slots.map((slot) => slot.toISOString()) };
+  const slotsIso = slots.map((slot) => slot.toISOString());
+  // O motivo do vazio deriva de `window` AQUI (a action ja sabe se o dia tem expediente) — o dominio
+  // permanece puro devolvendo Date[], sem carregar apresentacao (issue #22).
+  if (slotsIso.length === 0) {
+    return { ok: true, slots: slotsIso, emptyReason: window ? "no_slots" : "closed" };
+  }
+  return { ok: true, slots: slotsIso };
 }
