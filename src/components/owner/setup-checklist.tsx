@@ -51,8 +51,9 @@ export function SetupChecklist({
             key={item.href}
             className="flex items-center justify-between gap-3 rounded border border-neutral-300 p-3"
           >
-            <p className={`text-sm ${item.done ? "text-neutral-400 line-through" : "font-medium"}`}>
-              <span aria-hidden="true" className="mr-2">
+            {/* Feito = check + texto esmaecido, SEM line-through (riscado lê como cancelado). */}
+            <p className={`text-sm ${item.done ? "text-neutral-500" : "font-medium"}`}>
+              <span aria-hidden="true" className={`mr-2 ${item.done ? "text-emerald-600" : ""}`}>
                 {item.done ? "✓" : "○"}
               </span>
               {item.label}

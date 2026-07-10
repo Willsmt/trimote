@@ -9,6 +9,12 @@ import { listMyLedger, type ClientHistoryPageDTO } from "@/server/actions/list-m
 
 const BRL = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
 
+// Total das linhas EXIBIDAS (polish): somado no client a partir do que já foi carregado — nenhuma
+// query nova. Em centavos (inteiros) para não acumular erro de float; valores vêm com 2 casas.
+function sumDisplayed(rows: { amount: string }[]): number {
+  return rows.reduce((cents, row) => cents + Math.round(Number(row.amount) * 100), 0) / 100;
+}
+
 export function MySpendingList({ initialPage }: { initialPage: ClientHistoryPageDTO }) {
   const [rows, setRows] = useState(initialPage.rows);
   const [cursor, setCursor] = useState(initialPage.nextCursor);
@@ -29,6 +35,20 @@ export function MySpendingList({ initialPage }: { initialPage: ClientHistoryPage
 
   return (
     <section className="flex flex-col gap-3">
+      {/* Padrão visual das somas do balancete (cash-summary-view). O rótulo é honesto sobre a
+          cobertura: enquanto houver páginas por carregar, a soma cobre só o que está na tela. */}
+      <div className="rounded-lg border border-neutral-200 p-4">
+        <p className="text-sm text-neutral-500">{cursor ? "Total carregado até aqui" : "Total"}</p>
+        <p className="text-xl font-semibold text-neutral-900 tabular-nums">
+          {BRL.format(sumDisplayed(rows))}
+        </p>
+        {cursor && (
+          <p className="text-xs text-neutral-500">
+            Para ver o total completo, carregue todos os gastos.
+          </p>
+        )}
+      </div>
+
       <ul className="flex flex-col divide-y divide-neutral-100 rounded-lg border border-neutral-200">
         {rows.map((row) => (
           <li key={row.id} className="flex flex-col gap-1 p-3 text-sm">
