@@ -47,7 +47,9 @@ describe("listagem de negocios do admin — donos (issue #14)", () => {
     const all = await listBusinessesForAdmin();
     const a = all.find((b) => b.id === BIZ_A);
     expect(a).toBeDefined();
-    expect(a!.owners).toEqual([{ name: "Dono A", email: "dono-a@example.com" }]);
+    expect(a!.owners).toEqual([
+      { membershipId: expect.any(String), name: "Dono A", email: "dono-a@example.com" },
+    ]);
   });
 
   it("so o OWNER do proprio negocio aparece; dono de B nao vaza para A; nao-membro nao aparece", async () => {
