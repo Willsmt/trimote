@@ -64,12 +64,21 @@ export function BookingFlow({ services }: { services: ServiceOption[] }) {
   async function confirm(startsAt: string) {
     setLoading(true);
     setMessage(null);
-    const result = await createBooking({ serviceId, startsAt });
-    // Recarrega a disponibilidade para refletir o horário ocupado (ou liberado em caso de recusa).
-    // loadSlots já não mexe na mensagem; a do RESULTADO é setada DEPOIS do re-fetch para sobreviver.
-    await loadSlots();
-    setLoading(false);
-    setMessage(result.ok ? "Agendamento confirmado!" : FAILURE_MESSAGES[result.reason]);
+    try {
+      const result = await createBooking({ serviceId, startsAt });
+      // Recarrega a disponibilidade para refletir o horário ocupado (ou liberado em caso de recusa).
+      // loadSlots já não mexe na mensagem; a do RESULTADO é setada DEPOIS do re-fetch para sobreviver.
+      await loadSlots();
+      setMessage(result.ok ? "Agendamento confirmado!" : FAILURE_MESSAGES[result.reason]);
+    } catch {
+      // Qualquer throw inesperado da action (sessão expirada, rede, erro do servidor) antes travava a
+      // UI: loading ficava preso em true, os slots desabilitados e nenhuma mensagem aparecia. Aqui a
+      // rejeição vira aviso genérico. NÃO re-fetchamos no erro (evita sobrescrever esta mensagem ou
+      // relançar); ela sobrevive porque nada depois a limpa — loadSlots não mexe na mensagem (#27).
+      setMessage("Não foi possível concluir agora. Tente de novo em instantes.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
