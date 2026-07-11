@@ -6,6 +6,7 @@ import { UnauthorizedError } from "@/server/auth/session";
 import { listBusinessesForAdmin } from "@/server/business/list-businesses-for-admin";
 import { CreateBusinessForm } from "@/components/admin/create-business-form";
 import { PromoteOwnerForm } from "@/components/admin/promote-owner-form";
+import { RemoveOwnerButton } from "@/components/admin/remove-owner-button";
 
 export const dynamic = "force-dynamic";
 
@@ -48,10 +49,17 @@ export default async function AdminPage() {
                 </div>
                 {b.owners.length > 0 && (
                   <ul className="text-neutral-500">
-                    {b.owners.map((o, i) => (
-                      <li key={o.email ?? o.name ?? i}>
-                        {o.name ? `${o.name} — ` : ""}
-                        {o.email ?? "(sem email)"}
+                    {b.owners.map((o) => (
+                      <li key={o.membershipId} className="flex items-center justify-between gap-2">
+                        <span>
+                          {o.name ? `${o.name} — ` : ""}
+                          {o.email ?? "(sem email)"}
+                        </span>
+                        <RemoveOwnerButton
+                          businessId={b.id}
+                          membershipId={o.membershipId}
+                          ownerLabel={o.name ?? o.email ?? "este dono"}
+                        />
                       </li>
                     ))}
                   </ul>

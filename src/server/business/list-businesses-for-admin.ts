@@ -13,6 +13,9 @@ import { prisma } from "@/server/db/client";
  */
 
 export interface AdminBusinessOwner {
+  // Id do BusinessMember (não do User): identifica o vínculo a remover sem ambiguidade, casando com o
+  // contrato do core removeOwnerForAdmin (a UI manda membershipId, nunca email).
+  membershipId: string;
   name: string | null;
   email: string | null;
 }
@@ -33,7 +36,7 @@ export async function listBusinessesForAdmin(): Promise<AdminBusinessItem[]> {
       slug: true,
       members: {
         where: { role: "OWNER" },
-        select: { user: { select: { name: true, email: true } } },
+        select: { id: true, user: { select: { name: true, email: true } } },
         orderBy: { user: { email: "asc" } },
       },
     },
@@ -43,6 +46,6 @@ export async function listBusinessesForAdmin(): Promise<AdminBusinessItem[]> {
     id: b.id,
     name: b.name,
     slug: b.slug,
-    owners: b.members.map((m) => ({ name: m.user.name, email: m.user.email })),
+    owners: b.members.map((m) => ({ membershipId: m.id, name: m.user.name, email: m.user.email })),
   }));
 }
