@@ -18,6 +18,8 @@ const FAILURE_MESSAGES: Record<string, string> = {
   outside_opening_hours: "Fora do horário de funcionamento.",
   service_not_found: "Serviço não encontrado.",
   service_inactive: "Esse serviço não está mais disponível. Escolha outro.",
+  booking_limit_reached:
+    "Você já tem o máximo de agendamentos ativos neste estabelecimento. Conclua ou cancele um deles para agendar outro.",
 };
 
 function formatSlot(iso: string): string {
