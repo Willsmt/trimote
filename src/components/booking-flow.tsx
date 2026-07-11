@@ -18,6 +18,8 @@ const FAILURE_MESSAGES: Record<string, string> = {
   outside_opening_hours: "Fora do horário de funcionamento.",
   service_not_found: "Serviço não encontrado.",
   service_inactive: "Esse serviço não está mais disponível. Escolha outro.",
+  booking_limit_reached:
+    "Você já tem o máximo de agendamentos ativos neste estabelecimento. Conclua ou cancele um deles para agendar outro.",
 };
 
 function formatSlot(iso: string): string {
@@ -35,12 +37,14 @@ export function BookingFlow({ services }: { services: ServiceOption[] }) {
   const [message, setMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
+  // Responsabilidade única: buscar slots (e reportar o resultado da PRÓPRIA busca — vazio/fechado).
+  // NÃO limpa a mensagem: quem chama decide o estado inicial, para que uma mensagem de submit
+  // (confirm) não seja apagada por um re-fetch no mesmo ciclo.
   async function loadSlots() {
     if (!serviceId || !date) {
       return;
     }
     setLoading(true);
-    setMessage(null);
     const result = await getAvailableSlots({ serviceId, date });
     setLoading(false);
     if (!result.ok) {
@@ -61,10 +65,11 @@ export function BookingFlow({ services }: { services: ServiceOption[] }) {
     setLoading(true);
     setMessage(null);
     const result = await createBooking({ serviceId, startsAt });
+    // Recarrega a disponibilidade para refletir o horário ocupado (ou liberado em caso de recusa).
+    // loadSlots já não mexe na mensagem; a do RESULTADO é setada DEPOIS do re-fetch para sobreviver.
+    await loadSlots();
     setLoading(false);
     setMessage(result.ok ? "Agendamento confirmado!" : FAILURE_MESSAGES[result.reason]);
-    // Recarrega a disponibilidade para refletir o horário ocupado (ou liberado em caso de recusa).
-    await loadSlots();
   }
 
   return (
@@ -97,7 +102,11 @@ export function BookingFlow({ services }: { services: ServiceOption[] }) {
       <button
         type="button"
         className="rounded bg-neutral-900 p-2 text-white disabled:opacity-50"
-        onClick={loadSlots}
+        onClick={() => {
+          // Este fluxo começa limpo: a limpeza saiu de loadSlots, então é explícita aqui.
+          setMessage(null);
+          void loadSlots();
+        }}
         disabled={loading || !serviceId || !date}
       >
         Ver horários livres
