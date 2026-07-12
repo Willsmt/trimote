@@ -25,6 +25,9 @@ export interface TodayScheduleItem {
   serviceName: string;
   clientName: string | null;
   clientEmail: string | null;
+  // Telefone/WhatsApp do cliente (issue #34): alimenta o link wa.me na agenda. Só o dono do negócio
+  // ativo vê — a query já é escopada por businessId (requireOwner), então o campo não vaza cross-tenant.
+  clientPhone: string | null;
 }
 
 export interface TodayScheduleInput {
@@ -56,7 +59,7 @@ export async function listTodayScheduleForOwner(
       endsAt: true,
       status: true,
       service: { select: { name: true } },
-      user: { select: { name: true, email: true } },
+      user: { select: { name: true, email: true, phone: true } },
     },
   });
 
@@ -68,5 +71,6 @@ export async function listTodayScheduleForOwner(
     serviceName: b.service.name,
     clientName: b.user.name ?? null,
     clientEmail: b.user.email ?? null,
+    clientPhone: b.user.phone ?? null,
   }));
 }

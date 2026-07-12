@@ -42,6 +42,7 @@ export default async function OwnerHomePage() {
     serviceName: item.serviceName,
     clientName: item.clientName,
     clientEmail: item.clientEmail,
+    clientPhone: item.clientPhone,
   }));
 
   // Página pública do negócio (issue #15): slug do negócio ATIVO (nunca do input); URL montada no
