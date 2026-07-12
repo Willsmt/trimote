@@ -63,3 +63,12 @@ Earlier feature: 001-barber-booking — agendamento com não-sobreposição por 
   mensagens, na experiencia, na estetica e nas decisoes de produto - nao na
   mecanica de UI. O "artesanal" do Trimote vive na execucao e nas decisoes,
   nao em navegacao inventada.
+
+- Rastreamento/analytics exige reavaliar LGPD ANTES do merge. O Trimote seta
+  apenas cookies essenciais (NextAuth: session-token, csrf-token, callback-url,
+  state, pkce) - auditados em 2026-07-11, zero rastreamento, database session
+  sem dados no cliente. Adicionar Vercel Analytics, Speed Insights, Google
+  Analytics, Meta Pixel ou qualquer script de terceiro que colete comportamento
+  muda essa classificacao e exige atualizar a Politica de Privacidade + aviso de
+  cookies ANTES de mergear. Ligar Web Analytics no dashboard da Vercel conta
+  como adicionar rastreamento.
