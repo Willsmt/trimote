@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 import { SiteHeader } from "@/components/site-header";
+import { CookieNotice } from "@/components/cookie-notice";
 
 export const metadata: Metadata = {
   title: "Trimote",
@@ -19,6 +20,8 @@ export default function RootLayout({
       <body>
         <SiteHeader />
         {children}
+        {/* Faixa informativa de cookies (036): global, dispensável, não bloqueia o uso. */}
+        <CookieNotice />
       </body>
     </html>
   );
