@@ -1,0 +1,62 @@
+/*
+ * CSS Module da landing (isolado). Todo o tema ESCURO e os tokens visuais da landing vivem AQUI —
+ * nada disso vaza para o tema Tailwind global. tekhelet-vivo (#5B9BE0) e a paleta abaixo existem
+ * só neste escopo, nunca viram cor core do app.
+ *
+ * Stub da Peça 1: por ora só o shell escuro e o placeholder. As seções reais (hero, features, demo,
+ * etc.) e os efeitos atmosféricos (grade+mask do topo, blur da nav, texto-ouro, reveal) entram nas
+ * Peças 2-3.
+ */
+
+.root {
+  /* Tokens da landing (escopados). Reproduzem o :root do protótipo. */
+  --fundo: #10161f;
+  --superficie: #171f2b;
+  --superficie-2: #1e2836;
+  --texto: #eeede8;
+  --texto-secundario: #97a1ae;
+  --borda: #28323f;
+  --primaria: #4e7db5;
+  --primaria-hover: #6190c4;
+  --primaria-texto: #fff;
+  --primaria-suave: #1e2e44;
+  --tekhelet-vivo: #5b9be0;
+  --ouro-suave: #322c1d;
+  --ouro-texto: #e6be68;
+  --carmesim-texto: #e5978a;
+  --sucesso: #4ba47b;
+  --sucesso-texto: #83c6a4;
+  --sucesso-suave: #1c2f26;
+  --raio-s: 6px;
+  --raio-m: 10px;
+  --raio-l: 14px;
+
+  min-height: 100vh;
+  background: var(--fundo);
+  color: var(--texto);
+  /* Corpo em Inter (global). Títulos usarão --font-fraunces nas próximas peças. */
+  font-family: var(--font-inter), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.placeholder {
+  display: flex;
+  min-height: 100vh;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 32px;
+  text-align: center;
+}
+
+.placeholder h1 {
+  font-family: var(--font-fraunces), Georgia, serif;
+  font-size: 28px;
+  font-weight: 600;
+}
+
+.placeholder p {
+  color: var(--texto-secundario);
+  font-size: 15px;
+}

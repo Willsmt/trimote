@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 
-import { SiteHeader } from "@/components/site-header";
-import { SiteFooter } from "@/components/site-footer";
+import { inter } from "./fonts";
 import { CookieNotice } from "@/components/cookie-notice";
 
 export const metadata: Metadata = {
@@ -15,17 +14,14 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  // Header montado uma única vez no layout raiz para aparecer em todas as páginas (FR-008).
+  // Layout raiz enxuto: só o documento (<html>/<body>), a fonte base (Inter, self-hosted) e o aviso
+  // de cookies global (LGPD). O header/rodapé do app saíram daqui para o grupo (site) — assim a
+  // landing (grupo (marketing)) pode ter nav/tema próprios sem herdar o cabeçalho claro do app.
   return (
-    <html lang="pt-BR">
-      {/* Coluna flex de altura mínima do viewport: o conteúdo cresce (flex-1) e empurra o rodapé
-          para a base mesmo em páginas curtas (sticky footer), em vez de ele flutuar no meio. */}
-      <body className="flex min-h-screen flex-col">
-        <SiteHeader />
-        <div className="flex-1">{children}</div>
-        {/* Rodapé global (036): acesso permanente à Política, no fluxo do documento. */}
-        <SiteFooter />
-        {/* Faixa informativa de cookies (036): global, dispensável, não bloqueia o uso. */}
+    <html lang="pt-BR" className={inter.variable}>
+      <body className={inter.className}>
+        {children}
+        {/* Faixa informativa de cookies (036): global, dispensável, `fixed` — não depende de wrapper. */}
         <CookieNotice />
       </body>
     </html>

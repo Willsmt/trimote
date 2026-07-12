@@ -24,7 +24,7 @@ vi.mock("@/server/business/active-business", async (importActual) => {
 });
 
 import { prisma } from "@/server/db/client";
-import OwnerLayout from "@/app/owner/layout";
+import OwnerLayout from "@/app/(site)/owner/layout";
 import { BusinessSwitcher } from "@/components/owner/business-switcher";
 import {
   createTestBusiness,
