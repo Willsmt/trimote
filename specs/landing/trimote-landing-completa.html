@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trimote — Landing (referência de direção)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --fundo: #10161F; --superficie: #171F2B; --superficie-2: #1E2836;
+    --texto: #EEEDE8; --texto-secundario: #97A1AE; --borda: #28323F;
+    --primaria: #4E7DB5; --primaria-hover: #6190C4; --primaria-texto: #FFF; --primaria-suave: #1E2E44;
+    --tekhelet-vivo: #5B9BE0;
+    --ouro-metal: linear-gradient(135deg, #EBC05C, #C99730);
+    --ouro-suave: #322C1D; --ouro-texto: #E6BE68;
+    --carmesim-texto: #E5978A; --sucesso: #4BA47B; --sucesso-texto: #83C6A4; --sucesso-suave: #1C2F26;
+    --polimento: inset 0 1px 0 rgba(255,255,255,.08);
+    --raio-s: 6px; --raio-m: 10px; --raio-l: 14px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { font-family: 'Inter', system-ui, sans-serif; background: var(--fundo); color: var(--texto); -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 0 24px; }
+  h1, h2, .logo, .fraunces { font-family: 'Fraunces', Georgia, serif; }
+  .eyebrow { display: inline-flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: var(--texto-secundario); }
+  .eyebrow .pip { width: 6px; height: 6px; border-radius: 999px; background: var(--tekhelet-vivo); box-shadow: 0 0 0 4px rgba(91,155,224,.14); animation: pulse 2.4s ease-in-out infinite; }
+  @keyframes pulse { 0%,100%{box-shadow:0 0 0 4px rgba(91,155,224,.12)} 50%{box-shadow:0 0 0 7px rgba(91,155,224,.03)} }
+
+  /* botões */
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-weight: 600; font-size: 14px; padding: 11px 22px; border-radius: var(--raio-m); border: none; cursor: pointer; text-decoration: none; transition: background .15s, box-shadow .2s, border-color .15s, color .15s, transform .15s; }
+  .btn-lg { padding: 14px 28px; font-size: 15px; }
+  .btn-primario { background: var(--primaria); color: var(--primaria-texto); box-shadow: var(--polimento); }
+  .btn-primario:hover { background: var(--primaria-hover); transform: translateY(-1px); box-shadow: var(--polimento), 0 0 0 1px rgba(91,155,224,.5), 0 8px 28px -8px rgba(91,155,224,.55); }
+  .btn-primario:disabled { background: #2a3a4d; color: #6b7684; cursor: not-allowed; transform: none; box-shadow: none; }
+  .btn-secundario { background: transparent; color: var(--texto); border: 1px solid var(--borda); }
+  .btn-secundario:hover { border-color: var(--primaria); color: var(--primaria); }
+
+  /* atmosfera do topo */
+  .cena { position: relative; }
+  .cena::before { content: ""; position: absolute; inset: 0; height: 760px; pointer-events: none;
+    background: radial-gradient(680px 420px at 78% 30%, rgba(78,125,181,.16), transparent 60%),
+      linear-gradient(to right, rgba(255,255,255,.02) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255,255,255,.02) 1px, transparent 1px);
+    background-size: auto, 56px 56px, 56px 56px;
+    mask-image: linear-gradient(to bottom, #000 55%, transparent); }
+
+  /* nav */
+  nav { position: sticky; top: 0; z-index: 20; border-bottom: 1px solid var(--borda); background: rgba(16,22,31,.72); backdrop-filter: blur(10px); }
+  .nav-in { display: flex; align-items: center; justify-content: space-between; height: 68px; }
+  .logo { font-size: 22px; font-weight: 700; letter-spacing: -.02em; }
+  .logo .dot { background: var(--ouro-metal); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .nav-links { display: flex; align-items: center; gap: 28px; }
+  .nav-links a { color: var(--texto-secundario); text-decoration: none; font-size: 14px; font-weight: 500; }
+  .nav-links a:hover { color: var(--texto); }
+
+  /* hero */
+  .hero { position: relative; z-index: 2; padding: 76px 0 88px; }
+  .hero-grid { display: grid; grid-template-columns: 1.02fr .98fr; gap: 56px; align-items: center; }
+  .hero h1 { font-size: clamp(34px, 5vw, 56px); font-weight: 600; line-height: 1.06; letter-spacing: -.015em; margin: 18px 0 22px; }
+  .hero .sub { font-size: 18px; color: var(--texto-secundario); max-width: 500px; }
+  .hero-ctas { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 32px; }
+
+  .rise { opacity: 0; transform: translateY(14px); animation: rise .7s cubic-bezier(.2,.7,.2,1) forwards; }
+  @keyframes rise { to { opacity: 1; transform: none; } }
+  .d1{animation-delay:.05s}.d2{animation-delay:.15s}.d3{animation-delay:.25s}.d4{animation-delay:.35s}
+
+  .palco { position: relative; }
+  .mock { position: relative; background: var(--superficie); border: 1px solid rgba(91,155,224,.32); border-radius: var(--raio-l); padding: 24px 24px 22px;
+    box-shadow: var(--polimento), 0 0 0 1px rgba(91,155,224,.06), 0 30px 80px -32px rgba(91,155,224,.42), 0 18px 50px -30px rgba(0,0,0,.8);
+    opacity: 0; transform: translateY(20px) scale(.985); animation: rise .8s .1s cubic-bezier(.2,.7,.2,1) forwards; }
+  .mock-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
+  .mock-top .fraunces { font-size: 24px; font-weight: 600; }
+  .badge-ouro { background: var(--ouro-suave); color: var(--ouro-texto); font-size: 11px; font-weight: 600; padding: 4px 11px; border-radius: 999px; }
+  .linha { display: flex; align-items: center; justify-content: space-between; padding: 13px 0; border-bottom: 1px solid var(--borda); opacity: 0; transform: translateX(-8px); animation: entra .5s forwards; }
+  @keyframes entra { to { opacity: 1; transform: none; } }
+  .l1{animation-delay:.5s}.l2{animation-delay:.72s}.l3{animation-delay:.94s}
+  .linha .desc { font-size: 14px; } .linha .meta { font-size: 12px; color: var(--texto-secundario); margin-top: 2px; }
+  .valor { font-size: 14px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .valor.entrada { color: var(--sucesso-texto); } .valor.saida { color: var(--carmesim-texto); }
+  .mock-total { display: flex; align-items: center; justify-content: space-between; padding-top: 16px; }
+  .mock-total .label { font-size: 15px; font-weight: 600; }
+  .mock-total .num { font-size: 20px; font-weight: 600; font-variant-numeric: tabular-nums; letter-spacing: -.01em; }
+  .toast { position: absolute; right: -22px; bottom: 34px; display: flex; align-items: center; gap: 12px; background: var(--superficie-2); border: 1px solid var(--borda); border-radius: 12px; padding: 12px 16px; box-shadow: 0 20px 50px -20px rgba(0,0,0,.85); opacity: 0; transform: translateY(14px) translateX(10px); animation: toastIn .6s 1.5s cubic-bezier(.2,.7,.2,1) forwards; }
+  @keyframes toastIn { to { opacity: 1; transform: none; } }
+  .toast .check { width: 30px; height: 30px; border-radius: 8px; background: rgba(131,198,164,.14); color: var(--sucesso-texto); display: grid; place-items: center; font-size: 15px; }
+  .toast .t-tit { font-size: 13px; font-weight: 600; } .toast .t-sub { font-size: 11px; color: var(--texto-secundario); }
+
+  /* trust */
+  .trust { border-top: 1px solid var(--borda); border-bottom: 1px solid var(--borda); }
+  .trust-in { display: flex; flex-wrap: wrap; justify-content: center; gap: 14px 40px; padding: 22px 24px; }
+  .trust-item { display: flex; align-items: center; gap: 9px; font-size: 13px; color: var(--texto-secundario); }
+  .trust-item .tick { color: var(--primaria); font-weight: 700; }
+
+  /* seções */
+  section.bloco { padding: 100px 0; }
+  .cabeca { max-width: 620px; margin-bottom: 44px; }
+  .cabeca h2 { font-size: clamp(26px, 3.4vw, 32px); font-weight: 600; line-height: 1.15; letter-spacing: -.01em; margin: 12px 0 12px; }
+  .cabeca p { font-size: 16px; color: var(--texto-secundario); }
+
+  .features { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+  .card { background: var(--superficie); border: 1px solid var(--borda); border-radius: var(--raio-l); padding: 28px; transition: border-color .2s, transform .2s, box-shadow .2s; }
+  .card:hover { border-color: rgba(91,155,224,.45); transform: translateY(-3px); box-shadow: 0 18px 40px -24px rgba(0,0,0,.7); }
+  .card.wide { grid-column: span 2; }
+  .card .ic { width: 40px; height: 40px; border-radius: var(--raio-m); background: var(--primaria-suave); color: var(--primaria); display: grid; place-items: center; margin-bottom: 18px; font-size: 18px; }
+  .card h3 { font-size: 18px; font-weight: 600; margin-bottom: 8px; }
+  .card p { font-size: 14px; color: var(--texto-secundario); max-width: 440px; }
+
+  /* DEMO interativo de agendamento */
+  .demo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: center; }
+  .demo-txt h2 { font-size: clamp(26px, 3.4vw, 32px); font-weight: 600; line-height: 1.15; margin: 12px 0 14px; }
+  .demo-txt p { font-size: 16px; color: var(--texto-secundario); max-width: 460px; }
+  .demo-txt .nota { margin-top: 18px; font-size: 13px; color: var(--texto-secundario); display: flex; align-items: center; gap: 8px; }
+  .demo-txt .nota b { color: var(--tekhelet-vivo); font-weight: 600; }
+  .painel { background: var(--superficie); border: 1px solid var(--borda); border-radius: var(--raio-l); padding: 26px; box-shadow: var(--polimento); }
+  .neg-nome { font-family: 'Fraunces', serif; font-size: 22px; font-weight: 600; }
+  .neg-sub { font-size: 13px; color: var(--texto-secundario); margin-top: 2px; }
+  .serv { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--borda); font-size: 14px; }
+  .serv .preco { color: var(--texto-secundario); }
+  .horarios { display: flex; flex-wrap: wrap; gap: 8px; margin: 18px 0 20px; }
+  .chip { font-size: 13px; font-weight: 500; padding: 8px 14px; border-radius: 999px; background: var(--superficie-2); color: var(--texto); border: 1px solid var(--borda); cursor: pointer; transition: all .15s; }
+  .chip:hover { border-color: var(--primaria); color: var(--primaria); }
+  .chip.ativo { background: var(--primaria); color: #fff; border-color: var(--primaria); box-shadow: var(--polimento), 0 0 0 3px rgba(91,155,224,.18); }
+  .chip:disabled { opacity: .4; cursor: not-allowed; }
+  .demo-ok { text-align: center; padding: 8px 0 4px; }
+  .demo-ok .ring { width: 54px; height: 54px; margin: 0 auto 14px; border-radius: 999px; background: var(--sucesso-suave); color: var(--sucesso-texto); display: grid; place-items: center; font-size: 24px; }
+  .demo-ok .ok-tit { font-family: 'Fraunces', serif; font-size: 20px; font-weight: 600; }
+  .demo-ok .ok-sub { font-size: 14px; color: var(--texto-secundario); margin-top: 6px; }
+  .demo-ok .reset { margin-top: 18px; background: none; border: none; color: var(--primaria); font-size: 13px; font-weight: 600; cursor: pointer; }
+
+  /* comparação */
+  .compara { display: grid; grid-template-columns: 1fr auto 1fr; gap: 20px; align-items: stretch; }
+  .col { background: var(--superficie); border: 1px solid var(--borda); border-radius: var(--raio-l); padding: 28px; }
+  .col.depois { border-color: var(--primaria); background: var(--primaria-suave); }
+  .col .titulo { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--texto-secundario); margin-bottom: 18px; }
+  .col.depois .titulo { color: var(--primaria); }
+  .col ul { list-style: none; }
+  .col li { display: flex; align-items: flex-start; gap: 10px; padding: 11px 0; font-size: 15px; border-bottom: 1px solid var(--borda); }
+  .col li:last-child { border-bottom: none; }
+  .col li .m { color: var(--carmesim-texto); font-weight: 700; }
+  .col.depois li .m { color: var(--sucesso-texto); }
+  .seta { display: grid; place-items: center; color: var(--texto-secundario); font-size: 22px; }
+
+  /* criador */
+  .criador { max-width: 760px; margin: 0 auto; text-align: center; }
+  .criador blockquote { font-family: 'Fraunces', serif; font-size: clamp(22px, 3vw, 26px); font-weight: 600; line-height: 1.4; letter-spacing: -.01em; }
+  .criador .assina { margin-top: 20px; font-size: 14px; color: var(--texto-secundario); }
+  .criador .assina b { color: var(--texto); font-weight: 600; }
+
+  /* cta final */
+  .cta-final { background: var(--superficie); border: 1px solid var(--borda); border-radius: var(--raio-l); padding: 56px 40px; text-align: center; position: relative; overflow: hidden; }
+  .cta-final::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: radial-gradient(420px 200px at 50% 0%, rgba(78,125,181,.14), transparent 70%); }
+  .cta-final h2 { font-size: clamp(24px, 3.2vw, 30px); font-weight: 600; margin-bottom: 12px; position: relative; }
+  .cta-final p { font-size: 16px; color: var(--texto-secundario); max-width: 520px; margin: 0 auto 28px; position: relative; }
+  .cta-final .btn { position: relative; }
+
+  footer { border-top: 1px solid var(--borda); padding: 32px 0; }
+  .foot-in { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; }
+  .foot-links { display: flex; gap: 24px; }
+  .foot-links a { color: var(--texto-secundario); text-decoration: none; font-size: 13px; }
+  .foot-links a:hover { color: var(--texto); }
+  .foot-copy { font-size: 12px; color: var(--texto-secundario); }
+
+  a:focus-visible, .btn:focus-visible, .chip:focus-visible { outline: none; box-shadow: var(--polimento), 0 0 0 3px rgba(91,155,224,.4); }
+
+  /* scroll reveal */
+  .reveal { opacity: 0; transform: translateY(22px); transition: opacity .6s cubic-bezier(.2,.7,.2,1), transform .6s cubic-bezier(.2,.7,.2,1); }
+  .reveal.visto { opacity: 1; transform: none; }
+  .reveal.s1 { transition-delay: .08s; } .reveal.s2 { transition-delay: .18s; } .reveal.s3 { transition-delay: .28s; } .reveal.s4 { transition-delay: .38s; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .rise, .mock, .linha, .toast, .eyebrow .pip { animation: none !important; opacity: 1 !important; transform: none !important; }
+    .reveal { opacity: 1 !important; transform: none !important; transition: none !important; }
+    html { scroll-behavior: auto; }
+  }
+  @media (max-width: 860px) {
+    .hero-grid, .demo-grid { grid-template-columns: 1fr; gap: 44px; }
+    .features { grid-template-columns: 1fr; } .card.wide { grid-column: span 1; }
+    .compara { grid-template-columns: 1fr; } .seta { transform: rotate(90deg); }
+    .nav-links a:not(.btn) { display: none; } .toast { right: 6px; }
+  }
+</style>
+</head>
+<body>
+<div class="cena">
+  <nav>
+    <div class="wrap nav-in">
+      <div class="logo">trimote<span class="dot">.</span></div>
+      <div class="nav-links"><a href="#como">Como funciona</a><a href="#contato" class="btn btn-primario">Agendar uma conversa</a></div>
+    </div>
+  </nav>
+
+  <header class="hero">
+    <div class="wrap hero-grid">
+      <div>
+        <span class="eyebrow rise d1"><span class="pip"></span> Agenda e caixa, num lugar só</span>
+        <h1 class="rise d2">O cliente agenda sozinho.<br>Você cuida do resto.</h1>
+        <p class="sub rise d3">O Trimote junta a agenda e o caixa do seu negócio num lugar só. Você manda o link, o cliente escolhe o horário livre, e cada atendimento já entra no financeiro do dia.</p>
+        <div class="hero-ctas rise d4">
+          <a href="#contato" class="btn btn-primario btn-lg">Agendar uma conversa</a>
+          <a href="#demo" class="btn btn-secundario btn-lg">Ver uma página de exemplo</a>
+        </div>
+      </div>
+      <div class="palco">
+        <div class="mock">
+          <div class="mock-top"><span class="fraunces">Hoje</span><span class="badge-ouro">7 atendimentos</span></div>
+          <div class="linha l1"><div><div class="desc">Corte + barba</div><div class="meta">10:30 · Marcos</div></div><span class="valor entrada">+ R$ 55,00</span></div>
+          <div class="linha l2"><div><div class="desc">Corte</div><div class="meta">11:15 · João</div></div><span class="valor entrada">+ R$ 35,00</span></div>
+          <div class="linha l3"><div><div class="desc">Lâminas (reposição)</div><div class="meta">12:02 · despesa</div></div><span class="valor saida">− R$ 42,90</span></div>
+          <div class="mock-total"><span class="label">Saldo do dia</span><span class="num" id="saldo">R$ 0,00</span></div>
+        </div>
+        <div class="toast"><div class="check">✓</div><div><div class="t-tit">Agendamento confirmado</div><div class="t-sub">Sexta, 14:00 · pelo link</div></div></div>
+      </div>
+    </div>
+  </header>
+</div>
+
+<div class="trust">
+  <div class="wrap trust-in">
+    <div class="trust-item reveal s1"><span class="tick">✓</span> Dados no Brasil</div>
+    <div class="trust-item reveal s2"><span class="tick">✓</span> Política de privacidade pública</div>
+    <div class="trust-item reveal s3"><span class="tick">✓</span> Zero rastreamento</div>
+  </div>
+</div>
+
+<section class="bloco" id="como">
+  <div class="wrap">
+    <div class="cabeca reveal">
+      <span class="eyebrow">O que você ganha</span>
+      <h2>Menos WhatsApp e caderno. Mais dia sob controle.</h2>
+      <p>Três coisas resolvidas de uma vez: o cliente agenda, o dia se organiza, o caixa se fecha.</p>
+    </div>
+    <div class="features">
+      <div class="card wide reveal s1"><div class="ic">◷</div><h3>O cliente agenda sozinho</h3><p>Sua página com seus serviços e horários. Manda o link ou o QR; o cliente escolhe o horário livre e pronto. Menos WhatsApp, menos caderno, sem você no meio de cada marcação.</p></div>
+      <div class="card reveal s2"><div class="ic">▤</div><h3>O dia inteiro num lugar</h3><p>Quem vem, a que horas, por qual serviço. Confirma, cancela e remarca sem trocar de tela.</p></div>
+      <div class="card reveal s3"><div class="ic">▦</div><h3>O caixa se fecha sozinho</h3><p>Cada atendimento vira entrada. Lance despesas e veja o saldo do dia na hora, sem planilha no fim do expediente.</p></div>
+      <div class="card reveal s4"><div class="ic">⊘</div><h3>Dois clientes nunca no mesmo horário</h3><p>O sistema recusa choque de horário na origem. Overbooking não acontece.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="bloco" id="demo" style="padding-top:0">
+  <div class="wrap demo-grid">
+    <div class="demo-txt reveal s1">
+      <span class="eyebrow">Do lado do cliente</span>
+      <h2>É assim que seu cliente agenda.</h2>
+      <p>Sem app, sem cadastro complicado, sem esperar você responder. Ele abre o link, escolhe o horário e confirma. Experimente aqui do lado.</p>
+      <div class="nota"><span class="pip" style="width:6px;height:6px;border-radius:999px;background:var(--tekhelet-vivo);display:inline-block"></span> <b>Clicável</b> — escolha um horário e confirme.</div>
+    </div>
+    <div class="painel reveal s2" id="demoPainel">
+      <div id="demoForm">
+        <div class="neg-nome">Barbearia do Léo</div>
+        <div class="neg-sub">Vila Romana · seg a sáb, 9h às 19h</div>
+        <div style="margin-top:16px">
+          <div class="serv"><span>Corte + barba</span><span class="preco">R$ 55</span></div>
+          <div class="serv"><span>Corte</span><span class="preco">R$ 35</span></div>
+        </div>
+        <div style="font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--texto-secundario);margin-top:18px">Horários livres hoje</div>
+        <div class="horarios" id="chips">
+          <button class="chip" data-h="9:00">9:00</button>
+          <button class="chip" data-h="10:30">10:30</button>
+          <button class="chip" data-h="14:00">14:00</button>
+          <button class="chip" data-h="16:30">16:30</button>
+        </div>
+        <button class="btn btn-primario" id="btnConfirmar" style="width:100%" disabled>Escolha um horário</button>
+      </div>
+      <div id="demoSucesso" style="display:none">
+        <div class="demo-ok">
+          <div class="ring">✓</div>
+          <div class="ok-tit">Agendamento confirmado</div>
+          <div class="ok-sub" id="okSub">Corte + barba · hoje às 10:30</div>
+          <button class="reset" id="btnReset">Agendar outro horário</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="bloco" style="padding-top:0">
+  <div class="wrap">
+    <div class="cabeca reveal" style="max-width:560px"><span class="eyebrow">A diferença no dia a dia</span><h2>Como é hoje. Como fica.</h2></div>
+    <div class="compara">
+      <div class="col reveal s1">
+        <div class="titulo">Hoje</div>
+        <ul>
+          <li><span class="m">·</span> WhatsApp o dia todo pra marcar horário</li>
+          <li><span class="m">·</span> Caderno ou planilha pra lembrar quem vem</li>
+          <li><span class="m">·</span> Caixa só no fim do mês, no chute</li>
+          <li><span class="m">·</span> Horário marcado em dobro sem perceber</li>
+        </ul>
+      </div>
+      <div class="seta reveal s2">→</div>
+      <div class="col depois reveal s3">
+        <div class="titulo">Com Trimote</div>
+        <ul>
+          <li><span class="m">✓</span> Cliente agenda sozinho pelo link</li>
+          <li><span class="m">✓</span> O dia inteiro numa tela só</li>
+          <li><span class="m">✓</span> Saldo do dia na hora, sem planilha</li>
+          <li><span class="m">✓</span> Choque de horário bloqueado na origem</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="bloco" style="padding-top:0">
+  <div class="wrap criador reveal">
+    <blockquote>"Você fala direto com quem construiu. Não tem call center nem robô. Eu configuro seu negócio com você e ajusto o que precisar."</blockquote>
+    <div class="assina">— <b>Willians</b>, criador do Trimote</div>
+  </div>
+</section>
+
+<section class="bloco" style="padding-top:0" id="contato">
+  <div class="wrap">
+    <div class="cta-final reveal">
+      <h2>Pronto pra parar de gerenciar tudo no WhatsApp?</h2>
+      <p>Agende uma conversa e eu mostro o Trimote rodando no seu negócio.</p>
+      <a href="#" class="btn btn-primario btn-lg">Agendar uma conversa</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap foot-in">
+    <div class="logo" style="font-size:18px">trimote<span class="dot">.</span></div>
+    <div class="foot-links"><a href="#como">Como funciona</a><a href="#">Privacidade</a><a href="#contato">Contato</a></div>
+    <div class="foot-copy">© 2026 Trimote</div>
+  </div>
+</footer>
+
+<script>
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // saldo sobe ao vivo
+  (function () {
+    var el = document.getElementById('saldo'), alvo = 47.10;
+    function fmt(v){ return 'R$ ' + v.toFixed(2).replace('.', ','); }
+    if (reduce) { el.textContent = fmt(alvo); return; }
+    var ini = null;
+    function passo(ts){ if(!ini) ini=ts; var p=Math.min((ts-ini)/1100,1); el.textContent=fmt(alvo*(1-Math.pow(1-p,3))); if(p<1) requestAnimationFrame(passo); }
+    setTimeout(function(){ requestAnimationFrame(passo); }, 1150);
+  })();
+
+  // scroll reveal
+  (function () {
+    var alvos = document.querySelectorAll('.reveal');
+    if (reduce || !('IntersectionObserver' in window)) { alvos.forEach(function(e){ e.classList.add('visto'); }); return; }
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) { if (en.isIntersecting) { en.target.classList.add('visto'); io.unobserve(en.target); } });
+    }, { threshold: .16 });
+    alvos.forEach(function (e) { io.observe(e); });
+  })();
+
+  // demo interativo de agendamento
+  (function () {
+    var chips = document.getElementById('chips');
+    var btn = document.getElementById('btnConfirmar');
+    var form = document.getElementById('demoForm');
+    var ok = document.getElementById('demoSucesso');
+    var okSub = document.getElementById('okSub');
+    var reset = document.getElementById('btnReset');
+    var escolhido = null;
+
+    chips.addEventListener('click', function (e) {
+      var c = e.target.closest('.chip'); if (!c) return;
+      chips.querySelectorAll('.chip').forEach(function (x) { x.classList.remove('ativo'); });
+      c.classList.add('ativo');
+      escolhido = c.getAttribute('data-h');
+      btn.disabled = false;
+      btn.textContent = 'Confirmar às ' + escolhido;
+    });
+
+    btn.addEventListener('click', function () {
+      if (!escolhido) return;
+      okSub.textContent = 'Corte + barba · hoje às ' + escolhido;
+      form.style.display = 'none';
+      ok.style.display = 'block';
+    });
+
+    reset.addEventListener('click', function () {
+      escolhido = null;
+      chips.querySelectorAll('.chip').forEach(function (x) { x.classList.remove('ativo'); });
+      btn.disabled = true; btn.textContent = 'Escolha um horário';
+      ok.style.display = 'none'; form.style.display = 'block';
+    });
+  })();
+</script>
+</body>
+</html>

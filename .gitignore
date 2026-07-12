@@ -32,3 +32,6 @@ next-env.d.ts
 Thumbs.db
 .idea/
 .vscode/
+
+# Metadados de alternate data stream (Windows/WSL)
+*:Zone.Identifier
