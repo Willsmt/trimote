@@ -25,6 +25,7 @@ export interface TodayScheduleItemDTO {
   serviceName: string;
   clientName: string | null;
   clientEmail: string | null;
+  clientPhone: string | null;
 }
 
 // Mapa completo reason -> mensagem (pt-BR) das DUAS actions da linha. Nenhum reason órfão:
@@ -56,6 +57,14 @@ function formatTime(iso: string, timeZone: string): string {
     hour: "2-digit",
     minute: "2-digit",
   }).format(new Date(iso));
+}
+
+/** E.164 (+5511999999999) → exibição legível (11) 99999-9999; fallback: o próprio valor. */
+function formatPhoneDisplay(e164: string): string {
+  const digits = e164.replace(/\D/g, "");
+  const national = digits.length === 13 ? digits.slice(2) : digits;
+  if (national.length !== 11) return e164;
+  return `(${national.slice(0, 2)}) ${national.slice(2, 7)}-${national.slice(7)}`;
 }
 
 export function TodaySchedule({
@@ -161,6 +170,18 @@ export function TodaySchedule({
                 <p className="text-sm text-neutral-500">
                   {item.clientName ?? item.clientEmail ?? "Cliente"}
                 </p>
+                {/* WhatsApp do cliente (issue #34): só se preenchido; abre em nova aba para não tirar
+                    o dono da agenda. wa.me usa E.164 sem o '+'. Ausente = nada (não quebra a linha). */}
+                {item.clientPhone && (
+                  <a
+                    href={`https://wa.me/${item.clientPhone.replace(/\D/g, "")}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-emerald-700 underline"
+                  >
+                    WhatsApp: {formatPhoneDisplay(item.clientPhone)}
+                  </a>
+                )}
               </div>
               <div className="flex items-center gap-3">
                 <button

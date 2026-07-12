@@ -36,6 +36,10 @@ export async function SiteHeader() {
             <Link href="/my-spending" className="text-sm hover:underline">
               Meus gastos
             </Link>
+            {/* Perfil (034): edição do próprio telefone/WhatsApp. */}
+            <Link href="/profile" className="text-sm hover:underline">
+              Perfil
+            </Link>
           </>
         )}
 
