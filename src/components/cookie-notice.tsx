@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 
 // Chave do dismiss. Guardado em localStorage — NÃO em cookie: criar um cookie de "aceite" para um
@@ -18,12 +18,33 @@ const DISMISS_KEY = "trimote:cookie-notice-dismissed";
  */
 export function CookieNotice() {
   const [visible, setVisible] = useState(false);
+  const barRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (localStorage.getItem(DISMISS_KEY) !== "1") {
       setVisible(true);
     }
   }, []);
+
+  // A faixa é `fixed` (fora do fluxo), então sobreporia o fim da tela — inclusive o rodapé e seu link
+  // da Política, e os botões da base no mobile (BookingFlow, Concluir/Cancelar da agenda). Enquanto
+  // visível, reserva no body um padding igual à altura da faixa, para que o conteúdo role acima dela.
+  // Mede via ResizeObserver porque a altura muda com a quebra de linha entre breakpoints.
+  useEffect(() => {
+    if (!visible) return;
+    const bar = barRef.current;
+    if (!bar) return;
+    const apply = () => {
+      document.body.style.paddingBottom = `${bar.offsetHeight}px`;
+    };
+    apply();
+    const observer = new ResizeObserver(apply);
+    observer.observe(bar);
+    return () => {
+      observer.disconnect();
+      document.body.style.paddingBottom = "";
+    };
+  }, [visible]);
 
   if (!visible) return null;
 
@@ -33,7 +54,7 @@ export function CookieNotice() {
   }
 
   return (
-    <div className="fixed inset-x-0 bottom-0 z-50 bg-neutral-900 text-neutral-100">
+    <div ref={barRef} className="fixed inset-x-0 bottom-0 z-50 bg-neutral-900 text-neutral-100">
       <div className="mx-auto flex max-w-3xl flex-col gap-3 p-4 text-sm sm:flex-row sm:items-center sm:justify-between">
         <p>
           <strong>Usamos apenas cookies essenciais.</strong> O Trimote utiliza somente cookies
