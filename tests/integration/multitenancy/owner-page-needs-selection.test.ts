@@ -17,8 +17,8 @@ vi.mock("@/server/auth/session", async (importActual) => {
 import { prisma } from "@/server/db/client";
 import { requireOwner, NeedsBusinessSelectionError } from "@/server/auth/owner";
 import { BusinessSelectionScreen } from "@/components/owner/business-selection-screen";
-import OwnerHomePage from "@/app/owner/page";
-import OwnerFinancePage from "@/app/owner/finance/page";
+import OwnerHomePage from "@/app/(site)/owner/page";
+import OwnerFinancePage from "@/app/(site)/owner/finance/page";
 import {
   createTestBusiness,
   addMembership,

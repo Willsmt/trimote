@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 
-import HomePage from "@/app/page";
+import HomePage from "@/app/(marketing)/page";
 
 // Não-regressão do smoke T044 (fix 007, BUG 2): pós-T036a /services foi removida e /booking virou
 // redirect. A home NÃO pode linkar para essas rotas mortas (cliente cairia em loop/404). O acesso a
