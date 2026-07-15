@@ -31,6 +31,10 @@ export default function LandingPage() {
           gruda dentro do próprio pai, então dentro do `.cena` (nav+hero) ela soltava ao fim do hero.
           Como filha de `.root`, o pai é a página inteira e a nav acompanha todo o scroll. */}
       <LandingNav whatsappHref={whatsappHref} />
+      {/* Landmark <main> (a11y, achado do Lighthouse): envolve o conteúdo entre a nav e o rodapé.
+          Bloco puro, sem estilo — não altera o layout. Filhos mantidos na indentação atual de
+          propósito, para o diff ficar só na mudança semântica. */}
+      <main>
       <div className={styles.cena}>
         <header className={styles.hero}>
           <div className={`${styles.wrap} ${styles.heroGrid}`}>
@@ -255,6 +259,7 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
+      </main>
 
       <footer className={styles.footer}>
         <div className={`${styles.wrap} ${styles.footIn}`}>
