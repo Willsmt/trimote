@@ -6,7 +6,7 @@ import { ScrollReveal } from "@/components/landing/scroll-reveal";
 import { BalanceCounter } from "@/components/landing/balance-counter";
 import { BookingDemo } from "@/components/landing/booking-demo";
 import { WhatsappFab } from "@/components/landing/whatsapp-fab";
-import { SignInButton } from "@/components/auth-buttons";
+import { LandingNav } from "@/components/landing/landing-nav";
 
 // Landing pública de venda (issue #38), portada de specs/landing/trimote-landing-completa.html.
 // Server component: quase tudo é estático (SSR = bom p/ SEO e no-JS); só o reveal, o contador do
@@ -27,24 +27,11 @@ export const metadata: Metadata = {
 export default function LandingPage() {
   return (
     <>
+      {/* Nav FORA do `.cena` (irmã das seções, filha direta do shell da landing): position:sticky só
+          gruda dentro do próprio pai, então dentro do `.cena` (nav+hero) ela soltava ao fim do hero.
+          Como filha de `.root`, o pai é a página inteira e a nav acompanha todo o scroll. */}
+      <LandingNav whatsappHref={whatsappHref} />
       <div className={styles.cena}>
-        <nav className={styles.nav}>
-          <div className={`${styles.wrap} ${styles.navIn}`}>
-            <div className={styles.logo}>
-              trimote<span className={styles.dot}>.</span>
-            </div>
-            <div className={styles.navLinks}>
-              <a href="#como">Como funciona</a>
-              {/* "Entrar" real (signIn google): sem o SiteHeader global na /, o login ficaria órfão
-                  na home. Estilo secundário/ghost para não competir com o CTA primário. */}
-              <SignInButton className={`${styles.btn} ${styles.btnSecundario}`} />
-              <a href={whatsappHref} className={`${styles.btn} ${styles.btnPrimario}`}>
-                Agendar uma conversa
-              </a>
-            </div>
-          </div>
-        </nav>
-
         <header className={styles.hero}>
           <div className={`${styles.wrap} ${styles.heroGrid}`}>
             <div>

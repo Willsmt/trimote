@@ -28,13 +28,18 @@ export function SignInButton({ className }: { className?: string }) {
   );
 }
 
-/** Ação "Sair" (FR-002): encerra a sessão e volta à condição de visitante. */
-export function SignOutButton() {
+/**
+ * Ação "Sair" (FR-002): encerra a sessão e volta à condição de visitante.
+ *
+ * `className` opcional (mesmo racional do SignInButton): o site-header omite e usa o estilo claro
+ * padrão; a landing passa suas classes do CSS Module escuro. Só dispara `signOut`.
+ */
+export function SignOutButton({ className }: { className?: string }) {
   return (
     <button
       type="button"
       onClick={() => signOut()}
-      className="rounded border border-neutral-300 px-3 py-1 text-sm hover:bg-neutral-50"
+      className={className ?? "rounded border border-neutral-300 px-3 py-1 text-sm hover:bg-neutral-50"}
     >
       Sair
     </button>

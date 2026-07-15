@@ -199,6 +199,11 @@
 .navLinks a.btn:hover {
   color: var(--primaria-texto);
 }
+/* Nome do usuário logado na nav (indicação de sessão ativa). Só rótulo, não é link. */
+.navUser {
+  font-size: 14px;
+  color: var(--texto-secundario);
+}
 
 /* hero */
 .hero {
