@@ -3,9 +3,10 @@
  * nada disso vaza para o tema Tailwind global. tekhelet-vivo (#5B9BE0) e a paleta abaixo existem
  * só neste escopo, nunca viram cor core do app.
  *
- * Stub da Peça 1: por ora só o shell escuro e o placeholder. As seções reais (hero, features, demo,
- * etc.) e os efeitos atmosféricos (grade+mask do topo, blur da nav, texto-ouro, reveal) entram nas
- * Peças 2-3.
+ * Porta o protótipo specs/landing/trimote-landing-completa.html para o grupo (marketing). Diferenças
+ * conscientes: Fraunces/Inter vêm self-hosted por next/font (nada de fonts.gstatic.com em runtime —
+ * guarda LGPD), o reveal é ativado por [data-reveal]+JS com fallback <noscript>, e o contador do
+ * saldo/demo são componentes client. Nenhum seletor de elemento global: tudo escopado sob .root.
  */
 
 .root {
@@ -21,42 +22,877 @@
   --primaria-texto: #fff;
   --primaria-suave: #1e2e44;
   --tekhelet-vivo: #5b9be0;
+  --ouro-metal: linear-gradient(135deg, #ebc05c, #c99730);
   --ouro-suave: #322c1d;
   --ouro-texto: #e6be68;
   --carmesim-texto: #e5978a;
   --sucesso: #4ba47b;
   --sucesso-texto: #83c6a4;
   --sucesso-suave: #1c2f26;
+  --polimento: inset 0 1px 0 rgba(255, 255, 255, 0.08);
   --raio-s: 6px;
   --raio-m: 10px;
   --raio-l: 14px;
 
   min-height: 100vh;
+  /* overflow-x CLIP, não hidden: a nav é position:sticky e `.root` é ancestral dela. Um ancestral
+   * com overflow != visible vira o contêiner de rolagem do sticky; como `.root` não rola por dentro
+   * (só o viewport rola), `hidden` fazia o sticky não ter contra o quê grudar e a nav ia embora com
+   * o scroll. `clip` corta o transbordo horizontal (sombras/mock/toast) SEM criar contêiner de
+   * rolagem, então o sticky volta a funcionar. */
+  overflow-x: clip;
   background: var(--fundo);
   color: var(--texto);
-  /* Corpo em Inter (global). Títulos usarão --font-fraunces nas próximas peças. */
+  /* Corpo em Inter (global). Títulos em Fraunces via var, aplicada abaixo só a h1/h2/.fraunces. */
   font-family: var(--font-inter), system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
+  scroll-behavior: smooth;
 }
 
-.placeholder {
-  display: flex;
-  min-height: 100vh;
-  flex-direction: column;
+.root h1,
+.root h2,
+.logo,
+.fraunces {
+  font-family: var(--font-fraunces), Georgia, serif;
+}
+
+.wrap {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--texto-secundario);
+}
+
+.pip {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--tekhelet-vivo);
+  box-shadow: 0 0 0 4px rgba(91, 155, 224, 0.14);
+  animation: pulse 2.4s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 4px rgba(91, 155, 224, 0.12);
+  }
+  50% {
+    box-shadow: 0 0 0 7px rgba(91, 155, 224, 0.03);
+  }
+}
+
+/* botões */
+.btn {
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
-  padding: 32px;
-  text-align: center;
+  gap: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  padding: 11px 22px;
+  border-radius: var(--raio-m);
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.15s, box-shadow 0.2s, border-color 0.15s, color 0.15s, transform 0.15s;
+}
+.btnLg {
+  padding: 14px 28px;
+  font-size: 15px;
+}
+.btnPrimario {
+  background: var(--primaria);
+  color: var(--primaria-texto);
+  box-shadow: var(--polimento);
+}
+.btnPrimario:hover {
+  background: var(--primaria-hover);
+  transform: translateY(-1px);
+  box-shadow: var(--polimento), 0 0 0 1px rgba(91, 155, 224, 0.5), 0 8px 28px -8px rgba(91, 155, 224, 0.55);
+}
+.btnPrimario:disabled {
+  background: #2a3a4d;
+  color: #6b7684;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+.btnSecundario {
+  background: transparent;
+  color: var(--texto);
+  border: 1px solid var(--borda);
+}
+.btnSecundario:hover {
+  border-color: var(--primaria);
+  color: var(--primaria);
 }
 
-.placeholder h1 {
+/* atmosfera do topo */
+.cena {
+  position: relative;
+}
+.cena::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  height: 760px;
+  pointer-events: none;
+  background: radial-gradient(680px 420px at 78% 30%, rgba(78, 125, 181, 0.16), transparent 60%),
+    linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+  background-size: auto, 56px 56px, 56px 56px;
+  mask-image: linear-gradient(to bottom, #000 55%, transparent);
+  -webkit-mask-image: linear-gradient(to bottom, #000 55%, transparent);
+}
+
+/* nav */
+.nav {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  border-bottom: 1px solid var(--borda);
+  background: rgba(16, 22, 31, 0.72);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+.navIn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 68px;
+}
+.logo {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.dot {
+  background: var(--ouro-metal);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.navLinks {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+}
+.navLinks a {
+  color: var(--texto-secundario);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+}
+.navLinks a:hover {
+  color: var(--texto);
+}
+.navLinks a.btn:hover {
+  color: var(--primaria-texto);
+}
+
+/* hero */
+.hero {
+  position: relative;
+  z-index: 2;
+  padding: 76px 0 88px;
+}
+.heroGrid {
+  display: grid;
+  grid-template-columns: 1.02fr 0.98fr;
+  gap: 56px;
+  align-items: center;
+}
+.hero h1 {
+  font-size: clamp(34px, 5vw, 56px);
+  font-weight: 600;
+  line-height: 1.06;
+  letter-spacing: -0.015em;
+  margin: 18px 0 22px;
+}
+.sub {
+  font-size: 18px;
+  color: var(--texto-secundario);
+  max-width: 500px;
+}
+.heroCtas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 32px;
+}
+
+.rise {
+  opacity: 0;
+  transform: translateY(14px);
+  animation: rise 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+}
+@keyframes rise {
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.d1 {
+  animation-delay: 0.05s;
+}
+.d2 {
+  animation-delay: 0.15s;
+}
+.d3 {
+  animation-delay: 0.25s;
+}
+.d4 {
+  animation-delay: 0.35s;
+}
+
+.palco {
+  position: relative;
+}
+.mock {
+  position: relative;
+  background: var(--superficie);
+  border: 1px solid rgba(91, 155, 224, 0.32);
+  border-radius: var(--raio-l);
+  padding: 24px 24px 22px;
+  box-shadow: var(--polimento), 0 0 0 1px rgba(91, 155, 224, 0.06), 0 30px 80px -32px rgba(91, 155, 224, 0.42),
+    0 18px 50px -30px rgba(0, 0, 0, 0.8);
+  opacity: 0;
+  transform: translateY(20px) scale(0.985);
+  animation: rise 0.8s 0.1s cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+}
+.mockTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+.mockTop .fraunces {
+  font-size: 24px;
+  font-weight: 600;
+}
+.badgeOuro {
+  background: var(--ouro-suave);
+  color: var(--ouro-texto);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 11px;
+  border-radius: 999px;
+}
+.linha {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 13px 0;
+  border-bottom: 1px solid var(--borda);
+  opacity: 0;
+  transform: translateX(-8px);
+  animation: entra 0.5s forwards;
+}
+@keyframes entra {
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.l1 {
+  animation-delay: 0.5s;
+}
+.l2 {
+  animation-delay: 0.72s;
+}
+.l3 {
+  animation-delay: 0.94s;
+}
+.desc {
+  font-size: 14px;
+}
+.meta {
+  font-size: 12px;
+  color: var(--texto-secundario);
+  margin-top: 2px;
+}
+.valor {
+  font-size: 14px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.entrada {
+  color: var(--sucesso-texto);
+}
+.saida {
+  color: var(--carmesim-texto);
+}
+.mockTotal {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 16px;
+}
+.mockTotal .label {
+  font-size: 15px;
+  font-weight: 600;
+}
+.num {
+  font-size: 20px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+.toast {
+  position: absolute;
+  right: -22px;
+  /* Ancorado ABAIXO do card (fora da linha do "Saldo do dia"): o saldo subindo é o clima da cena e
+   * o toast, decorativo, não pode tapá-lo. Pendura no rodapé do card, dentro do padding do hero. */
+  bottom: -56px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--superficie-2);
+  border: 1px solid var(--borda);
+  border-radius: 12px;
+  padding: 12px 16px;
+  box-shadow: 0 20px 50px -20px rgba(0, 0, 0, 0.85);
+  /* Enfeite, não UI: nunca intercepta clique (o pai também é aria-hidden). */
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(14px) translateX(10px);
+  animation: toastIn 0.6s 1.5s cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+}
+@keyframes toastIn {
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.check {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background: rgba(131, 198, 164, 0.14);
+  color: var(--sucesso-texto);
+  display: grid;
+  place-items: center;
+  font-size: 15px;
+}
+.tTit {
+  font-size: 13px;
+  font-weight: 600;
+}
+.tSub {
+  font-size: 11px;
+  color: var(--texto-secundario);
+}
+
+/* trust */
+.trust {
+  border-top: 1px solid var(--borda);
+  border-bottom: 1px solid var(--borda);
+}
+.trustIn {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 14px 40px;
+  padding: 22px 24px;
+}
+.trustItem {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 13px;
+  color: var(--texto-secundario);
+}
+.tick {
+  color: var(--primaria);
+  font-weight: 700;
+}
+
+/* seções */
+.bloco {
+  padding: 100px 0;
+}
+.blocoContinua {
+  padding-top: 0;
+}
+.cabeca {
+  max-width: 620px;
+  margin-bottom: 44px;
+}
+.cabeca h2 {
+  font-size: clamp(26px, 3.4vw, 32px);
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  margin: 12px 0 12px;
+}
+.cabeca p {
+  font-size: 16px;
+  color: var(--texto-secundario);
+}
+
+.features {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+.card {
+  background: var(--superficie);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-l);
+  padding: 28px;
+  transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+}
+.card:hover {
+  border-color: rgba(91, 155, 224, 0.45);
+  transform: translateY(-3px);
+  box-shadow: 0 18px 40px -24px rgba(0, 0, 0, 0.7);
+}
+.wide {
+  grid-column: span 2;
+}
+.ic {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--raio-m);
+  background: var(--primaria-suave);
+  color: var(--primaria);
+  display: grid;
+  place-items: center;
+  margin-bottom: 18px;
+  font-size: 18px;
+}
+.card h3 {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+.card p {
+  font-size: 14px;
+  color: var(--texto-secundario);
+  max-width: 440px;
+}
+
+/* DEMO interativo de agendamento */
+.demoGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 48px;
+  align-items: center;
+}
+.demoTxt h2 {
+  font-size: clamp(26px, 3.4vw, 32px);
+  font-weight: 600;
+  line-height: 1.15;
+  margin: 12px 0 14px;
+}
+.demoTxt p {
+  font-size: 16px;
+  color: var(--texto-secundario);
+  max-width: 460px;
+}
+.nota {
+  margin-top: 18px;
+  font-size: 13px;
+  color: var(--texto-secundario);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.nota b {
+  color: var(--tekhelet-vivo);
+  font-weight: 600;
+}
+.notaPip {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--tekhelet-vivo);
+  display: inline-block;
+  flex: none;
+}
+.painel {
+  background: var(--superficie);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-l);
+  padding: 26px;
+  box-shadow: var(--polimento);
+}
+.negNome {
   font-family: var(--font-fraunces), Georgia, serif;
-  font-size: 28px;
+  font-size: 22px;
+  font-weight: 600;
+}
+.negSub {
+  font-size: 13px;
+  color: var(--texto-secundario);
+  margin-top: 2px;
+}
+.servLista {
+  margin-top: 16px;
+}
+.serv {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--borda);
+  font-size: 14px;
+}
+.preco {
+  color: var(--texto-secundario);
+}
+.horariosLabel {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--texto-secundario);
+  margin-top: 18px;
+}
+.horarios {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 18px 0 20px;
+}
+.chip {
+  font-size: 13px;
+  font-weight: 500;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: var(--superficie-2);
+  color: var(--texto);
+  border: 1px solid var(--borda);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.chip:hover {
+  border-color: var(--primaria);
+  color: var(--primaria);
+}
+.chipAtivo {
+  background: var(--primaria);
+  color: #fff;
+  border-color: var(--primaria);
+  box-shadow: var(--polimento), 0 0 0 3px rgba(91, 155, 224, 0.18);
+}
+.chipAtivo:hover {
+  color: #fff;
+}
+.chip:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.btnBloco {
+  width: 100%;
+}
+.demoOk {
+  text-align: center;
+  padding: 8px 0 4px;
+}
+.ring {
+  width: 54px;
+  height: 54px;
+  margin: 0 auto 14px;
+  border-radius: 999px;
+  background: var(--sucesso-suave);
+  color: var(--sucesso-texto);
+  display: grid;
+  place-items: center;
+  font-size: 24px;
+}
+.okTit {
+  font-family: var(--font-fraunces), Georgia, serif;
+  font-size: 20px;
+  font-weight: 600;
+}
+.okSub {
+  font-size: 14px;
+  color: var(--texto-secundario);
+  margin-top: 6px;
+}
+.reset {
+  margin-top: 18px;
+  background: none;
+  border: none;
+  color: var(--primaria);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* comparação */
+.compara {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 20px;
+  align-items: stretch;
+}
+.col {
+  background: var(--superficie);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-l);
+  padding: 28px;
+}
+.colDepois {
+  border-color: var(--primaria);
+  background: var(--primaria-suave);
+}
+.colTitulo {
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--texto-secundario);
+  margin-bottom: 18px;
+}
+.colDepois .colTitulo {
+  color: var(--primaria);
+}
+.col ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.col li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 11px 0;
+  font-size: 15px;
+  border-bottom: 1px solid var(--borda);
+}
+.col li:last-child {
+  border-bottom: none;
+}
+.m {
+  color: var(--carmesim-texto);
+  font-weight: 700;
+}
+.colDepois .m {
+  color: var(--sucesso-texto);
+}
+.seta {
+  display: grid;
+  place-items: center;
+  color: var(--texto-secundario);
+  font-size: 22px;
+}
+
+/* criador */
+.criador {
+  max-width: 760px;
+  margin: 0 auto;
+  text-align: center;
+}
+.criador blockquote {
+  font-family: var(--font-fraunces), Georgia, serif;
+  font-size: clamp(22px, 3vw, 26px);
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: -0.01em;
+  margin: 0;
+}
+.assina {
+  margin-top: 20px;
+  font-size: 14px;
+  color: var(--texto-secundario);
+}
+.assina b {
+  color: var(--texto);
   font-weight: 600;
 }
 
-.placeholder p {
+/* cta final */
+.ctaFinal {
+  background: var(--superficie);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-l);
+  padding: 56px 40px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.ctaFinal::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(420px 200px at 50% 0%, rgba(78, 125, 181, 0.14), transparent 70%);
+}
+.ctaFinal h2 {
+  font-size: clamp(24px, 3.2vw, 30px);
+  font-weight: 600;
+  margin-bottom: 12px;
+  position: relative;
+}
+.ctaFinal p {
+  font-size: 16px;
   color: var(--texto-secundario);
-  font-size: 15px;
+  max-width: 520px;
+  margin: 0 auto 28px;
+  position: relative;
+}
+.ctaFinal .btn {
+  position: relative;
+}
+
+/* rodapé próprio da landing (o SiteFooter do app não é herdado pelo grupo marketing) */
+.footer {
+  border-top: 1px solid var(--borda);
+  padding: 32px 0;
+}
+.footIn {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.footLinks {
+  display: flex;
+  gap: 24px;
+}
+.footLinks a {
+  color: var(--texto-secundario);
+  text-decoration: none;
+  font-size: 13px;
+}
+.footLinks a:hover {
+  color: var(--texto);
+}
+.footCopy {
+  font-size: 12px;
+  color: var(--texto-secundario);
+}
+
+/*
+ * Botão flutuante de WhatsApp. Cor de AÇÃO = tekhelet (--primaria), nunca o verde do WhatsApp
+ * (verde aqui é sucesso/entrada). Sem badge, sem pulso. Some (opacity + pointer-events) quando o
+ * rodapé aparece, controlado pelo componente client via .fabOculto.
+ */
+.fab {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 30;
+  width: 54px;
+  height: 54px;
+  border-radius: 999px;
+  background: var(--primaria);
+  color: var(--primaria-texto);
+  display: grid;
+  place-items: center;
+  box-shadow: var(--polimento), 0 10px 28px -8px rgba(0, 0, 0, 0.6);
+  transition: opacity 0.25s, transform 0.15s, background 0.15s;
+}
+.fab:hover {
+  background: var(--primaria-hover);
+  transform: translateY(-2px);
+}
+.fabOculto {
+  opacity: 0;
+  transform: translateY(10px);
+  pointer-events: none;
+}
+
+.root a:focus-visible,
+.btn:focus-visible,
+.chip:focus-visible,
+.fab:focus-visible {
+  outline: none;
+  box-shadow: var(--polimento), 0 0 0 3px rgba(91, 155, 224, 0.4);
+}
+
+/*
+ * Scroll reveal por atributo (não por classe hasheada): o componente client marca [data-reveal] com
+ * data-visto ao entrar na viewport. Fallback <noscript> (na page) reforça visibilidade sem JS, e o
+ * media query abaixo neutraliza tudo sob reduced-motion. Escopado sob .root.
+ */
+.root [data-reveal] {
+  opacity: 0;
+  transform: translateY(22px);
+  transition: opacity 0.6s cubic-bezier(0.2, 0.7, 0.2, 1), transform 0.6s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.root [data-reveal][data-visto] {
+  opacity: 1;
+  transform: none;
+}
+.root [data-reveal-step="1"] {
+  transition-delay: 0.08s;
+}
+.root [data-reveal-step="2"] {
+  transition-delay: 0.18s;
+}
+.root [data-reveal-step="3"] {
+  transition-delay: 0.28s;
+}
+.root [data-reveal-step="4"] {
+  transition-delay: 0.38s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .root {
+    scroll-behavior: auto;
+  }
+  .rise,
+  .mock,
+  .linha,
+  .toast,
+  .pip {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .root [data-reveal] {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+  /* FAB some sem fade sob reduced-motion (mas ainda some — .fabOculto continua valendo). */
+  .fab {
+    transition: none;
+  }
+  .fab:hover {
+    transform: none;
+  }
+}
+
+@media (max-width: 860px) {
+  .heroGrid,
+  .demoGrid {
+    grid-template-columns: 1fr;
+    gap: 44px;
+  }
+  .features {
+    grid-template-columns: 1fr;
+  }
+  .wide {
+    grid-column: span 1;
+  }
+  .compara {
+    grid-template-columns: 1fr;
+  }
+  .seta {
+    transform: rotate(90deg);
+  }
+  .navLinks a:not(.btn) {
+    display: none;
+  }
+  .toast {
+    right: 6px;
+  }
+  .fab {
+    right: 16px;
+    bottom: 16px;
+  }
 }
