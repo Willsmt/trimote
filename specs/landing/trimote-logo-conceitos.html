@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trimote — Conceitos de logo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --fundo: #F7F6F3; --superficie: #FFFFFF; --texto: #1A1D23;
+    --texto-secundario: #626A76; --borda: #E2E3DF;
+    --primaria: #2B4C7E; --ouro-a: #E3B54F; --ouro-b: #C08A26;
+  }
+  [data-theme="dark"] {
+    --fundo: #10161F; --superficie: #171F2B; --texto: #EEEDE8;
+    --texto-secundario: #97A1AE; --borda: #28323F;
+    --primaria: #4E7DB5; --ouro-a: #EBC05C; --ouro-b: #C99730;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Inter', sans-serif; background: var(--fundo); color: var(--texto);
+    line-height: 1.55; padding: 40px 20px 80px; transition: background .25s, color .25s;
+  }
+  .wrap { max-width: 880px; margin: 0 auto; }
+  h1, h2 { font-family: 'Fraunces', serif; font-weight: 600; }
+  h1 { font-size: 30px; margin-bottom: 4px; }
+  h2 { font-size: 20px; margin: 48px 0 14px; }
+  .sub { color: var(--texto-secundario); font-size: 14px; }
+  .topo { display: flex; justify-content: space-between; align-items: center; margin-bottom: 28px; }
+  .toggle {
+    font-size: 13px; font-weight: 600; padding: 8px 16px; border-radius: 999px;
+    cursor: pointer; background: var(--superficie); color: var(--texto); border: 1px solid var(--borda);
+  }
+  .painel {
+    background: var(--superficie); border: 1px solid var(--borda);
+    border-radius: 14px; padding: 32px; display: flex; flex-wrap: wrap;
+    gap: 40px; align-items: center; justify-content: center;
+  }
+  .item { text-align: center; }
+  .item .rotulo { font-size: 11px; color: var(--texto-secundario); margin-top: 12px; text-transform: uppercase; letter-spacing: .06em; }
+
+  .wordmark { font-family: 'Fraunces', serif; font-weight: 700; letter-spacing: -0.02em; color: var(--texto); }
+  .wordmark .dot { background: linear-gradient(135deg, var(--ouro-a), var(--ouro-b)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+
+  .lockup { display: inline-flex; align-items: center; gap: 12px; }
+  .nota { font-size: 13px; color: var(--texto-secundario); max-width: 640px; margin-top: 10px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topo">
+    <div>
+      <h1>Conceitos de logo</h1>
+      <p class="sub">Wordmark como logo principal · monograma "T do corte" para ícone</p>
+    </div>
+    <button class="toggle" onclick="alternarTema()">Alternar claro / escuro</button>
+  </div>
+
+  <h2>1 — Wordmark (logo principal)</h2>
+  <div class="painel">
+    <div class="item">
+      <div class="wordmark" style="font-size:56px">trimote<span class="dot">.</span></div>
+      <div class="rotulo">landing, cabeçalhos</div>
+    </div>
+    <div class="item">
+      <div class="wordmark" style="font-size:28px">trimote<span class="dot">.</span></div>
+      <div class="rotulo">navbar do app</div>
+    </div>
+    <div class="item">
+      <div class="wordmark" style="font-size:15px">agendamento por trimote<span class="dot">.</span></div>
+      <div class="rotulo">selo na página pública</div>
+    </div>
+  </div>
+  <p class="nota">Minúsculo de propósito: baixa o tom pra amigável sem perder o peso da Fraunces 700. O ponto final em ouro é a assinatura — a frase que termina bem, o serviço que se resolve.</p>
+
+  <h2>2 — Monograma "T do corte" (ícone de app, favicon, QR)</h2>
+  <div class="painel">
+
+    <div class="item">
+      <svg width="120" height="120" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="ouro1" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#E3B54F"/><stop offset="1" stop-color="#C08A26"/>
+          </linearGradient>
+        </defs>
+        <rect width="120" height="120" rx="26" fill="#2B4C7E"/>
+        <!-- T com canto superior direito aparado a 45° -->
+        <path d="M 30 34 H 76 L 90 48 H 68 V 88 H 52 V 48 H 30 Z" fill="#F7F6F3"/>
+        <!-- o corte, em ouro -->
+        <path d="M 76 34 L 90 48 L 90 34 Z" fill="url(#ouro1)"/>
+      </svg>
+      <div class="rotulo">ícone de app · fundo tekhelet</div>
+    </div>
+
+    <div class="item">
+      <svg width="120" height="120" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="ouro2" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#E3B54F"/><stop offset="1" stop-color="#C08A26"/>
+          </linearGradient>
+        </defs>
+        <rect width="120" height="120" rx="26" fill="none" stroke="var(--borda)"/>
+        <path d="M 30 34 H 76 L 90 48 H 68 V 88 H 52 V 48 H 30 Z" fill="var(--primaria)"/>
+        <path d="M 76 34 L 90 48 L 90 34 Z" fill="url(#ouro2)"/>
+      </svg>
+      <div class="rotulo">versão vazada · sobre qualquer fundo</div>
+    </div>
+
+    <div class="item">
+      <svg width="48" height="48" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="ouro3" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#E3B54F"/><stop offset="1" stop-color="#C08A26"/>
+          </linearGradient>
+        </defs>
+        <rect width="120" height="120" rx="26" fill="#2B4C7E"/>
+        <path d="M 30 34 H 76 L 90 48 H 68 V 88 H 52 V 48 H 30 Z" fill="#F7F6F3"/>
+        <path d="M 76 34 L 90 48 L 90 34 Z" fill="url(#ouro3)"/>
+      </svg>
+      <div class="rotulo">48px · teste de favicon</div>
+    </div>
+
+    <div class="item">
+      <svg width="28" height="28" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+        <rect width="120" height="120" rx="26" fill="#2B4C7E"/>
+        <path d="M 30 34 H 76 L 90 48 H 68 V 88 H 52 V 48 H 30 Z" fill="#F7F6F3"/>
+        <path d="M 76 34 L 90 48 L 90 34 Z" fill="#D2A03A"/>
+      </svg>
+      <div class="rotulo">28px · aba do navegador (ouro chapado)</div>
+    </div>
+
+  </div>
+  <p class="nota">O conceito: um T sólido cujo braço direito foi <b>aparado</b> em 45° — e o corte é exatamente onde mora o ouro. É o gesto do produto (tirar o excesso) virando forma. Em tamanho mínimo o gradiente vira ouro chapado <code>#D2A03A</code>, porque gradiente some abaixo de ~32px.</p>
+
+  <h2>3 — Lockup (monograma + wordmark juntos)</h2>
+  <div class="painel">
+    <div class="item">
+      <div class="lockup">
+        <svg width="44" height="44" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="ouro4" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#E3B54F"/><stop offset="1" stop-color="#C08A26"/>
+            </linearGradient>
+          </defs>
+          <rect width="120" height="120" rx="26" fill="#2B4C7E"/>
+          <path d="M 30 34 H 76 L 90 48 H 68 V 88 H 52 V 48 H 30 Z" fill="#F7F6F3"/>
+          <path d="M 76 34 L 90 48 L 90 34 Z" fill="url(#ouro4)"/>
+        </svg>
+        <span class="wordmark" style="font-size:32px">trimote<span class="dot">.</span></span>
+      </div>
+      <div class="rotulo">materiais impressos, QR de balcão, apresentações</div>
+    </div>
+  </div>
+
+</div>
+<script>
+  function alternarTema() {
+    const html = document.documentElement;
+    html.setAttribute('data-theme', html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+  }
+</script>
+</body>
+</html>

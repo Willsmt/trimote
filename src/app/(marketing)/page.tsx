@@ -18,10 +18,34 @@ const WHATSAPP_NUMERO = "5511956697013";
 const WHATSAPP_MENSAGEM = "Olá! Quero conhecer o Trimote para o meu negócio.";
 const whatsappHref = `https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent(WHATSAPP_MENSAGEM)}`;
 
+// Copy aprovada (#40). Acentos restaurados por ser texto de EXIBICAO (aba do browser, card no
+// WhatsApp); "agenda" minusculo e intencional. Constantes p/ o title/description nao divergirem
+// entre a tag <title>, o OG e o Twitter.
+const META_TITULO = "Trimote — agenda e caixa do seu negócio num lugar só";
+const META_DESCRICAO =
+  "O cliente agenda sozinho pelo seu link e cada atendimento já entra no financeiro do dia. Menos WhatsApp, menos caderno.";
+
 export const metadata: Metadata = {
-  title: "Trimote — Agenda e caixa do seu negócio num lugar só",
-  description:
-    "O cliente agenda sozinho pelo seu link; cada atendimento já entra no caixa do dia. Menos WhatsApp e caderno, mais dia sob controle.",
+  title: META_TITULO,
+  description: META_DESCRICAO,
+  // canonical da landing resolve p/ https://trimote.com.br/ via metadataBase (root).
+  alternates: { canonical: "/" },
+  openGraph: {
+    type: "website",
+    locale: "pt_BR",
+    url: "/",
+    siteName: "Trimote",
+    title: META_TITULO,
+    description: META_DESCRICAO,
+    // Imagem OG NAO referenciada aqui de proposito: a Peca 3 adiciona opengraph-image.tsx e o Next
+    // injeta og:image/twitter:image pela convencao de arquivo. Assim nao ha og:image apontando p/
+    // 404 entre as pecas.
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: META_TITULO,
+    description: META_DESCRICAO,
+  },
 };
 
 export default function LandingPage() {
@@ -31,6 +55,10 @@ export default function LandingPage() {
           gruda dentro do próprio pai, então dentro do `.cena` (nav+hero) ela soltava ao fim do hero.
           Como filha de `.root`, o pai é a página inteira e a nav acompanha todo o scroll. */}
       <LandingNav whatsappHref={whatsappHref} />
+      {/* Landmark <main> (a11y, achado do Lighthouse): envolve o conteúdo entre a nav e o rodapé.
+          Bloco puro, sem estilo — não altera o layout. Filhos mantidos na indentação atual de
+          propósito, para o diff ficar só na mudança semântica. */}
+      <main>
       <div className={styles.cena}>
         <header className={styles.hero}>
           <div className={`${styles.wrap} ${styles.heroGrid}`}>
@@ -255,6 +283,7 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
+      </main>
 
       <footer className={styles.footer}>
         <div className={`${styles.wrap} ${styles.footIn}`}>

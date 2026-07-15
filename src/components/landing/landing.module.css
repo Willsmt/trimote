@@ -17,7 +17,10 @@
   --texto: #eeede8;
   --texto-secundario: #97a1ae;
   --borda: #28323f;
-  --primaria: #4e7db5;
+  /* #4774aa, NÃO o #4e7db5 do protótipo: branco sobre #4e7db5 mede 4.26:1 (reprova WCAG AA, mín.
+   * 4.5:1 p/ texto normal — o CTA "Agendar uma conversa" reprovou no Lighthouse); #4774aa mede
+   * 4.84:1 e mantém o tekhelet vivo. Emenda registrada em specs/landing/CONSTITUICAO-VISUAL.md (#40). */
+  --primaria: #4774aa;
   --primaria-hover: #6190c4;
   --primaria-texto: #fff;
   --primaria-suave: #1e2e44;
