@@ -1,10 +1,12 @@
 # Trimote
 
-Sistema de agendamento online para uma barbearia. O cliente vê os serviços, escolhe um dia e um
+Plataforma **multi-tenant** de agendamento e financeiro para negócios de serviço (barbearias e
+afins). Cada negócio tem sua página pública própria: o cliente vê os serviços, escolhe um dia e um
 horário livre e agenda por conta própria — com a garantia de que **nunca** há duplo agendamento no
-mesmo horário (não-sobreposição garantida no nível de dados).
-
-Feature do MVP: [`specs/001-barber-booking`](specs/001-barber-booking/).
+mesmo horário (não-sobreposição garantida no nível de dados) — e cada atendimento concluído entra no
+caixa do dia. Começou como app de uma barbearia única (feature do MVP:
+[`specs/001-barber-booking`](specs/001-barber-booking/)) e virou plataforma na
+[`specs/007-multi-tenancy`](specs/007-multi-tenancy/).
 
 ## Stack
 
@@ -37,7 +39,7 @@ Feature do MVP: [`specs/001-barber-booking`](specs/001-barber-booking/).
    | `NEXTAUTH_SECRET` | Segredo do NextAuth (gere um valor aleatório) |
    | `NEXTAUTH_URL` | URL da app (ex.: `http://localhost:3000`) |
    | `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | Credenciais do Google Cloud Console |
-   | `OWNER_EMAIL` | E-mail do dono. O seed promove (ou cria) este usuário como `OWNER` (ver Painel do dono) |
+   | `OWNER_EMAIL` | E-mail do operador da plataforma. O seed promove (ou cria) este usuário como `ADMIN` e o vincula como dono (`OWNER`) do negócio showroom (ver Multi-tenancy) |
 
 2. Suba o banco:
 
@@ -53,7 +55,7 @@ Feature do MVP: [`specs/001-barber-booking`](specs/001-barber-booking/).
    ```bash
    npm install
    npm run db:migrate        # prisma migrate dev (aplica o schema + a exclusion constraint)
-   npm run db:seed           # popula barbearia, expediente e serviços
+   npm run db:seed           # negócio showroom, expediente, serviços + bootstrap do 1º ADMIN
    ```
 
 4. Rode a aplicação:
@@ -258,24 +260,67 @@ pública própria. Feature: [`specs/007-multi-tenancy`](specs/007-multi-tenancy/
 - Fora de escopo: STAFF/agenda por profissional, personalização visual, marketplace, cobrança da
   plataforma, multi-vertical real, edição de slug.
 
+## Landing pública e SEO
+
+A raiz (`/`) é uma **landing de venda** do produto para donos de negócio, no route group
+`(marketing)` — tema próprio (escuro, tipografia Fraunces) isolado do app em `(site)`. Specs:
+[`specs/landing`](specs/landing/).
+
+- **Renderização**: server component estático (bom para SEO e para navegação sem JS); só o reveal no
+  scroll, o contador de saldo e a demo de agendamento são ilhas client. A nav fixa tem consciência de
+  sessão (mostra o destino certo para quem já está logado).
+- **CTA**: todos os "Agendar uma conversa" apontam para um único `wa.me`. Não há coleta de dados na
+  landing.
+- **SEO/compartilhamento**: `metadata` com título/descrição canônicos, Open Graph e Twitter; imagem
+  **Open Graph gerada dinamicamente** (`opengraph-image.tsx`); `robots.ts` e `sitemap.ts`; favicon
+  (`icon.svg`) e apple touch icon (`apple-icon.tsx`). Acessibilidade: landmark `main`, contraste do
+  CTA corrigido.
+
+## Perfil do cliente (telefone/WhatsApp)
+
+Em `/profile`, o cliente autenticado edita o próprio **telefone**. Feature: issue #34.
+
+- **Coleta com finalidade**: campo `phone` no `User`, validado e normalizado no padrão BR na Server
+  Action; a página tem guarda de sessão (visitante vai ao login) e aviso de finalidade. O telefone é
+  lido do banco, **não** trafega na sessão.
+- **Uso**: na agenda do dia do OWNER, o telefone do cliente aparece como **link de WhatsApp** — a
+  ponte para o contato quando necessário, sem inflar a navegação.
+
+## Privacidade e cookies (LGPD)
+
+Feature: issue #36. Alinha o produto à LGPD **antes** de qualquer rastreamento (ver a política em
+`CLAUDE.md`).
+
+- **Política de Privacidade**: página pública e estática em `/privacidade` (11 seções, transcritas
+  fielmente do texto oficial), linkada no **rodapé global**.
+- **Aviso de cookies**: faixa informativa. O Trimote seta **apenas cookies essenciais** (NextAuth),
+  sem rastreamento nem analytics de terceiros — classificação auditada e a ser **reavaliada antes de
+  mergear** qualquer script que colete comportamento.
+
 ## Estrutura
 
 ```text
-prisma/          # schema, migrations (exclusion constraint, índice único parcial), seed, sql/
+prisma/          # schema, migrations (rename puro + funcional, exclusion constraint, índices), seed, sql/
 src/
-├── app/         # rotas: /services, /booking, /my-bookings, /owner/*, /api/auth/[...nextauth]
-├── components/  # UI: site-header (server) + auth-buttons (client), my-bookings, booking, owner/
+├── app/
+│   ├── (marketing)/  # landing pública em / (tema próprio) + opengraph-image
+│   ├── (site)/       # app: /b/[slug], /booking, /my-bookings, /my-spending, /owner/*, /admin,
+│   │                 #      /profile, /privacidade
+│   ├── api/auth/[...nextauth]/
+│   └── robots.ts / sitemap.ts / icon.svg / apple-icon.tsx   # SEO e ícones
+├── components/  # UI: site-header/footer (server) + auth-buttons (client), landing/, owner/, admin/, client/
 ├── domain/      # lógica pura sem I/O: availability, time (test-first)
 ├── server/      # actions/ (Server Actions), booking/ + owner/ + ledger/ (core testável), auth/, db/
 └── lib/
 tests/
 ├── unit/        # availability, time, ledger (sem banco)
-└── integration/ # booking-conflict, booking-ownership, owner-authorization, service-lifecycle, reschedule, ledger
+└── integration/ # booking-conflict, booking-ownership, owner-authorization, service-lifecycle,
+                 # reschedule, ledger, multi-tenancy
 ```
 
 Padrão: as Server Actions (`src/server/actions/`) são wrappers finos sobre um core em
-`src/server/booking/`, `src/server/owner/` e `src/server/ledger/`; o owner deriva sempre da sessão no
-servidor (guard `requireOwner` para gestão e para a captura financeira).
+`src/server/booking/`, `src/server/owner/` e `src/server/ledger/`; o negócio ativo e o papel derivam
+sempre da sessão no servidor (guards `requireOwner`/`requireAdmin` — `businessId` nunca vem do input).
 
 ## Convenções
 
