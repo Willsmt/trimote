@@ -1,19 +1,22 @@
 import type { MetadataRoute } from "next";
 
 import { prisma } from "@/server/db/client";
+import { SITE_URL } from "@/config/site";
 
 // sitemap.xml (App Router, issue #40). URLs devem ser ABSOLUTAS (o metadataBase nao se aplica ao
-// sitemap). Base fixa, igual ao metadataBase do layout raiz.
-const BASE = "https://trimote.com.br";
+// sitemap). Base fixa, igual ao metadataBase do layout raiz (mesma fonte: SITE_URL, issue #44).
+const BASE = SITE_URL;
 
 // ISR diario: cada negocio publico novo entra no sitemap sem rebuild. Uma query por revalidacao
 // (findMany de slugs) — custo desprezivel no MVP (poucos negocios).
 export const revalidate = 86400;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  // Todo Business tem porta publica em /b/[slug] (nao ha flag de "publicado"). Sem updatedAt no
-  // model, uso createdAt como lastModified.
+  // So entra quem fez opt-in (isListed, issue #44) — nenhum negocio e indexado sem alguem decidir.
+  // A porta publica /b/[slug] continua acessivel por link direto (funil QR/Instagram); a flag
+  // controla APENAS o sitemap. Sem updatedAt no model, uso createdAt como lastModified.
   const businesses = await prisma.business.findMany({
+    where: { isListed: true },
     select: { slug: true, createdAt: true },
     orderBy: { createdAt: "asc" },
   });

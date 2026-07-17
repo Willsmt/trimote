@@ -82,3 +82,21 @@ Earlier feature: 001-barber-booking — agendamento com não-sobreposição por 
   (2) remove o velho depois que o codigo novo esta servindo. A migration
   20260703120000_rename_business deste repo e o exemplo do que NAO pode ir
   sozinho.
+
+- O deploy de PRODUCAO exige o Neon acessivel na janela do build: o migrate
+  deploy roda dentro do script build (antes do next build), e o sitemap
+  consulta o banco na fase de static generation. Neon fora do ar = deploy
+  BLOQUEADO, nao outage - a Vercel nao promove build quebrado e o deploy
+  anterior continua servindo. E desenho (fail-closed), nao divida: nao
+  "consertar" com fail-open sem decisao explicita.
+
+- NAO adicionar URL de Preview (*.vercel.app) as Authorized redirect URIs do
+  Google enquanto o Preview compartilhar DATABASE_URL e NEXTAUTH_SECRET com
+  Production. Hoje o login em Preview falha com redirect_uri_mismatch
+  (MEDIDO em 2026-07) - esse e o UNICO fail-closed que impede uma sessao de
+  preview de escrever no banco de producao, e ele e EXTERNO ao repo (vive no
+  console do Google). Se um dia precisar de login em Preview: primeiro
+  desacopla o banco (Neon branch + NEXTAUTH_SECRET proprio no environment
+  Preview), so depois registra a URI. Nunca ao contrario. Deployment
+  Protection da Vercel esta DESLIGADA (medido: preview abre sem senha) - nao
+  contar com ela como barreira.

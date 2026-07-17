@@ -3,11 +3,12 @@ import "./globals.css";
 
 import { inter } from "./fonts";
 import { CookieNotice } from "@/components/cookie-notice";
+import { SITE_URL } from "@/config/site";
 
 export const metadata: Metadata = {
   // metadataBase no root: resolve as URLs relativas de OG/canonical de TODAS as rotas (canonical da
   // landing, og:image da Peca 3). Definido uma vez aqui, herdado por (site) e (marketing).
-  metadataBase: new URL("https://trimote.com.br"),
+  metadataBase: new URL(SITE_URL),
   // Titulo padrao do app; a landing e cada pagina publica (ex.: /privacidade) sobrescrevem. A
   // description generica de barbearia saiu (multi-tenant): as paginas que precisam definem a sua; as
   // privadas (owner/admin/perfil) nao dependem de SEO.

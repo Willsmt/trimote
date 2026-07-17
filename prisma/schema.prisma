@@ -116,6 +116,10 @@ model Business {
   timezone  String              @default("America/Sao_Paulo")
   // Vertical do negocio (F007). Sem ramificacao de comportamento no MVP (multi-vertical fora de escopo).
   segment   String              @default("barbershop")
+  // NAO e controle de acesso: /b/[slug] permanece publico por link direto (funil QR/Instagram).
+  // Esta flag controla APENAS a inclusao no sitemap.xml (issue #44). Default false = opt-in
+  // explicito: nenhum negocio e indexado sem alguem decidir. Ligar hoje = UPDATE manual (sem UI).
+  isListed  Boolean             @default(false)
   openingHours OpeningHours[]
   services  Service[]
   bookings  Booking[]
