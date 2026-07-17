@@ -100,3 +100,13 @@ Earlier feature: 001-barber-booking — agendamento com não-sobreposição por 
   Preview), so depois registra a URI. Nunca ao contrario. Deployment
   Protection da Vercel esta DESLIGADA (medido: preview abre sem senha) - nao
   contar com ela como barreira.
+
+- Grep nesta sessao passa pelo hook rtk (semantica ripgrep): ignora dotfiles
+  e arquivos gitignorados por padrao, sem avisar. Grep vazio NAO e evidencia
+  de ausencia - e evidencia de ausencia nos arquivos visiveis. Para auditoria
+  (segredo hardcoded, credencial, config), usar rtk proxy grep -rn ... ou
+  flags de hidden/no-ignore, e dizer no report qual variante foi usada. Vale
+  para qualquer busca cujo alvo plausivel seja dotfile ou gitignorado.
+  Medido em 17/07: grep -rn "DATABASE_URL_NEON_TEST" . retornou vazio
+  enquanto o .env.neon-prod estava intacto no disco com a var. Mesma familia
+  do error=Callback (#42): sucesso e falha produzindo o mesmo sinal.
