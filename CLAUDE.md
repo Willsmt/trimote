@@ -72,3 +72,13 @@ Earlier feature: 001-barber-booking — agendamento com não-sobreposição por 
   muda essa classificacao e exige atualizar a Politica de Privacidade + aviso de
   cookies ANTES de mergear. Ligar Web Analytics no dashboard da Vercel conta
   como adicionar rastreamento.
+
+- Migration destrutiva (rename/drop) NAO pode ir num deploy so. O migrate
+  deploy roda durante o build de producao, enquanto o deploy anterior ainda
+  serve trafego: existe uma janela (a duracao do build) de schema novo x
+  codigo velho. Migration aditiva (coluna nullable, tabela nova) sobrevive a
+  janela; rename/drop derruba producao dentro dela. Destrutiva vira
+  expand/contract em dois deploys: (1) adiciona o novo e escreve nos dois,
+  (2) remove o velho depois que o codigo novo esta servindo. A migration
+  20260703120000_rename_business deste repo e o exemplo do que NAO pode ir
+  sozinho.

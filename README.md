@@ -35,7 +35,8 @@ caixa do dia. Começou como app de uma barbearia única (feature do MVP:
 
    | Variável | Descrição |
    |----------|-----------|
-   | `DATABASE_URL` | Conexão Postgres. Local (docker-compose) usa a porta **5433**: `postgresql://postgres:postgres@localhost:5433/trimote?schema=public` |
+   | `DATABASE_URL` | Conexão Postgres do runtime. Local (docker-compose) usa a porta **5433**: `postgresql://postgres:postgres@localhost:5433/trimote?schema=public`. Em produção (Neon) é a **pooled** (host com `-pooler`) |
+   | `DIRECT_URL` | Conexão **direta** (sem `-pooler`), usada só pelas migrations. **Obrigatória apenas em produção** (guard no `prisma.config.ts`); no local não há pooler — igual à `DATABASE_URL` (ver Deploy) |
    | `NEXTAUTH_SECRET` | Segredo do NextAuth (gere um valor aleatório) |
    | `NEXTAUTH_URL` | URL da app (ex.: `http://localhost:3000`) |
    | `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | Credenciais do Google Cloud Console |
@@ -95,6 +96,31 @@ nenhuma conversão de fuso fora dessa camada.
 | `npm run db:seed` | Popula os dados pré-cadastrados |
 
 > Os testes de integração exigem o Postgres do `docker-compose` no ar.
+
+## Deploy (Vercel)
+
+As migrations são aplicadas **automaticamente no build de produção**: o script `build` roda
+`prisma migrate deploy` gateado por `VERCEL_ENV = "production"`, antes do `next build` (o
+`sitemap.ts` consulta o banco em build time). Builds de **preview e local não aplicam nada** —
+comportamento idêntico ao de sempre. Se o `migrate deploy` falhar, o build inteiro cai e o
+deploy é bloqueado (fail-closed).
+
+**`DIRECT_URL` é OBRIGATÓRIA no environment Production da Vercel** — conexão direta do Neon
+(host **sem** `-pooler`). A `DATABASE_URL` segue sendo a pooled, usada pelo runtime; migrations
+não podem rodar sobre a pooled (o schema engine usa advisory lock, incompatível com PgBouncer em
+transaction mode). Sem `DIRECT_URL` em produção, o build cai no guard do `prisma.config.ts` com
+mensagem nomeada.
+
+**Destravar migration em estado failed**: se o `migrate deploy` falhar no meio, a migration fica
+registrada como failed e **todo deploy novo fica bloqueado** até resolver. Procedimento:
+
+1. Inspecionar o que a migration chegou a aplicar no banco.
+2. Se nada foi aplicado (rollback da transação): `prisma migrate resolve --rolled-back <nome>`,
+   corrigir o SQL e subir de novo.
+3. Se o efeito foi aplicado à mão no banco: `prisma migrate resolve --applied <nome>`.
+
+Ambos exigem a `DATABASE_URL` de produção no ambiente — operação **manual**, sem automação
+possível pelo design do Prisma.
 
 ## Navegação e sessão
 
