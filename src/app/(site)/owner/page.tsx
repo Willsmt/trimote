@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { SITE_URL } from "@/config/site";
 import { requireOwner, ForbiddenError, NeedsBusinessSelectionError } from "@/server/auth/owner";
 import { UnauthorizedError } from "@/server/auth/session";
 import { prisma } from "@/server/db/client";
@@ -46,7 +47,8 @@ export default async function OwnerHomePage() {
   }));
 
   // Página pública do negócio (issue #15): slug do negócio ATIVO (nunca do input); URL montada no
-  // SERVER a partir de NEXTAUTH_URL (barra final normalizada) — a env não é exposta ao client.
+  // SERVER a partir de SITE_URL (issue #44) — a URL que o dono copia é a canônica do site, não a
+  // de callback do OAuth (NEXTAUTH_URL divergiria em preview/local).
   // O _count alimenta o checklist de setup (issue #12) na mesma query: serviços ATIVOS (soft delete
   // da F002 — desativados não contam como configurado) e dias de expediente.
   const business = await prisma.business.findUnique({
@@ -56,8 +58,7 @@ export default async function OwnerHomePage() {
       _count: { select: { services: { where: { isActive: true } }, openingHours: true } },
     },
   });
-  const baseUrl = (process.env.NEXTAUTH_URL ?? "").replace(/\/$/, "");
-  const publicUrl = business ? `${baseUrl}/b/${business.slug}` : null;
+  const publicUrl = business ? `${SITE_URL}/b/${business.slug}` : null;
   const setupComplete =
     !business || (business._count.services > 0 && business._count.openingHours > 0);
 

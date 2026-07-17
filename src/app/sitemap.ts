@@ -1,10 +1,11 @@
 import type { MetadataRoute } from "next";
 
 import { prisma } from "@/server/db/client";
+import { SITE_URL } from "@/config/site";
 
 // sitemap.xml (App Router, issue #40). URLs devem ser ABSOLUTAS (o metadataBase nao se aplica ao
-// sitemap). Base fixa, igual ao metadataBase do layout raiz.
-const BASE = "https://trimote.com.br";
+// sitemap). Base fixa, igual ao metadataBase do layout raiz (mesma fonte: SITE_URL, issue #44).
+const BASE = SITE_URL;
 
 // ISR diario: cada negocio publico novo entra no sitemap sem rebuild. Uma query por revalidacao
 // (findMany de slugs) — custo desprezivel no MVP (poucos negocios).
