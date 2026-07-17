@@ -11,9 +11,11 @@ const BASE = "https://trimote.com.br";
 export const revalidate = 86400;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  // Todo Business tem porta publica em /b/[slug] (nao ha flag de "publicado"). Sem updatedAt no
-  // model, uso createdAt como lastModified.
+  // So entra quem fez opt-in (isListed, issue #44) — nenhum negocio e indexado sem alguem decidir.
+  // A porta publica /b/[slug] continua acessivel por link direto (funil QR/Instagram); a flag
+  // controla APENAS o sitemap. Sem updatedAt no model, uso createdAt como lastModified.
   const businesses = await prisma.business.findMany({
+    where: { isListed: true },
     select: { slug: true, createdAt: true },
     orderBy: { createdAt: "asc" },
   });
