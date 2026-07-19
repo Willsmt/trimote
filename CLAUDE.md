@@ -48,65 +48,16 @@ Earlier feature: 001-barber-booking — agendamento com não-sobreposição por 
 (EXCLUDE USING gist on tstzrange, btree_gist). UTC no armazenamento; lógica no fuso da barbearia.
 <!-- SPECKIT END -->
 
-## Principios de design/produto
+## Regras sempre ativas
 
-- Navegacao minimalista e contextual. O menu global mostra so o essencial
-  por papel. Acoes aparecem no contexto onde sao usadas (ex.: apos concluir
-  um atendimento, link direto para o financeiro), nao acumuladas num menu
-  global. Cada feature nova deve manter as acoes principais a um clique sem
-  inflar a navegacao. Simplicidade e vantagem competitiva: contra apps
-  maiores, ganha-se na facilidade, nao na quantidade de opcoes.
+- Grep nesta sessão passa pelo hook rtk (semântica ripgrep): ignora dotfiles e arquivos gitignorados por padrão, sem avisar. Grep vazio NÃO é evidência de ausência — é evidência de ausência nos arquivos visíveis. Para auditoria (segredo hardcoded, credencial, config), usar rtk proxy grep -rn ... ou flags de hidden/no-ignore, e dizer no report qual variante foi usada. Medido em 17/07: grep de DATABASE_URL_NEON_TEST retornou vazio com o .env.neon-prod intacto no disco.
+- Rastreamento/analytics exige reavaliar LGPD ANTES do merge. O Trimote seta apenas cookies essenciais (NextAuth; auditado 2026-07-11, zero rastreamento). Adicionar Vercel Analytics, Speed Insights, GA, Meta Pixel ou qualquer script de terceiro que colete comportamento muda essa classificação e exige atualizar Política de Privacidade + aviso de cookies ANTES de mergear. Ligar Web Analytics no dashboard da Vercel conta como adicionar rastreamento.
 
-- Convencao na mecanica, autoral na identidade. Seguir padroes estabelecidos
-  de navegacao e interacao (nao reinventar onde o usuario ja sabe procurar:
-  menu, login, voltar, formularios). Investir originalidade no tom das
-  mensagens, na experiencia, na estetica e nas decisoes de produto - nao na
-  mecanica de UI. O "artesanal" do Trimote vive na execucao e nas decisoes,
-  nao em navegacao inventada.
+## Convenções
 
-- Rastreamento/analytics exige reavaliar LGPD ANTES do merge. O Trimote seta
-  apenas cookies essenciais (NextAuth: session-token, csrf-token, callback-url,
-  state, pkce) - auditados em 2026-07-11, zero rastreamento, database session
-  sem dados no cliente. Adicionar Vercel Analytics, Speed Insights, Google
-  Analytics, Meta Pixel ou qualquer script de terceiro que colete comportamento
-  muda essa classificacao e exige atualizar a Politica de Privacidade + aviso de
-  cookies ANTES de mergear. Ligar Web Analytics no dashboard da Vercel conta
-  como adicionar rastreamento.
+- Conventional Commits (commitlint ativo). Branch de issue `NNN-nome` criada ANTES do primeiro commit; merge via `--no-ff`. Código em inglês, docs/comentários em português. README atualizado a cada feature ou dependência nova.
 
-- Migration destrutiva (rename/drop) NAO pode ir num deploy so. O migrate
-  deploy roda durante o build de producao, enquanto o deploy anterior ainda
-  serve trafego: existe uma janela (a duracao do build) de schema novo x
-  codigo velho. Migration aditiva (coluna nullable, tabela nova) sobrevive a
-  janela; rename/drop derruba producao dentro dela. Destrutiva vira
-  expand/contract em dois deploys: (1) adiciona o novo e escreve nos dois,
-  (2) remove o velho depois que o codigo novo esta servindo. A migration
-  20260703120000_rename_business deste repo e o exemplo do que NAO pode ir
-  sozinho.
+## Arquitetura de contexto
 
-- O deploy de PRODUCAO exige o Neon acessivel na janela do build: o migrate
-  deploy roda dentro do script build (antes do next build), e o sitemap
-  consulta o banco na fase de static generation. Neon fora do ar = deploy
-  BLOQUEADO, nao outage - a Vercel nao promove build quebrado e o deploy
-  anterior continua servindo. E desenho (fail-closed), nao divida: nao
-  "consertar" com fail-open sem decisao explicita.
-
-- NAO adicionar URL de Preview (*.vercel.app) as Authorized redirect URIs do
-  Google enquanto o Preview compartilhar DATABASE_URL e NEXTAUTH_SECRET com
-  Production. Hoje o login em Preview falha com redirect_uri_mismatch
-  (MEDIDO em 2026-07) - esse e o UNICO fail-closed que impede uma sessao de
-  preview de escrever no banco de producao, e ele e EXTERNO ao repo (vive no
-  console do Google). Se um dia precisar de login em Preview: primeiro
-  desacopla o banco (Neon branch + NEXTAUTH_SECRET proprio no environment
-  Preview), so depois registra a URI. Nunca ao contrario. Deployment
-  Protection da Vercel esta DESLIGADA (medido: preview abre sem senha) - nao
-  contar com ela como barreira.
-
-- Grep nesta sessao passa pelo hook rtk (semantica ripgrep): ignora dotfiles
-  e arquivos gitignorados por padrao, sem avisar. Grep vazio NAO e evidencia
-  de ausencia - e evidencia de ausencia nos arquivos visiveis. Para auditoria
-  (segredo hardcoded, credencial, config), usar rtk proxy grep -rn ... ou
-  flags de hidden/no-ignore, e dizer no report qual variante foi usada. Vale
-  para qualquer busca cujo alvo plausivel seja dotfile ou gitignorado.
-  Medido em 17/07: grep -rn "DATABASE_URL_NEON_TEST" . retornou vazio
-  enquanto o .env.neon-prod estava intacto no disco com a var. Mesma familia
-  do error=Callback (#42): sucesso e falha produzindo o mesmo sinal.
+- Regras específicas por área vivem em `.claude/skills/trimote-*` e são carregadas sob demanda pelo gatilho de cada skill. Ao criar regra nova, prefira adicioná-la à skill do domínio correspondente (ou criar uma nova) em vez de inflar este arquivo.
+- Governança formal: `.specify/memory/constitution.md` (prevalece sobre tudo).
