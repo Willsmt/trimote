@@ -30,7 +30,9 @@ export async function LandingNav({ whatsappHref }: { whatsappHref: string }) {
           <a href="#como">Como funciona</a>
           {user ? (
             <>
-              <Link href={contextual.href}>{contextual.label}</Link>
+              <Link href={contextual.href} className={styles.navLinkContextual}>
+                {contextual.label}
+              </Link>
               {/* Indicação de sessão ativa (FR-007): o usuário sabe que autenticou e não clica em
                   Entrar de novo. */}
               <span className={styles.navUser}>{user.name ?? user.email}</span>
