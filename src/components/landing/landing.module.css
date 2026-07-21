@@ -909,4 +909,20 @@
     right: 16px;
     bottom: 16px;
   }
+  /* Nome do usuario logado sai no mobile (#47): e redundante (reaparece dentro do app) e o espaco
+     que ocupa e o que falta para o link contextual caber. */
+  .navUser {
+    display: none;
+  }
+  /* Reexibe o link contextual (Painel / Meus agendamentos), que a regra .navLinks a:not(.btn)
+     acima esconde no mobile. Mesma especificidade (0,2,1) daquela regra: este seletor vence pelo
+     desempate de ORDEM, entao precisa vir depois dela neste bloco. Se reordenar, o link some de
+     novo. "Como funciona" segue oculto porque nao tem esta classe.
+     display:inline (nao inline-flex) reproduz a caixa que o link ja tem no desktop: .navLinks a
+     nao declara display, entao ele fica no inline default de <a> e, como item flex de .navLinks,
+     e blockificado para block. inline blockifica igual; inline-flex viraria flex e trocaria o
+     formatting context interno sem necessidade. */
+  .navLinks a.navLinkContextual {
+    display: inline;
+  }
 }
