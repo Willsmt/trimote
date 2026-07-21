@@ -896,6 +896,12 @@
   .navLinks a:not(.btn) {
     display: none;
   }
+  /* CTA de venda some do nav no mobile (#46): sem espaco a ~380px ele era comprimido abaixo do
+     rotulo e quebrava em 3 linhas, vazando a borda. A mesma acao (whatsappHref) segue no botao do
+     hero e no WhatsappFab. Escopo em .navLinks para nao pegar os CTAs do corpo da pagina. */
+  .navLinks .btnPrimario {
+    display: none;
+  }
   .toast {
     right: 6px;
   }
