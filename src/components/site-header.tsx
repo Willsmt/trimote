@@ -20,58 +20,62 @@ export async function SiteHeader() {
 
   return (
     <header className="border-b border-neutral-200">
-      <nav className="mx-auto flex max-w-3xl items-center gap-4 p-4">
-        <Link href="/" className="font-bold">
-          Trimote
-        </Link>
-
-        {/* Links de área logada (FR-005): visíveis a qualquer usuário autenticado. Agendar é por
-            negócio (/b/[slug]); não há mais catálogo global (F007/US4). */}
-        {user && (
-          <>
-            <Link href="/my-bookings" className="text-sm hover:underline">
-              Meus agendamentos
-            </Link>
-            {/* Histórico dos próprios gastos (006, US5): qualquer autenticado; filtro por sessão no servidor. */}
-            <Link href="/my-spending" className="text-sm hover:underline">
-              Meus gastos
-            </Link>
-            {/* Perfil (034): edição do próprio telefone/WhatsApp. */}
-            <Link href="/profile" className="text-sm hover:underline">
-              Perfil
-            </Link>
-          </>
-        )}
-
-        {/* Painel do dono: só quem tem vínculo OWNER (F007 — posse por membership, não papel global).
-            Esconder é conveniência; a barreira real é requireOwner no servidor. */}
-        {isOwner && (
-          <>
-            <Link href="/owner" className="text-sm hover:underline">
-              Painel
-            </Link>
-            <Link href="/owner/finance" className="text-sm hover:underline">
-              Financeiro
-            </Link>
-          </>
-        )}
-
-        {/* Área ADMIN (F007, US1): só Role ADMIN. A barreira real é requireAdmin no servidor. */}
-        {isAdmin && (
-          <Link href="/admin" className="text-sm hover:underline">
-            Admin
+      <nav className="mx-auto flex max-w-3xl flex-col gap-2 p-4">
+        <div className="flex items-center justify-between gap-4">
+          <Link href="/" className="font-bold">
+            Trimote
           </Link>
-        )}
 
-        <div className="ml-auto flex items-center gap-3">
-          {user ? (
+          <div className="flex items-center gap-3">
+            {user ? (
+              <>
+                {/* Indicação de sessão ativa: identifica o usuário realmente logado (FR-007). */}
+                <span className="hidden text-sm text-neutral-500 sm:inline">{user.name ?? user.email}</span>
+                <SignOutButton />
+              </>
+            ) : (
+              <SignInButton />
+            )}
+          </div>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-4">
+          {/* Links de área logada (FR-005): visíveis a qualquer usuário autenticado. Agendar é por
+              negócio (/b/[slug]); não há mais catálogo global (F007/US4). */}
+          {user && (
             <>
-              {/* Indicação de sessão ativa: identifica o usuário realmente logado (FR-007). */}
-              <span className="text-sm text-neutral-500">{user.name ?? user.email}</span>
-              <SignOutButton />
+              <Link href="/my-bookings" className="text-sm hover:underline">
+                Meus agendamentos
+              </Link>
+              {/* Histórico dos próprios gastos (006, US5): qualquer autenticado; filtro por sessão no servidor. */}
+              <Link href="/my-spending" className="text-sm hover:underline">
+                Meus gastos
+              </Link>
+              {/* Perfil (034): edição do próprio telefone/WhatsApp. */}
+              <Link href="/profile" className="text-sm hover:underline">
+                Perfil
+              </Link>
             </>
-          ) : (
-            <SignInButton />
+          )}
+
+          {/* Painel do dono: só quem tem vínculo OWNER (F007 — posse por membership, não papel global).
+              Esconder é conveniência; a barreira real é requireOwner no servidor. */}
+          {isOwner && (
+            <>
+              <Link href="/owner" className="text-sm hover:underline">
+                Painel
+              </Link>
+              <Link href="/owner/finance" className="text-sm hover:underline">
+                Financeiro
+              </Link>
+            </>
+          )}
+
+          {/* Área ADMIN (F007, US1): só Role ADMIN. A barreira real é requireAdmin no servidor. */}
+          {isAdmin && (
+            <Link href="/admin" className="text-sm hover:underline">
+              Admin
+            </Link>
           )}
         </div>
       </nav>
