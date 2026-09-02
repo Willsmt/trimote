@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { signIn } from "next-auth/react";
 
 import { getAvailableSlots } from "@/server/actions/get-available-slots";
@@ -66,6 +67,10 @@ export function BookingFlow({
         : null,
   );
   const [loading, setLoading] = useState(false);
+  // Junto com `message`, mas só true quando a mensagem atual é a de sucesso do agendamento — o
+  // <p> não distingue sucesso de erro/aviso por conteúdo, então guardamos isso à parte pro link
+  // "Ver meus agendamentos" nunca aparecer numa mensagem de erro.
+  const [lastConfirmedOk, setLastConfirmedOk] = useState(false);
   // Slot que um VISITANTE clicou: dispara o gate "Entre para agendar" sem chamar a action (o clique
   // do não-logado não pode escrever). Nulo = sem gate aberto.
   const [pendingSlot, setPendingSlot] = useState<string | null>(null);
@@ -109,12 +114,14 @@ export function BookingFlow({
   async function confirm(startsAt: string) {
     setLoading(true);
     setMessage(null);
+    setLastConfirmedOk(false);
     try {
       const result = await createBooking({ serviceId, startsAt });
       // Recarrega a disponibilidade para refletir o horário ocupado (ou liberado em caso de recusa).
       // loadSlots já não mexe na mensagem; a do RESULTADO é setada DEPOIS do re-fetch para sobreviver.
       await loadSlots();
       setMessage(result.ok ? "Agendamento confirmado!" : FAILURE_MESSAGES[result.reason]);
+      setLastConfirmedOk(result.ok);
     } catch {
       // Qualquer throw inesperado da action (sessão expirada, rede, erro do servidor) antes travava a
       // UI: loading ficava preso em true, os slots desabilitados e nenhuma mensagem aparecia. Aqui a
@@ -181,7 +188,19 @@ export function BookingFlow({
         Ver horários livres
       </button>
 
-      {message && <p className="text-sm font-medium">{message}</p>}
+      {message && (
+        <p className="text-sm font-medium">
+          {message}
+          {isAuthenticated && lastConfirmedOk && (
+            <>
+              {" "}
+              <Link href="/my-bookings" className="underline">
+                Ver meus agendamentos
+              </Link>
+            </>
+          )}
+        </p>
+      )}
 
       {pendingSlot && (
         // Gate de login do visitante: sem rota nova, um estado contextual no próprio fluxo.
