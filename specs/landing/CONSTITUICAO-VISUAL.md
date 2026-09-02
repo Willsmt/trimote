@@ -46,6 +46,23 @@ de WCAG 2.1 AA para texto normal (o CTA "Agendar uma conversa" reprovou no Light
 (`#2B4C7E`) media **8.61:1** e **não muda**. `primaria-pressed`/`primaria-hover` escuros ficam como
 estavam. Regra derivada: todo par ação/texto novo deve medir ≥ 4.5:1 antes de entrar na tabela.
 
+## Paleta de capa (fallback de página pública sem foto)
+
+Extensão da constituição para a página pública do negócio (`/b/[slug]`), origem no mockup
+`specs/public-page/trimote-pagina-publica-mockup.html`. Quando o negócio não tem foto de capa, a
+capa recebe uma cor sólida escolhida por **hash do slug** (determinística — o mesmo negócio sempre
+cai na mesma cor) entre as seis abaixo. Não são tokens semânticos como os de `Cores`: são valores
+fixos, escopados só ao fallback de capa, sem papel de ação/estado no resto do app.
+
+| Nome       | Cor       |
+|------------|-----------|
+| `tekhelet` | `#2B4C7E` |
+| `noite`    | `#1B3459` |
+| `tinta`    | `#1A1D23` |
+| `carmesim` | `#8A2F21` |
+| `mata`     | `#205A43` |
+| `bronze`   | `#8F6812` |
+
 ## Tipografia (Google Fonts)
 
 - **Fraunces** (títulos): 600/700 — **somente de 24px pra cima**. Abaixo disso, serifada em UI vira ruído.

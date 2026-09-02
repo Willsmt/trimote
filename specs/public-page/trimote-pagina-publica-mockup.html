@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="claro" data-estado="logado" data-capa="sem" data-cor="tekhelet" data-schema="off">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trimote — /b/[slug] (mockup do projeto final)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --fundo:#F7F6F3; --superficie:#FFFFFF; --superficie-2:#F0EFEB;
+    --texto:#1A1D23; --texto-secundario:#626A76; --borda:#E2E3DF;
+    --primaria:#2B4C7E; --primaria-hover:#23406C; --primaria-pressed:#1B3459;
+    --primaria-suave:#E9EFF7; --anel-foco:rgba(43,76,126,.35);
+    --desabilitado-bg:#E4E5E2; --desabilitado-texto:#9AA0A8;
+    --ouro:#D2A03A; --ouro-metal:linear-gradient(135deg,#E3B54F,#C08A26);
+    --ouro-suave:#F6EDDA; --ouro-texto:#8F6812;
+    --carmesim:#B0402F; --carmesim-suave:#F7E7E3; --carmesim-texto:#8A2F21;
+    --sucesso:#2F8161; --sucesso-suave:#E4F1EB; --sucesso-texto:#205A43;
+    --polimento:inset 0 1px 0 rgba(255,255,255,.14);
+    --raio-input:6px; --raio-botao:10px; --raio-card:14px;
+  }
+  [data-theme="escuro"] {
+    --fundo:#10161F; --superficie:#171F2B; --superficie-2:#1E2836;
+    --texto:#EEEDE8; --texto-secundario:#97A1AE; --borda:#28323F;
+    --primaria:#4774AA; --primaria-hover:#6190C4; --primaria-pressed:#416A9C;
+    --primaria-suave:#1E2E44; --anel-foco:rgba(97,144,196,.40);
+    --desabilitado-bg:#232D3A; --desabilitado-texto:#6B7684;
+    --ouro:#DFAC45; --ouro-metal:linear-gradient(135deg,#EBC05C,#C99730);
+    --ouro-suave:#322C1D; --ouro-texto:#E6BE68;
+    --carmesim:#CE5A4B; --carmesim-suave:#35211D; --carmesim-texto:#E5978A;
+    --sucesso:#4BA47B; --sucesso-suave:#1C2F26; --sucesso-texto:#83C6A4;
+    --polimento:inset 0 1px 0 rgba(255,255,255,.08);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family:'Inter',system-ui,sans-serif; background:var(--fundo); color:var(--texto);
+    -webkit-font-smoothing:antialiased; transition:background .25s, color .25s;
+  }
+  .fraunces { font-family:'Fraunces',Georgia,serif; letter-spacing:-.02em; }
+
+  /* ---------- painel do mockup (fora da página) ---------- */
+  .painel-mock {
+    position:sticky; top:0; z-index:50; background:var(--superficie);
+    border-bottom:1px solid var(--borda); padding:12px 16px;
+    display:flex; flex-wrap:wrap; gap:8px 24px; align-items:center; justify-content:center;
+  }
+  .painel-mock .grupo { display:flex; align-items:center; gap:8px; }
+  .painel-mock .rot { font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.08em; color:var(--texto-secundario); }
+  .painel-mock button {
+    font-family:inherit; font-size:13px; font-weight:500; padding:6px 12px; cursor:pointer;
+    border-radius:999px; border:1px solid var(--borda); background:transparent; color:var(--texto-secundario); transition:all .15s;
+  }
+  .painel-mock button[aria-pressed="true"] { background:var(--primaria); border-color:var(--primaria); color:#fff; }
+  .painel-mock button:hover { border-color:var(--primaria); }
+
+  /* ---------- marcação de dado inexistente ---------- */
+  .precisa-schema { position:relative; }
+  [data-schema="on"] .precisa-schema { outline:1px dashed var(--carmesim); outline-offset:5px; border-radius:4px; }
+  [data-schema="on"] .precisa-schema::after {
+    content:attr(data-campo); position:absolute; top:-10px; left:0; z-index:5;
+    background:var(--carmesim-suave); color:var(--carmesim-texto);
+    font-size:11px; font-weight:600; letter-spacing:.04em; padding:1px 7px; border-radius:999px;
+    white-space:nowrap; pointer-events:none;
+  }
+  [data-schema="on"] .capa .precisa-schema::after { top:6px; left:6px; }
+
+  /* ---------- capa ---------- */
+  .capa { position:relative; min-height:280px; display:flex; align-items:flex-end; overflow:hidden; background:var(--capa-cor); }
+  [data-cor="tekhelet"] { --capa-cor:#2B4C7E; }
+  [data-cor="noite"]    { --capa-cor:#1B3459; }
+  [data-cor="tinta"]    { --capa-cor:#1A1D23; }
+  [data-cor="carmesim"] { --capa-cor:#8A2F21; }
+  [data-cor="mata"]     { --capa-cor:#205A43; }
+  [data-cor="bronze"]   { --capa-cor:#8F6812; }
+  .sw { width:22px; height:22px; padding:0 !important; border-radius:999px !important; border:1px solid var(--borda) !important; }
+  .sw[data-v="tekhelet"] { background:#2B4C7E !important; }
+  .sw[data-v="noite"]    { background:#1B3459 !important; }
+  .sw[data-v="tinta"]    { background:#1A1D23 !important; }
+  .sw[data-v="carmesim"] { background:#8A2F21 !important; }
+  .sw[data-v="mata"]     { background:#205A43 !important; }
+  .sw[data-v="bronze"]   { background:#8F6812 !important; }
+  .sw[aria-pressed="true"] { box-shadow:0 0 0 2px var(--fundo), 0 0 0 4px var(--capa-cor); }
+  .capa-foto { position:absolute; inset:0; background-size:cover; background-position:center; }
+  [data-capa="sem"] .capa-foto { display:none; }
+  [data-capa="boa"] .capa-foto {
+    background-color:#3a2f26;
+    background-image:linear-gradient(115deg,#5c4634 0%,#2e2620 42%,#6b5240 70%,#241d18 100%);
+  }
+  [data-capa="ruim"] .capa-foto {
+    background-color:#cfd6c4;
+    background-image:linear-gradient(150deg,#ffffff 0%,#eef3e2 30%,#b9c4a6 58%,#f7f9ee 78%,#dfe6d0 100%);
+  }
+  .capa-iniciais {
+    position:absolute; right:-8px; bottom:-40px; z-index:1; pointer-events:none;
+    font-family:'Fraunces',Georgia,serif; font-weight:700; font-size:200px; line-height:1;
+    letter-spacing:-.04em; color:rgba(247,246,243,.11); user-select:none;
+  }
+  [data-capa="boa"] .capa-iniciais, [data-capa="ruim"] .capa-iniciais { display:none; }
+  .capa-veu { position:absolute; inset:0; z-index:2; background:linear-gradient(to top, var(--capa-cor) 4%, color-mix(in srgb, var(--capa-cor) 66%, transparent) 58%, color-mix(in srgb, var(--capa-cor) 34%, transparent) 100%); }
+  [data-capa="sem"] .capa-veu { display:none; }
+  .capa-in { position:relative; z-index:3; width:100%; max-width:560px; margin:0 auto; padding:0 24px 24px; }
+  .capa h1 { font-size:40px; font-weight:600; line-height:1.05; color:#F7F6F3; margin-bottom:8px; }
+  .capa .meta { font-size:13px; color:rgba(247,246,243,.78); line-height:1.6; }
+  .capa .meta span { display:block; }
+
+  /* ---------- conta ---------- */
+  .conta { position:relative; z-index:30; max-width:560px; margin:0 auto; padding:0 24px; display:flex; justify-content:flex-end; gap:20px; height:56px; align-items:center; }
+  .conta a { font-size:13px; font-weight:500; color:rgba(247,246,243,.82); text-decoration:none; transition:color .15s; }
+  .conta a:hover { color:#F7F6F3; }
+  [data-estado="anonimo"] .so-logado { display:none; }
+  [data-estado="logado"] .so-anonimo { display:none; }
+
+  .pagina { max-width:560px; margin:0 auto; padding:24px 24px 64px; }
+
+  .acoes-dono { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:24px; }
+  .btn-fantasma {
+    display:inline-flex; align-items:center; gap:8px; font-size:13px; font-weight:600;
+    padding:8px 16px; border-radius:999px; border:1px solid var(--borda);
+    background:transparent; color:var(--texto); text-decoration:none; cursor:pointer; transition:all .15s;
+  }
+  .btn-fantasma:hover { border-color:var(--primaria); color:var(--primaria); }
+
+  .aviso { background:var(--primaria-suave); border-radius:var(--raio-card); padding:24px; margin-bottom:24px; }
+  .aviso .tit { font-size:13px; font-weight:600; margin-bottom:4px; }
+  .aviso p { font-size:13px; color:var(--texto-secundario); line-height:1.6; }
+  .aviso .sinal { margin-top:12px; padding-top:12px; border-top:1px solid var(--borda); font-size:13px; font-weight:500; }
+
+  .rotulo { font-size:11px; font-weight:500; text-transform:uppercase; letter-spacing:.08em; color:var(--texto-secundario); margin-bottom:12px; }
+
+  .servico {
+    width:100%; text-align:left; font-family:inherit; cursor:pointer;
+    background:var(--superficie); border:1px solid var(--borda); border-radius:var(--raio-card);
+    padding:24px; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center; gap:16px;
+    transition:border-color .15s, box-shadow .15s;
+  }
+  .servico:hover { border-color:var(--primaria); }
+  .servico[aria-pressed="true"] { border-color:var(--primaria); box-shadow:0 0 0 1px var(--primaria); }
+  .servico .nome { font-size:15px; }
+  .servico .dur { font-size:13px; color:var(--texto-secundario); }
+  .servico .preco { font-size:15px; font-weight:500; white-space:nowrap; font-variant-numeric:tabular-nums; }
+  .servico.extra { display:none; }
+  [data-servicos="todos"] .servico.extra { display:flex; }
+  .ver-mais { width:100%; font-family:inherit; font-size:13px; font-weight:600; color:var(--primaria); background:none; border:none; cursor:pointer; padding:8px 0; }
+  [data-servicos="todos"] .ver-mais { display:none; }
+
+  .profs { display:flex; flex-wrap:wrap; gap:8px; }
+  .prof {
+    font-family:inherit; font-size:13px; font-weight:500; padding:8px 16px; cursor:pointer;
+    border-radius:999px; border:1px solid var(--borda); background:var(--superficie); color:var(--texto); transition:all .15s;
+  }
+  .prof:hover { border-color:var(--primaria); color:var(--primaria); }
+  .prof[aria-pressed="true"] { background:var(--primaria); border-color:var(--primaria); color:#fff; box-shadow:var(--polimento); }
+
+  .campo-dia {
+    width:100%; font-family:inherit; font-size:15px; color:var(--texto);
+    background:var(--superficie-2); border:1px solid var(--borda); border-radius:var(--raio-input); padding:12px 16px;
+  }
+  .campo-dia:focus { outline:none; border-color:var(--primaria); box-shadow:0 0 0 3px var(--anel-foco); }
+
+  .grade { display:grid; grid-template-columns:repeat(auto-fill,minmax(80px,1fr)); gap:8px; }
+  .slot {
+    font-family:inherit; font-size:13px; font-weight:500; padding:12px 0; cursor:pointer;
+    background:var(--superficie); color:var(--texto); border:1px solid var(--borda); border-radius:var(--raio-botao);
+    font-variant-numeric:tabular-nums; transition:all .15s;
+  }
+  .slot:hover:not(:disabled) { border-color:var(--primaria); color:var(--primaria); }
+  .slot[aria-pressed="true"] { background:var(--primaria); border-color:var(--primaria); color:#fff; box-shadow:var(--polimento); }
+  .slot:disabled { background:var(--desabilitado-bg); border-color:transparent; color:var(--desabilitado-texto); cursor:not-allowed; }
+
+  .cta {
+    width:100%; font-family:inherit; font-size:15px; font-weight:600; padding:16px 0;
+    border:none; border-radius:var(--raio-botao); cursor:pointer;
+    background:var(--primaria); color:#fff; box-shadow:var(--polimento); transition:background .15s;
+  }
+  .cta:hover:not(:disabled) { background:var(--primaria-hover); }
+  .cta:disabled { background:var(--desabilitado-bg); color:var(--desabilitado-texto); box-shadow:none; cursor:not-allowed; }
+
+  .porta { background:var(--primaria-suave); border-radius:var(--raio-card); padding:24px; margin-bottom:16px; }
+  .porta .resumo { font-size:15px; margin-bottom:8px; }
+  .porta p { font-size:13px; color:var(--texto-secundario); line-height:1.6; }
+
+  .sucesso { text-align:center; padding:32px 0 0; }
+  .sucesso .anel {
+    width:56px; height:56px; margin:0 auto 16px; border-radius:999px;
+    background:var(--sucesso-suave); color:var(--sucesso-texto); display:grid; place-items:center; font-size:24px;
+  }
+  .sucesso h2 { font-size:24px; font-weight:600; margin-bottom:8px; }
+  .sucesso .quando { font-size:15px; color:var(--texto-secundario); }
+
+  .pix { background:var(--superficie); border:1px solid var(--borda); border-radius:var(--raio-card); padding:24px; margin:32px 0; text-align:left; }
+  .pix .tit { font-size:13px; font-weight:600; margin-bottom:4px; }
+  .pix .exp { font-size:13px; color:var(--texto-secundario); line-height:1.6; margin-bottom:16px; }
+  .pix .valor { font-size:24px; font-weight:600; font-variant-numeric:tabular-nums; margin-bottom:16px; }
+  .pix .chave-linha { display:flex; gap:8px; align-items:center; }
+  .pix .chave {
+    flex:1; font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:13px;
+    background:var(--superficie-2); border:1px solid var(--borda); border-radius:var(--raio-input);
+    padding:12px 16px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  }
+  .pix .copiar {
+    font-family:inherit; font-size:13px; font-weight:600; padding:12px 16px; cursor:pointer; white-space:nowrap;
+    border-radius:var(--raio-botao); border:1px solid var(--borda); background:transparent; color:var(--texto); transition:all .15s;
+  }
+  .pix .copiar:hover { border-color:var(--primaria); color:var(--primaria); }
+
+  .links-fim { display:flex; flex-direction:column; gap:12px; align-items:center; }
+  .links-fim a { font-size:13px; font-weight:600; color:var(--primaria); text-decoration:none; }
+
+  .vazio { padding:32px 0 48px; }
+  .vazio h2 { font-size:24px; font-weight:600; margin-bottom:8px; }
+  .vazio p { font-size:15px; color:var(--texto-secundario); line-height:1.6; margin-bottom:24px; }
+
+  .selo {
+    border-top:1px solid var(--borda); margin-top:32px; padding-top:24px;
+    display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap;
+  }
+  .selo .marca { font-size:13px; color:var(--texto-secundario); }
+  .selo .marca .wm { font-family:'Fraunces',serif; font-weight:600; color:var(--texto); letter-spacing:-.02em; }
+  .selo .marca .dot { font-family:'Fraunces',serif; font-weight:700; background:var(--ouro-metal); -webkit-background-clip:text; background-clip:text; color:transparent; }
+  .selo a { font-size:11px; color:var(--texto-secundario); text-decoration:none; }
+  .selo a:hover { color:var(--texto); }
+
+  .oculto { display:none !important; }
+  :focus-visible { outline:none; box-shadow:0 0 0 3px var(--anel-foco); }
+  @media (prefers-reduced-motion:reduce) { * { transition:none !important; } }
+  @media (max-width:560px) { .capa h1 { font-size:32px; } }
+</style>
+</head>
+<body>
+
+<div class="painel-mock">
+  <div class="grupo">
+    <span class="rot">Tema</span>
+    <button id="btnTema" aria-pressed="false">Escuro</button>
+  </div>
+  <div class="grupo">
+    <span class="rot">Foto</span>
+    <button class="bt-capa" data-v="sem" aria-pressed="true">Sem</button>
+    <button class="bt-capa" data-v="boa" aria-pressed="false">Boa</button>
+    <button class="bt-capa" data-v="ruim" aria-pressed="false">Ruim</button>
+  </div>
+  <div class="grupo">
+    <span class="rot">Capa</span>
+    <button class="sw" data-v="tekhelet" aria-pressed="true" title="Tekhelet"></button>
+    <button class="sw" data-v="noite" aria-pressed="false" title="Noite"></button>
+    <button class="sw" data-v="tinta" aria-pressed="false" title="Tinta"></button>
+    <button class="sw" data-v="carmesim" aria-pressed="false" title="Carmesim"></button>
+    <button class="sw" data-v="mata" aria-pressed="false" title="Mata"></button>
+    <button class="sw" data-v="bronze" aria-pressed="false" title="Bronze"></button>
+    <button id="btnHash" style="margin-left:4px">Sortear pelo slug</button>
+  </div>
+  <div class="grupo">
+    <span class="rot">Iniciais</span>
+    <input id="inIni" value="BL" maxlength="3" style="width:56px; font-family:inherit; font-size:13px; text-align:center; padding:6px 8px; border-radius:999px; border:1px solid var(--borda); background:transparent; color:var(--texto);">
+  </div>
+  <div class="grupo">
+    <span class="rot">Visitante</span>
+    <button class="bt-estado" data-v="anonimo" aria-pressed="false">Anônimo</button>
+    <button class="bt-estado" data-v="logado" aria-pressed="true">Logado</button>
+  </div>
+  <div class="grupo">
+    <span class="rot">Tela</span>
+    <button class="bt-tela" data-v="agenda" aria-pressed="true">Agenda</button>
+    <button class="bt-tela" data-v="preparo" aria-pressed="false">Em preparação</button>
+  </div>
+  <div class="grupo">
+    <button id="btnSchema" aria-pressed="false">Marcar o que precisa de schema</button>
+  </div>
+</div>
+
+<div class="capa">
+  <div class="capa-iniciais" id="iniciais"></div>
+  <div class="capa-foto precisa-schema" data-campo="Business.capaUrl — 1200x400"></div>
+  <div class="capa-veu"></div>
+  <div style="position:absolute; inset:0; z-index:4;">
+    <div class="conta">
+      <a href="#" class="so-anonimo">Entrar</a>
+      <a href="#" class="so-logado">Meus agendamentos</a>
+      <a href="#" class="so-logado">Meus gastos</a>
+      <a href="#" class="so-logado">Perfil</a>
+    </div>
+  </div>
+  <div class="capa-in">
+    <h1 class="fraunces">Barbearia do Léo</h1>
+    <div class="meta">
+      <span>Seg a sáb, 9h às 19h</span>
+      <span class="precisa-schema" data-campo="Business.endereco · capaCor · capaIniciais" style="display:inline-block">Rua Aurora, 210 — Vila Romana, São Paulo</span>
+    </div>
+  </div>
+</div>
+
+<div class="pagina">
+
+  <div class="acoes-dono precisa-schema" data-campo="Business.whatsapp">
+    <a href="#" class="btn-fantasma">Falar no WhatsApp</a>
+    <a href="#" class="btn-fantasma">Como chegar</a>
+  </div>
+
+  <div class="aviso precisa-schema" data-campo="Business.avisoPublico + sinalValor">
+    <div class="tit">Antes de marcar</div>
+    <p>Chegue com 5 minutos de folga. Se precisar desmarcar, avise pelo WhatsApp até 2 horas antes — o horário volta pra agenda e alguém pega.</p>
+    <div class="sinal">Sinal de R$ 30,00 no PIX para confirmar o horário.</div>
+  </div>
+
+  <!-- ============ TELA: AGENDA ============ -->
+  <div id="telaAgenda">
+    <div id="fluxo">
+
+      <p class="rotulo">Serviço</p>
+      <div data-servicos="poucos" id="listaServ">
+        <button class="servico" aria-pressed="true" data-s="Corte + barba"><span><span class="nome">Corte + barba</span><br><span class="dur">50 min</span></span><span class="preco">R$ 55,00</span></button>
+        <button class="servico" aria-pressed="false" data-s="Corte"><span><span class="nome">Corte</span><br><span class="dur">30 min</span></span><span class="preco">R$ 35,00</span></button>
+        <button class="servico" aria-pressed="false" data-s="Barba"><span><span class="nome">Barba</span><br><span class="dur">25 min</span></span><span class="preco">R$ 25,00</span></button>
+        <button class="servico" aria-pressed="false" data-s="Pezinho"><span><span class="nome">Pezinho</span><br><span class="dur">15 min</span></span><span class="preco">R$ 15,00</span></button>
+        <button class="servico" aria-pressed="false" data-s="Sobrancelha"><span><span class="nome">Sobrancelha</span><br><span class="dur">15 min</span></span><span class="preco">R$ 15,00</span></button>
+        <button class="servico extra" aria-pressed="false" data-s="Platinado"><span><span class="nome">Platinado</span><br><span class="dur">120 min</span></span><span class="preco">R$ 180,00</span></button>
+        <button class="servico extra" aria-pressed="false" data-s="Relaxamento"><span><span class="nome">Relaxamento</span><br><span class="dur">90 min</span></span><span class="preco">R$ 120,00</span></button>
+        <button class="ver-mais" id="verMais">Ver os 7 serviços</button>
+      </div>
+
+      <div class="precisa-schema" data-campo="Professional (entidade nova + constraint)" style="margin-top:32px">
+        <p class="rotulo">Profissional</p>
+        <div class="profs" id="profs">
+          <button class="prof" aria-pressed="true" data-p="Qualquer um">Qualquer um</button>
+          <button class="prof" aria-pressed="false" data-p="Léo">Léo</button>
+          <button class="prof" aria-pressed="false" data-p="Rafa">Rafa</button>
+        </div>
+      </div>
+
+      <p class="rotulo" style="margin-top:32px">Dia</p>
+      <input type="date" class="campo-dia" value="2026-07-17">
+
+      <p class="rotulo" style="margin-top:24px">Horário</p>
+      <div class="grade" id="slots">
+        <button class="slot" data-h="09:00">09:00</button>
+        <button class="slot" data-h="09:30">09:30</button>
+        <button class="slot" data-h="10:00">10:00</button>
+        <button class="slot" data-h="10:30">10:30</button>
+        <button class="slot" disabled>11:00</button>
+        <button class="slot" disabled>11:30</button>
+        <button class="slot" data-h="14:00">14:00</button>
+        <button class="slot" data-h="14:30">14:30</button>
+        <button class="slot" data-h="15:00">15:00</button>
+        <button class="slot" data-h="15:30">15:30</button>
+        <button class="slot" disabled>16:00</button>
+        <button class="slot" data-h="16:30">16:30</button>
+      </div>
+
+      <div class="porta so-anonimo oculto" id="porta" style="margin-top:24px">
+        <p class="resumo" id="portaResumo">Corte + barba, sexta às 10:00.</p>
+        <p>Entre com sua conta Google para o Léo saber quem chega — e para você acompanhar seus horários depois.</p>
+      </div>
+
+      <div style="margin-top:24px">
+        <button class="cta" id="btnCta" disabled>Escolha um horário</button>
+      </div>
+    </div>
+
+    <div id="telaSucesso" class="oculto">
+      <div class="sucesso">
+        <div class="anel">✓</div>
+        <h2 class="fraunces">Horário confirmado</h2>
+        <p class="quando" id="okQuando">Corte + barba · sexta, 17 de julho, às 10:00</p>
+
+        <div class="pix precisa-schema" data-campo="Business.sinalValor + chavePix">
+          <div class="tit">Falta o sinal</div>
+          <p class="exp">O Léo confirma o horário quando o sinal cair. Copie a chave e pague pelo app do seu banco.</p>
+          <div class="valor">R$ 30,00</div>
+          <div class="chave-linha">
+            <div class="chave" id="chavePix">7f3c9a1e-4d82-4b60-9e17-2a5d8c0f61b4</div>
+            <button class="copiar" id="btnCopiar">Copiar</button>
+          </div>
+        </div>
+
+        <div class="links-fim">
+          <a href="#">Ver meus agendamentos</a>
+          <a href="#" id="btnOutro" style="color:var(--texto-secundario)">Marcar outro horário</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ TELA: EM PREPARAÇÃO ============ -->
+  <div id="telaPreparo" class="oculto">
+    <div class="vazio">
+      <h2 class="fraunces">A agenda abre em breve</h2>
+      <p>O Léo ainda está montando os horários e os serviços por aqui. Volte daqui a pouco — ou fale com ele pelo WhatsApp que ele marca na hora.</p>
+      <a href="#" class="btn-fantasma precisa-schema" data-campo="Business.whatsapp">Falar no WhatsApp</a>
+    </div>
+  </div>
+
+  <div class="selo">
+    <span class="marca">agendamento por <span class="wm">trimote</span><span class="dot">.</span></span>
+    <a href="#">Política de Privacidade</a>
+  </div>
+
+</div>
+
+<script>
+  var raiz = document.documentElement;
+  var servicoAtual = 'Corte + barba', slotAtual = null;
+  var CORES = ['tekhelet', 'noite', 'tinta', 'carmesim', 'mata', 'bronze'];
+
+  function iniciaisDe(nome) {
+    var p = nome.trim().split(/\s+/).filter(function (x) { return x.length > 2; });
+    return p.slice(0, 2).map(function (x) { return x[0]; }).join('').toUpperCase();
+  }
+  function corDoSlug(slug) {
+    var h = 0;
+    for (var i = 0; i < slug.length; i++) { h = (h * 31 + slug.charCodeAt(i)) >>> 0; }
+    return CORES[h % CORES.length];
+  }
+  function pintaCapa(cor) {
+    raiz.setAttribute('data-cor', cor);
+    document.querySelectorAll('.sw').forEach(function (x) { x.setAttribute('aria-pressed', String(x.dataset.v === cor)); });
+  }
+
+  document.getElementById('iniciais').textContent = iniciaisDe(document.querySelector('.capa h1').textContent);
+
+  document.getElementById('inIni').addEventListener('input', function () {
+    document.getElementById('iniciais').textContent = this.value.toUpperCase();
+  });
+
+  document.querySelectorAll('.sw').forEach(function (b) {
+    b.addEventListener('click', function () { pintaCapa(b.dataset.v); });
+  });
+
+  document.getElementById('btnHash').addEventListener('click', function () {
+    pintaCapa(corDoSlug('barbearia-do-leo'));
+    this.textContent = 'slug → ' + raiz.getAttribute('data-cor');
+    var self = this;
+    setTimeout(function () { self.textContent = 'Sortear pelo slug'; }, 2000);
+  });
+
+  document.getElementById('btnTema').addEventListener('click', function () {
+    var escuro = raiz.getAttribute('data-theme') === 'escuro';
+    raiz.setAttribute('data-theme', escuro ? 'claro' : 'escuro');
+    this.textContent = escuro ? 'Escuro' : 'Claro';
+    this.setAttribute('aria-pressed', String(!escuro));
+  });
+
+  document.getElementById('btnSchema').addEventListener('click', function () {
+    var on = raiz.getAttribute('data-schema') === 'on';
+    raiz.setAttribute('data-schema', on ? 'off' : 'on');
+    this.setAttribute('aria-pressed', String(!on));
+  });
+
+  function grupo(sel, attr) {
+    document.querySelectorAll(sel).forEach(function (b) {
+      b.addEventListener('click', function () {
+        raiz.setAttribute(attr, b.dataset.v);
+        document.querySelectorAll(sel).forEach(function (x) { x.setAttribute('aria-pressed', String(x === b)); });
+        atualiza();
+      });
+    });
+  }
+  grupo('.bt-capa', 'data-capa');
+  grupo('.bt-estado', 'data-estado');
+
+  document.querySelectorAll('.bt-tela').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var agenda = b.dataset.v === 'agenda';
+      document.getElementById('telaAgenda').classList.toggle('oculto', !agenda);
+      document.getElementById('telaPreparo').classList.toggle('oculto', agenda);
+      document.querySelectorAll('.bt-tela').forEach(function (x) { x.setAttribute('aria-pressed', String(x === b)); });
+    });
+  });
+
+  document.getElementById('verMais').addEventListener('click', function () {
+    document.getElementById('listaServ').setAttribute('data-servicos', 'todos');
+  });
+
+  document.getElementById('listaServ').addEventListener('click', function (e) {
+    var s = e.target.closest('.servico');
+    if (!s) return;
+    document.querySelectorAll('.servico').forEach(function (x) { x.setAttribute('aria-pressed', 'false'); });
+    s.setAttribute('aria-pressed', 'true');
+    servicoAtual = s.dataset.s;
+    atualiza();
+  });
+
+  document.getElementById('profs').addEventListener('click', function (e) {
+    var p = e.target.closest('.prof');
+    if (!p) return;
+    document.querySelectorAll('.prof').forEach(function (x) { x.setAttribute('aria-pressed', 'false'); });
+    p.setAttribute('aria-pressed', 'true');
+  });
+
+  document.getElementById('slots').addEventListener('click', function (e) {
+    var b = e.target.closest('.slot');
+    if (!b || b.disabled) return;
+    document.querySelectorAll('.slot').forEach(function (x) { x.setAttribute('aria-pressed', 'false'); });
+    b.setAttribute('aria-pressed', 'true');
+    slotAtual = b.dataset.h;
+    atualiza();
+  });
+
+  function atualiza() {
+    var cta = document.getElementById('btnCta');
+    var porta = document.getElementById('porta');
+    var anon = raiz.getAttribute('data-estado') === 'anonimo';
+    if (!slotAtual) {
+      cta.disabled = true; cta.textContent = 'Escolha um horário';
+      porta.classList.add('oculto'); return;
+    }
+    cta.disabled = false;
+    cta.textContent = anon ? 'Entrar e confirmar às ' + slotAtual : 'Confirmar às ' + slotAtual;
+    porta.classList.toggle('oculto', !anon);
+    document.getElementById('portaResumo').textContent = servicoAtual + ', sexta às ' + slotAtual + '.';
+  }
+
+  document.getElementById('btnCta').addEventListener('click', function () {
+    if (!slotAtual) return;
+    document.getElementById('okQuando').textContent = servicoAtual + ' · sexta, 17 de julho, às ' + slotAtual;
+    document.getElementById('fluxo').classList.add('oculto');
+    document.getElementById('telaSucesso').classList.remove('oculto');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+
+  document.getElementById('btnCopiar').addEventListener('click', function () {
+    var self = this;
+    navigator.clipboard.writeText(document.getElementById('chavePix').textContent.trim()).then(function () {
+      self.textContent = 'Copiado';
+      setTimeout(function () { self.textContent = 'Copiar'; }, 1600);
+    }).catch(function () { self.textContent = 'Copie manual'; });
+  });
+
+  document.getElementById('btnOutro').addEventListener('click', function (e) {
+    e.preventDefault();
+    slotAtual = null;
+    document.querySelectorAll('.slot').forEach(function (x) { x.setAttribute('aria-pressed', 'false'); });
+    atualiza();
+    document.getElementById('telaSucesso').classList.add('oculto');
+    document.getElementById('fluxo').classList.remove('oculto');
+  });
+
+  atualiza();
+</script>
+</body>
+</html>
