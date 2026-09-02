@@ -1,3 +1,5 @@
+import { cache } from "react";
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { prisma } from "@/server/db/client";
@@ -8,6 +10,30 @@ import { todayInZone } from "@/domain/time";
 import { BookingFlow } from "@/components/booking-flow";
 
 export const dynamic = "force-dynamic";
+
+// cache() do React deduplica dentro da MESMA request: generateMetadata e o componente da página
+// chamam esta função com o mesmo slug e o Next reaproveita o resultado, evitando 2 queries.
+const getBusinessBySlug = cache((slug: string) =>
+  prisma.business.findUnique({
+    where: { slug },
+    select: { id: true, name: true, timezone: true, _count: { select: { openingHours: true } } },
+  }),
+);
+
+// Título da aba reflete o negócio (antes ficava com o "Trimote" genérico do layout raiz). Sem
+// notFound() aqui: o componente da página já trata o 404 real; um fallback genérico basta.
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const business = await getBusinessBySlug(slug);
+  if (!business) {
+    return { title: "Agendamento" };
+  }
+  return { title: `${business.name} — agendamento` };
+}
 
 // Página pública do negócio por slug (007, US4). Porta de entrada do cliente (QR/Instagram): mostra os
 // serviços DAQUELE negócio e agenda nele (o serviço carrega o businessId). Slug inválido → 404 tratado.
@@ -20,10 +46,7 @@ export default async function BusinessPublicPage({
   searchParams: Promise<{ serviceId?: string; startsAt?: string }>;
 }) {
   const { slug } = await params;
-  const business = await prisma.business.findUnique({
-    where: { slug },
-    select: { id: true, name: true, timezone: true, _count: { select: { openingHours: true } } },
-  });
+  const business = await getBusinessBySlug(slug);
   if (!business) notFound();
 
   const services = await listServicesForBusiness(business.id);
