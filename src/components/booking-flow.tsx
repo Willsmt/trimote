@@ -74,6 +74,8 @@ export function BookingFlow({
   // Slot que um VISITANTE clicou: dispara o gate "Entre para agendar" sem chamar a action (o clique
   // do não-logado não pode escrever). Nulo = sem gate aberto.
   const [pendingSlot, setPendingSlot] = useState<string | null>(null);
+  // Cards de serviço além do 5º ficam ocultos até o clique em "Ver os N serviços" (#51).
+  const [showAllServices, setShowAllServices] = useState(false);
 
   // Retorno do OAuth: o servidor já garantiu que o slot está livre; aqui só carregamos o dia para
   // exibir e destacar o horário pretendido. Roda uma vez, no mount.
@@ -86,6 +88,11 @@ export function BookingFlow({
 
   // O slot em evidência: o que o visitante clicou (gate aberto) ou o restaurado pós-login.
   const emphasizedSlot = pendingSlot ?? restored?.startsAt ?? null;
+
+  // 5 primeiros por padrão (services já vem ordenado do servidor); o resto só aparece após
+  // "Ver os N serviços". slice(0,5) e o array inteiro cobrem o "mostrar 5 vs mostrar todos" sem
+  // duplicar o card em dois blocos separados.
+  const visibleServices = showAllServices ? services : services.slice(0, 5);
 
   // Responsabilidade única: buscar slots (e reportar o resultado da PRÓPRIA busca — vazio/fechado).
   // NÃO limpa a mensagem: quem chama decide o estado inicial, para que uma mensagem de submit
@@ -150,20 +157,37 @@ export function BookingFlow({
 
   return (
     <div className="flex flex-col gap-4">
-      <label className="flex flex-col gap-1 text-sm">
+      <div className="flex flex-col gap-2 text-sm">
         Serviço
-        <select
-          className="rounded-[var(--raio-input)] border border-[var(--borda)] bg-[var(--superficie-2)] p-2 text-[var(--texto)] focus:border-[var(--primaria)] focus:outline-none focus:ring-[3px] focus:ring-[var(--anel-foco)]"
-          value={serviceId}
-          onChange={(event) => setServiceId(event.target.value)}
-        >
-          {services.map((service) => (
-            <option key={service.id} value={service.id}>
-              {service.name} — {service.priceLabel} ({service.durationMinutes} min)
-            </option>
-          ))}
-        </select>
-      </label>
+        {visibleServices.map((service) => (
+          <button
+            key={service.id}
+            type="button"
+            className={`flex items-center justify-between gap-4 rounded-[var(--raio-card)] border bg-[var(--superficie)] p-4 text-left ${
+              serviceId === service.id
+                ? "border-[var(--primaria)] ring-2 ring-[var(--anel-foco)]"
+                : "border-[var(--borda)]"
+            }`}
+            onClick={() => setServiceId(service.id)}
+          >
+            <span>
+              {service.name}
+              <br />
+              <span className="text-[var(--texto-secundario)]">{service.durationMinutes} min</span>
+            </span>
+            <span className="font-medium">{service.priceLabel}</span>
+          </button>
+        ))}
+        {services.length > 5 && !showAllServices && (
+          <button
+            type="button"
+            className="p-0 text-left font-semibold text-[var(--primaria)]"
+            onClick={() => setShowAllServices(true)}
+          >
+            Ver os {services.length} serviços
+          </button>
+        )}
+      </div>
 
       <label className="flex flex-col gap-1 text-sm">
         Dia
