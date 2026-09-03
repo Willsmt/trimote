@@ -204,7 +204,7 @@ export default async function BusinessPublicPage({
         </div>
       </div>
       <main className="mx-auto flex max-w-xl flex-col gap-6 p-8">
-        {(whatsappHref || comoChegarHref) && (
+        {isReadyForBooking && (whatsappHref || comoChegarHref) && (
           <div className={styles.acoesDono}>
             {whatsappHref && <WhatsappButton href={whatsappHref} />}
             {comoChegarHref && <ComoChegarButton href={comoChegarHref} />}
