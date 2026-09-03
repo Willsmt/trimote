@@ -6,6 +6,7 @@ import { prisma } from "@/server/db/client";
 import { BusinessSelectionScreen } from "@/components/owner/business-selection-screen";
 import { BusinessWhatsappForm } from "@/components/owner/business-whatsapp-form";
 import { BusinessEnderecoForm } from "@/components/owner/business-endereco-form";
+import { BusinessSinalForm } from "@/components/owner/business-sinal-form";
 
 export const dynamic = "force-dynamic";
 
@@ -33,7 +34,7 @@ export default async function OwnerBusinessPage() {
   const { businessId } = active;
   const business = await prisma.business.findUnique({
     where: { id: businessId },
-    select: { whatsapp: true, endereco: true },
+    select: { whatsapp: true, endereco: true, sinalPercentual: true, chavePix: true },
   });
 
   return (
@@ -46,6 +47,10 @@ export default async function OwnerBusinessPage() {
       </header>
       <BusinessWhatsappForm initialWhatsapp={business?.whatsapp ?? null} />
       <BusinessEnderecoForm initialEndereco={business?.endereco ?? null} />
+      <BusinessSinalForm
+        initialSinalPercentual={business?.sinalPercentual ?? null}
+        initialChavePix={business?.chavePix ?? null}
+      />
     </main>
   );
 }
