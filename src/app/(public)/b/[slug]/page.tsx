@@ -1,15 +1,46 @@
 import { cache } from "react";
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { prisma } from "@/server/db/client";
 import { listServicesForBusiness } from "@/server/actions/list-services";
 import { getAvailableSlots } from "@/server/actions/get-available-slots";
 import { getCurrentUser } from "@/server/auth/session";
-import { todayInZone } from "@/domain/time";
+import { todayInZone, formatOpeningHours } from "@/domain/time";
 import { BookingFlow } from "@/components/booking-flow";
+import { SignInButton } from "@/components/auth-buttons";
+import { listOpeningHoursPublic } from "@/server/actions/list-opening-hours-public";
+import styles from "../../public-page.module.css";
 
 export const dynamic = "force-dynamic";
+
+// Paleta de fallback de capa (specs/landing/CONSTITUICAO-VISUAL.md, seção "Paleta de capa"):
+// escolha determinística por hash do slug — o mesmo negócio sempre cai na mesma cor. Algoritmo
+// portado exatamente do mockup (specs/public-page/trimote-pagina-publica-mockup.html).
+const CAPA_CORES = ["tekhelet", "noite", "tinta", "carmesim", "mata", "bronze"] as const;
+
+function corDoSlug(slug: string): (typeof CAPA_CORES)[number] {
+  let hash = 0;
+  for (let i = 0; i < slug.length; i++) {
+    hash = (hash * 31 + slug.charCodeAt(i)) >>> 0;
+  }
+  return CAPA_CORES[hash % CAPA_CORES.length];
+}
+
+// Iniciais do negócio pra capa sem foto (Camada 2 adiciona upload). Mesmas regras do mockup: até
+// duas palavras com mais de 2 caracteres (ignora "de", "do", "da" etc.), primeira letra de cada.
+function iniciaisDe(nome: string): string {
+  const palavras = nome
+    .trim()
+    .split(/\s+/)
+    .filter((p) => p.length > 2);
+  return palavras
+    .slice(0, 2)
+    .map((p) => p[0])
+    .join("")
+    .toUpperCase();
+}
 
 // cache() do React deduplica dentro da MESMA request: generateMetadata e o componente da página
 // chamam esta função com o mesmo slug e o Next reaproveita o resultado, evitando 2 queries.
@@ -63,6 +94,11 @@ export default async function BusinessPublicPage({
   // agenda lotada, quando o negócio nunca abre. Mensagem contextual no lugar, nunca o fluxo enganoso.
   const isReadyForBooking = serviceOptions.length > 0 && business._count.openingHours > 0;
 
+  // Expediente formatado pra capa (#50): leitura pública, sem gate — o cliente vê o horário de
+  // funcionamento antes mesmo de escolher um serviço.
+  const openingHours = await listOpeningHoursPublic(business.id);
+  const openingHoursLabel = formatOpeningHours(openingHours);
+
   // Gate de login: a página continua PÚBLICA (visitante navega os slots). Lemos a sessão UMA vez só
   // para decidir o comportamento do CLIQUE no cliente. Escopo mínimo — um booleano, nunca dados da sessão.
   const isAuthenticated = Boolean(await getCurrentUser());
@@ -92,28 +128,48 @@ export default async function BusinessPublicPage({
   }
 
   return (
-    <main className="mx-auto flex max-w-xl flex-col gap-6 p-8">
-      <header>
-        <h1 className="text-2xl font-bold">{business.name}</h1>
+    <>
+      <div className={styles.capa} data-cor={corDoSlug(slug)}>
+        <div className={styles.capaIniciais}>{iniciaisDe(business.name)}</div>
+        <div className={styles.capaVeu} />
+        <div style={{ position: "absolute", inset: 0, zIndex: 4 }}>
+          <div className={styles.conta}>
+            {isAuthenticated ? (
+              <>
+                <Link href="/my-bookings">Meus agendamentos</Link>
+                <Link href="/my-spending">Meus gastos</Link>
+                <Link href="/profile">Perfil</Link>
+              </>
+            ) : (
+              <SignInButton className={styles.entrar} />
+            )}
+          </div>
+        </div>
+        <div className={styles.capaIn}>
+          <h1 className={styles.fraunces}>{business.name}</h1>
+          {openingHoursLabel && <div className={styles.meta}>{openingHoursLabel}</div>}
+        </div>
+      </div>
+      <main className="mx-auto flex max-w-xl flex-col gap-6 p-8">
         <p className="text-sm text-neutral-500">
           {isReadyForBooking
             ? "Escolha um serviço, um dia e um horário livre."
             : "Agenda em preparação."}
         </p>
-      </header>
-      {isReadyForBooking ? (
-        <BookingFlow
-          services={serviceOptions}
-          slug={slug}
-          isAuthenticated={isAuthenticated}
-          restored={restored}
-          restoreError={restoreError}
-        />
-      ) : (
-        <p className="text-sm text-neutral-500">
-          {business.name} está preparando a agenda. Volte em breve para marcar seu horário por aqui.
-        </p>
-      )}
-    </main>
+        {isReadyForBooking ? (
+          <BookingFlow
+            services={serviceOptions}
+            slug={slug}
+            isAuthenticated={isAuthenticated}
+            restored={restored}
+            restoreError={restoreError}
+          />
+        ) : (
+          <p className="text-sm text-neutral-500">
+            {business.name} está preparando a agenda. Volte em breve para marcar seu horário por aqui.
+          </p>
+        )}
+      </main>
+    </>
   );
 }
