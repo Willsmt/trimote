@@ -6,6 +6,7 @@ import { signIn } from "next-auth/react";
 
 import { getAvailableSlots } from "@/server/actions/get-available-slots";
 import { createBooking } from "@/server/actions/create-booking";
+import pixStyles from "./booking-flow.module.css";
 
 interface ServiceOption {
   id: string;
@@ -76,6 +77,13 @@ export function BookingFlow({
   const [pendingSlot, setPendingSlot] = useState<string | null>(null);
   // Cards de serviço além do 5º ficam ocultos até o clique em "Ver os N serviços" (#51).
   const [showAllServices, setShowAllServices] = useState(false);
+  // Snapshot do sinal (issue #56), vindo do retorno de sucesso de createBooking — só populado
+  // quando a confirmação atual deu certo (limpo no erro, pra não vazar dado de uma tentativa
+  // anterior numa mensagem de erro seguinte).
+  const [sinalValorLabel, setSinalValorLabel] = useState<string | null>(null);
+  const [chavePix, setChavePix] = useState<string | null>(null);
+  // Feedback textual temporário do botão "Copiar" (mesmo padrão do mockup, btnCopiar).
+  const [copyFeedback, setCopyFeedback] = useState<string | null>(null);
 
   // Retorno do OAuth: o servidor já garantiu que o slot está livre; aqui só carregamos o dia para
   // exibir e destacar o horário pretendido. Roda uma vez, no mount.
@@ -129,12 +137,16 @@ export function BookingFlow({
       await loadSlots();
       setMessage(result.ok ? "Agendamento confirmado!" : FAILURE_MESSAGES[result.reason]);
       setLastConfirmedOk(result.ok);
+      setSinalValorLabel(result.ok ? result.sinalValorLabel : null);
+      setChavePix(result.ok ? result.chavePix : null);
     } catch {
       // Qualquer throw inesperado da action (sessão expirada, rede, erro do servidor) antes travava a
       // UI: loading ficava preso em true, os slots desabilitados e nenhuma mensagem aparecia. Aqui a
       // rejeição vira aviso genérico. NÃO re-fetchamos no erro (evita sobrescrever esta mensagem ou
       // relançar); ela sobrevive porque nada depois a limpa — loadSlots não mexe na mensagem (#27).
       setMessage("Não foi possível concluir agora. Tente de novo em instantes.");
+      setSinalValorLabel(null);
+      setChavePix(null);
     } finally {
       setLoading(false);
     }
@@ -148,6 +160,20 @@ export function BookingFlow({
       return;
     }
     void confirm(startsAt);
+  }
+
+  // Copiar chave PIX (issue #56): feedback textual no próprio botão, revertendo após ~1.5s — mesmo
+  // padrão do mockup (btnCopiar). Clipboard indisponível (navegador antigo, contexto não-seguro) não
+  // quebra a UI: mensagem alternativa curta no lugar do "Copiado".
+  async function handleCopyPix() {
+    if (!chavePix) return;
+    try {
+      await navigator.clipboard.writeText(chavePix);
+      setCopyFeedback("Copiado");
+    } catch {
+      setCopyFeedback("Copie manualmente");
+    }
+    setTimeout(() => setCopyFeedback(null), 1500);
   }
 
   function startLogin(startsAt: string) {
@@ -213,17 +239,31 @@ export function BookingFlow({
       </button>
 
       {message && (
-        <p className="text-sm font-medium">
-          {message}
-          {isAuthenticated && lastConfirmedOk && (
-            <>
-              {" "}
-              <Link href="/my-bookings" className="underline">
-                Ver meus agendamentos
-              </Link>
-            </>
+        <>
+          <p className="text-sm font-medium">
+            {message}
+            {isAuthenticated && lastConfirmedOk && (
+              <>
+                {" "}
+                <Link href="/my-bookings" className="underline">
+                  Ver meus agendamentos
+                </Link>
+              </>
+            )}
+          </p>
+          {lastConfirmedOk && sinalValorLabel && (
+            <div className={pixStyles.pix}>
+              <p>O dono confirma o horário quando o sinal cair.</p>
+              <div className={pixStyles.pixValor}>{sinalValorLabel}</div>
+              <div className={pixStyles.pixChaveLinha}>
+                <span className={pixStyles.pixChave}>{chavePix}</span>
+                <button type="button" className={pixStyles.pixCopiar} onClick={handleCopyPix}>
+                  {copyFeedback ?? "Copiar"}
+                </button>
+              </div>
+            </div>
           )}
-        </p>
+        </>
       )}
 
       {pendingSlot && (

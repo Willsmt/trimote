@@ -227,3 +227,17 @@
     font-size: 32px;
   }
 }
+
+/* Aviso do sinal antes da seleção de serviço (#56), portado do mockup (specs/public-page/
+   trimote-pagina-publica-mockup.html, classe .aviso) — mesmas custom properties já declaradas
+   acima no :root, nenhum valor novo. */
+.aviso {
+  background: var(--primaria-suave);
+  border-radius: var(--raio-card);
+  padding: 24px;
+}
+.aviso p {
+  font-size: 13px;
+  color: var(--texto-secundario);
+  line-height: 1.6;
+}

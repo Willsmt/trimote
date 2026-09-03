@@ -213,6 +213,7 @@ model Booking {
   status       BookingStatus @default(ACTIVE)
   createdAt    DateTime      @default(now()) @db.Timestamptz(6)
   cancelledAt  DateTime?     @db.Timestamptz(6)
+  sinalValor Decimal? @db.Decimal(10, 2)
 
   business Business        @relation(fields: [businessId], references: [id])
   user       User              @relation(fields: [userId], references: [id])
