@@ -120,6 +120,10 @@ model Business {
   // Esta flag controla APENAS a inclusao no sitemap.xml (issue #44). Default false = opt-in
   // explicito: nenhum negocio e indexado sem alguem decidir. Ligar hoje = UPDATE manual (sem UI).
   isListed  Boolean             @default(false)
+  // Contato de WhatsApp do negocio (owner#52, Camada 2 da #46), exibido na pagina publica. Nullable:
+  // negocios existentes nao tem valor ate o dono preencher. Formato canonico E.164 (+55...), mesma
+  // regra de src/domain/phone usada pelo WhatsApp do proprio usuario (issue #34).
+  whatsapp  String?
   openingHours OpeningHours[]
   services  Service[]
   bookings  Booking[]

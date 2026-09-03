@@ -82,6 +82,9 @@ export default async function OwnerHomePage() {
       </section>
 
       <nav className="flex flex-col gap-2">
+        <Link href="/owner/business" className="rounded border border-neutral-300 p-3 hover:bg-neutral-50">
+          Dados do negócio
+        </Link>
         <Link href="/owner/services" className="rounded border border-neutral-300 p-3 hover:bg-neutral-50">
           Gerenciar serviços
         </Link>
