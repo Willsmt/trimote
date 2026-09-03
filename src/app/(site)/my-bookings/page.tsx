@@ -20,6 +20,8 @@ export default async function MyBookingsPage() {
     startsAtIso: booking.startsAt.toISOString(),
     endsAtIso: booking.endsAt.toISOString(),
     status: booking.status,
+    sinalValorLabel: booking.sinalValorLabel,
+    chavePix: booking.chavePix,
   }));
 
   return (
