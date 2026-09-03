@@ -1,0 +1,60 @@
+/* Card de valor + chave PIX na tela de sucesso pós-confirmação (#56), portado do mockup
+   (specs/public-page/trimote-pagina-publica-mockup.html, classe .pix). Movido de
+   public-page.module.css (Peça 6c) pra não acoplar este componente compartilhado a um módulo de
+   página específica — as custom properties usadas aqui (--primaria-suave, --raio-card,
+   --texto-secundario, --borda, --superficie, --superficie-2, --raio-input, --raio-botao, --texto,
+   --primaria) continuam vindo do :root de public-page.module.css: CSS Modules não isolam :root,
+   só nomes de classe — a variável cascateia globalmente assim que aquele módulo é importado em
+   qualquer ponto da árvore (page.tsx, sempre presente acima de BookingFlow). */
+.pix {
+  background: var(--superficie);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-card);
+  padding: 24px;
+}
+.pix p {
+  font-size: 13px;
+  color: var(--texto-secundario);
+  line-height: 1.6;
+  margin-bottom: 16px;
+}
+.pixValor {
+  font-size: 24px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  margin-bottom: 16px;
+}
+.pixChaveLinha {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.pixChave {
+  flex: 1;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 13px;
+  background: var(--superficie-2);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-input);
+  padding: 12px 16px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pixCopiar {
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 12px 16px;
+  cursor: pointer;
+  white-space: nowrap;
+  border-radius: var(--raio-botao);
+  border: 1px solid var(--borda);
+  background: transparent;
+  color: var(--texto);
+  transition: border-color 0.15s, color 0.15s;
+}
+.pixCopiar:hover {
+  border-color: var(--primaria);
+  color: var(--primaria);
+}

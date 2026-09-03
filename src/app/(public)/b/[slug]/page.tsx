@@ -80,6 +80,7 @@ const getBusinessBySlug = cache((slug: string) =>
       timezone: true,
       whatsapp: true,
       endereco: true,
+      sinalPercentual: true,
       _count: { select: { openingHours: true } },
     },
   }),
@@ -215,6 +216,11 @@ export default async function BusinessPublicPage({
             ? "Escolha um serviço, um dia e um horário livre."
             : "Agenda em preparação."}
         </p>
+        {isReadyForBooking && business.sinalPercentual !== null && (
+          <div className={styles.aviso}>
+            <p>Sinal de {business.sinalPercentual}% do valor do serviço para confirmar o horário.</p>
+          </div>
+        )}
         {isReadyForBooking ? (
           <BookingFlow
             services={serviceOptions}

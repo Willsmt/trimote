@@ -2,6 +2,7 @@ import { Prisma } from "@prisma/client";
 
 import { prisma } from "@/server/db/client";
 import { utcToLocalMinutes, weekdayInZone } from "@/domain/time";
+import { formatBRL } from "@/domain/money";
 
 /**
  * Núcleo da criação de agendamento (FR-007..FR-009, FR-015), testável de forma isolada com um
@@ -41,7 +42,14 @@ export type CreateBookingFailureReason =
   | "booking_limit_reached";
 
 export type CreateBookingResult =
-  | { ok: true; bookingId: string }
+  | {
+      ok: true;
+      bookingId: string;
+      /** formatBRL(sinalValor) quando há sinal configurado; null senão (issue #56). */
+      sinalValorLabel: string | null;
+      /** service.business.chavePix, direto — independente do sinal (issue #56). */
+      chavePix: string | null;
+    }
   | { ok: false; reason: CreateBookingFailureReason };
 
 /**
@@ -99,6 +107,18 @@ export async function createBookingForUser(input: CreateBookingInput): Promise<C
   // endsAt materializado (research.md D8) — calculado dentro da transação de criação.
   const endsAt = new Date(input.startsAt.getTime() + service.durationMinutes * 60_000);
 
+  // sinalValor: SNAPSHOT do sinal no momento da criação (issue #56), mesmo princípio do
+  // LedgerEntry — grava uma vez e nunca recalcula depois; uma mudança futura no percentual do
+  // negócio não altera bookings já criados. null quando o negócio não cobra sinal (sinalPercentual
+  // null), nunca 0 — distingue "sem sinal configurado" de "sinal de R$0,00".
+  const sinalValor =
+    service.business.sinalPercentual === null
+      ? null
+      : new Prisma.Decimal(service.price)
+          .times(service.business.sinalPercentual)
+          .dividedBy(100)
+          .toDecimalPlaces(2);
+
   try {
     // Transação INTERATIVA na ordem obrigatória lock → count → create (issue #27). `null` = limite
     // atingido (nada foi escrito; o commit vazio só solta o lock).
@@ -133,6 +153,7 @@ export async function createBookingForUser(input: CreateBookingInput): Promise<C
           startsAt: input.startsAt,
           endsAt,
           status: "ACTIVE",
+          sinalValor,
         },
         select: { id: true },
       });
@@ -140,7 +161,12 @@ export async function createBookingForUser(input: CreateBookingInput): Promise<C
     if (!booking) {
       return { ok: false, reason: "booking_limit_reached" };
     }
-    return { ok: true, bookingId: booking.id };
+    return {
+      ok: true,
+      bookingId: booking.id,
+      sinalValorLabel: sinalValor === null ? null : formatBRL(sinalValor),
+      chavePix: service.business.chavePix,
+    };
   } catch (error) {
     // A violação da exclusion constraint é fluxo de negócio ESPERADO (horário ocupado por uma
     // criação concorrente), não um erro: traduzimos em recusa e não relançamos nem logamos. O

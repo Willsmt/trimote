@@ -1,6 +1,7 @@
 import type { BookingStatus } from "@prisma/client";
 
 import { prisma } from "@/server/db/client";
+import { formatBRL } from "@/domain/money";
 
 /**
  * Lista os agendamentos do próprio usuário (FR-010/FR-012). A consulta filtra estritamente por
@@ -14,6 +15,10 @@ export interface MyBooking {
   startsAt: Date;
   endsAt: Date;
   status: BookingStatus;
+  /** formatBRL(booking.sinalValor) — SNAPSHOT gravado na criação (issue #56); null sem sinal. */
+  sinalValorLabel: string | null;
+  /** business.chavePix AO VIVO (issue #56) — sem coluna própria no Booking; reflete o valor atual. */
+  chavePix: string | null;
 }
 
 export async function listBookingsForUser(userId: string): Promise<MyBooking[]> {
@@ -25,8 +30,9 @@ export async function listBookingsForUser(userId: string): Promise<MyBooking[]> 
       startsAt: true,
       endsAt: true,
       status: true,
+      sinalValor: true,
       service: { select: { name: true } },
-      business: { select: { name: true } },
+      business: { select: { name: true, chavePix: true } },
     },
   });
 
@@ -37,5 +43,7 @@ export async function listBookingsForUser(userId: string): Promise<MyBooking[]> 
     startsAt: booking.startsAt,
     endsAt: booking.endsAt,
     status: booking.status,
+    sinalValorLabel: booking.sinalValor === null ? null : formatBRL(booking.sinalValor),
+    chavePix: booking.business.chavePix,
   }));
 }

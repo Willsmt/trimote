@@ -13,6 +13,8 @@ interface BookingItem {
   startsAtIso: string;
   endsAtIso: string;
   status: "ACTIVE" | "CANCELLED" | "COMPLETED";
+  sinalValorLabel: string | null;
+  chavePix: string | null;
 }
 
 const CANCEL_FAILURE_MESSAGES: Record<string, string> = {
@@ -87,6 +89,12 @@ export function MyBookingsList({ items }: { items: BookingItem[] }) {
         <div>
           <p className="font-medium">{item.serviceName} · {item.businessName}</p>
           <p className="text-sm text-neutral-500">{formatRange(item.startsAtIso, item.endsAtIso)}</p>
+          {item.status === "ACTIVE" && item.sinalValorLabel !== null && (
+            <p className="text-sm">
+              Sinal: {item.sinalValorLabel}
+              {item.chavePix ? ` · PIX: ${item.chavePix}` : ""}
+            </p>
+          )}
         </div>
         {item.status === "ACTIVE" ? (
           <div className="flex items-center gap-2">
