@@ -57,6 +57,18 @@ function WhatsappButton({ href }: { href: string }) {
   );
 }
 
+// Botão "Como chegar" (#54): mesmo estilo/padrão do WhatsappButton, ícone de pin decorativo.
+function ComoChegarButton({ href }: { href: string }) {
+  return (
+    <a href={href} target="_blank" rel="noopener noreferrer" className={styles.btnFantasma}>
+      <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z" />
+      </svg>
+      Como chegar
+    </a>
+  );
+}
+
 // cache() do React deduplica dentro da MESMA request: generateMetadata e o componente da página
 // chamam esta função com o mesmo slug e o Next reaproveita o resultado, evitando 2 queries.
 const getBusinessBySlug = cache((slug: string) =>
@@ -67,6 +79,7 @@ const getBusinessBySlug = cache((slug: string) =>
       name: true,
       timezone: true,
       whatsapp: true,
+      endereco: true,
       _count: { select: { openingHours: true } },
     },
   }),
@@ -128,6 +141,12 @@ export default async function BusinessPublicPage({
       )}`
     : null;
 
+  // Botão "Como chegar" (#54): busca por texto no Google Maps, sem geocoding — null quando o dono
+  // não preencheu o endereço (#54); nenhum bloco renderiza.
+  const comoChegarHref = business.endereco
+    ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(business.endereco)}`
+    : null;
+
   // Gate de login: a página continua PÚBLICA (visitante navega os slots). Lemos a sessão UMA vez só
   // para decidir o comportamento do CLIQUE no cliente. Escopo mínimo — um booleano, nunca dados da sessão.
   const isAuthenticated = Boolean(await getCurrentUser());
@@ -176,11 +195,21 @@ export default async function BusinessPublicPage({
         </div>
         <div className={styles.capaIn}>
           <h1 className={styles.fraunces}>{business.name}</h1>
-          {openingHoursLabel && <div className={styles.meta}>{openingHoursLabel}</div>}
+          {(openingHoursLabel || business.endereco) && (
+            <div className={styles.meta}>
+              {openingHoursLabel && <span>{openingHoursLabel}</span>}
+              {business.endereco && <span>{business.endereco}</span>}
+            </div>
+          )}
         </div>
       </div>
       <main className="mx-auto flex max-w-xl flex-col gap-6 p-8">
-        {whatsappHref && <WhatsappButton href={whatsappHref} />}
+        {(whatsappHref || comoChegarHref) && (
+          <div className={styles.acoesDono}>
+            {whatsappHref && <WhatsappButton href={whatsappHref} />}
+            {comoChegarHref && <ComoChegarButton href={comoChegarHref} />}
+          </div>
+        )}
         <p className="text-sm text-neutral-500">
           {isReadyForBooking
             ? "Escolha um serviço, um dia e um horário livre."

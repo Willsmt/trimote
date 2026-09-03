@@ -106,6 +106,11 @@
   color: rgba(247, 246, 243, 0.78);
   line-height: 1.6;
 }
+/* Cada <span> filho (expediente, endereço) vira sua própria linha — regra do mockup original que
+   não tinha sido portada na #50, quando .meta só tinha um dado (expediente) e não precisava dela. */
+.meta span {
+  display: block;
+}
 
 /* Fraunces é dos títulos/identidade (mesmo racional de src/app/fonts.ts): a variável CSS do
    next/font, nunca a família literal — senão cai no Google Fonts em runtime em vez do self-host. */
@@ -150,6 +155,14 @@
 }
 .entrar:hover {
   color: #f7f6f3;
+}
+
+/* Agrupa os botões de ação do dono (WhatsApp, Como chegar) numa linha, como .acoes-dono do mockup —
+   sem isso, cada <a> (flex-col do <main>) empilharia sozinho em vez de ficar lado a lado. */
+.acoesDono {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 .btnFantasma {
