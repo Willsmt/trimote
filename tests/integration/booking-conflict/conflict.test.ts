@@ -26,13 +26,18 @@ const BIZ_SINAL_10 = "biz-cft-sinal10";
 const SVC_SINAL_10 = "svc-cft-sinal10";
 const BIZ_SINAL_7 = "biz-cft-sinal7";
 const SVC_SINAL_7 = "svc-cft-sinal7";
+// Negócio isolado SEM sinal configurado — desacoplado de business-trimote (o seed global é estado
+// mutável, sujeito a smoke manual no /owner/business; um teste que dependesse dele quebraria toda
+// vez que alguém preenchesse esses campos ali).
+const BIZ_SINAL_NULL = "biz-cft-sinalnull";
+const SVC_SINAL_NULL = "svc-cft-sinalnull";
 
 async function seedBusinessComSinal(input: {
   businessId: string;
   slug: string;
   serviceId: string;
   price: string;
-  sinalPercentual: number;
+  sinalPercentual: number | null;
   chavePix?: string;
 }) {
   await createTestBusiness({ id: input.businessId, name: input.businessId, slug: input.slug });
@@ -79,6 +84,13 @@ beforeAll(async () => {
     price: "10.33",
     sinalPercentual: 7,
   });
+  await seedBusinessComSinal({
+    businessId: BIZ_SINAL_NULL,
+    slug: "cft-sinalnull",
+    serviceId: SVC_SINAL_NULL,
+    price: "40.00",
+    sinalPercentual: null,
+  });
 });
 
 afterEach(async () => {
@@ -87,7 +99,7 @@ afterEach(async () => {
 
 afterAll(async () => {
   await prisma.booking.deleteMany({ where: { userId: TEST_USER_ID } });
-  await cleanupBusinesses([BIZ_SINAL_10, BIZ_SINAL_7]);
+  await cleanupBusinesses([BIZ_SINAL_10, BIZ_SINAL_7, BIZ_SINAL_NULL]);
   await prisma.user.delete({ where: { id: TEST_USER_ID } });
   await prisma.$disconnect();
 });
@@ -138,10 +150,10 @@ describe("createBookingForUser (conflito)", () => {
 });
 
 describe("sinalValor (snapshot na criação, issue #56)", () => {
-  it("é null quando o negócio não tem sinalPercentual configurado (estado atual do seed)", async () => {
+  it("é null quando o negócio não tem sinalPercentual configurado", async () => {
     const result = await createBookingForUser({
       userId: TEST_USER_ID,
-      serviceId: SERVICE_ID,
+      serviceId: SVC_SINAL_NULL,
       startsAt,
     });
     expect(result.ok).toBe(true);
@@ -195,10 +207,10 @@ describe("retorno de sucesso com sinalValorLabel + chavePix (issue #56)", () => 
     expect(result.chavePix).toBe("alguma-chave");
   });
 
-  it("negócio sem sinal e sem chave PIX -> ambos null (estado atual do seed)", async () => {
+  it("negócio sem sinal e sem chave PIX -> ambos null", async () => {
     const result = await createBookingForUser({
       userId: TEST_USER_ID,
-      serviceId: SERVICE_ID,
+      serviceId: SVC_SINAL_NULL,
       startsAt,
     });
     expect(result.ok).toBe(true);
