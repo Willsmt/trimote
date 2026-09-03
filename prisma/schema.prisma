@@ -124,6 +124,10 @@ model Business {
   // negocios existentes nao tem valor ate o dono preencher. Formato canonico E.164 (+55...), mesma
   // regra de src/domain/phone usada pelo WhatsApp do proprio usuario (issue #34).
   whatsapp  String?
+  // Endereco em texto livre (owner#54, Camada 2 da #46), exibido na pagina publica ("Como chegar" +
+  // segunda linha da capa). Sem estrutura separada (rua/numero/bairro/cidade) por decisao de escopo:
+  // frase unica, como o dono digitar. Nullable: negocios existentes nao tem valor.
+  endereco  String?
   openingHours OpeningHours[]
   services  Service[]
   bookings  Booking[]

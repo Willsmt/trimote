@@ -49,6 +49,7 @@ async function main() {
         name: s.name,
         price: new Prisma.Decimal(s.price),
         durationMinutes: s.durationMinutes,
+        isActive: true,
       },
       create: {
         id: s.id,

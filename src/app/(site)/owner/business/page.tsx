@@ -5,6 +5,7 @@ import { UnauthorizedError } from "@/server/auth/session";
 import { prisma } from "@/server/db/client";
 import { BusinessSelectionScreen } from "@/components/owner/business-selection-screen";
 import { BusinessWhatsappForm } from "@/components/owner/business-whatsapp-form";
+import { BusinessEnderecoForm } from "@/components/owner/business-endereco-form";
 
 export const dynamic = "force-dynamic";
 
@@ -32,7 +33,7 @@ export default async function OwnerBusinessPage() {
   const { businessId } = active;
   const business = await prisma.business.findUnique({
     where: { id: businessId },
-    select: { whatsapp: true },
+    select: { whatsapp: true, endereco: true },
   });
 
   return (
@@ -44,6 +45,7 @@ export default async function OwnerBusinessPage() {
         </p>
       </header>
       <BusinessWhatsappForm initialWhatsapp={business?.whatsapp ?? null} />
+      <BusinessEnderecoForm initialEndereco={business?.endereco ?? null} />
     </main>
   );
 }
