@@ -153,7 +153,7 @@ export function BookingFlow({
       <label className="flex flex-col gap-1 text-sm">
         Serviço
         <select
-          className="rounded border border-neutral-300 p-2"
+          className="rounded-[var(--raio-input)] border border-[var(--borda)] bg-[var(--superficie-2)] p-2 text-[var(--texto)] focus:border-[var(--primaria)] focus:outline-none focus:ring-[3px] focus:ring-[var(--anel-foco)]"
           value={serviceId}
           onChange={(event) => setServiceId(event.target.value)}
         >

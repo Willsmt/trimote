@@ -113,3 +113,65 @@ export function shiftPeriod(
   }
   return ref.plus({ [GRANULARITY_UNIT[granularity]]: dir }).toFormat("yyyy-MM-dd");
 }
+
+const DIAS_ABREV = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
+
+function formatHoraDoDia(minutos: number): string {
+  const h = Math.floor(minutos / 60);
+  const m = minutos % 60;
+  return m === 0 ? `${h}h` : `${h}h${String(m).padStart(2, "0")}`;
+}
+
+interface FaixaExpediente {
+  inicio: number;
+  fim: number;
+  opensAtMinutes: number;
+  closesAtMinutes: number;
+}
+
+/**
+ * "Seg a Sex, 9h às 19h · Sáb, 9h às 13h" (página pública, #50): agrupa dias CONSECUTIVOS
+ * (weekday 0=domingo..6=sábado) com o MESMO par de horário numa única faixa; faixas com horário
+ * diferente ficam separadas por " · ". Negócio sem OpeningHours configurado → string vazia (nunca
+ * "Fechado" — isso seria mentira, só significa que o dono não configurou nada ainda).
+ */
+export function formatOpeningHours(
+  items: { weekday: number; opensAtMinutes: number; closesAtMinutes: number }[],
+): string {
+  if (items.length === 0) {
+    return "";
+  }
+
+  const ordenado = [...items].sort((a, b) => a.weekday - b.weekday);
+
+  const faixas: FaixaExpediente[] = [];
+  for (const item of ordenado) {
+    const ultima = faixas[faixas.length - 1];
+    const encaixaNaUltima =
+      ultima !== undefined &&
+      item.weekday === ultima.fim + 1 &&
+      item.opensAtMinutes === ultima.opensAtMinutes &&
+      item.closesAtMinutes === ultima.closesAtMinutes;
+
+    if (encaixaNaUltima) {
+      ultima.fim = item.weekday;
+    } else {
+      faixas.push({
+        inicio: item.weekday,
+        fim: item.weekday,
+        opensAtMinutes: item.opensAtMinutes,
+        closesAtMinutes: item.closesAtMinutes,
+      });
+    }
+  }
+
+  return faixas
+    .map((faixa) => {
+      const dias =
+        faixa.inicio === faixa.fim
+          ? DIAS_ABREV[faixa.inicio]
+          : `${DIAS_ABREV[faixa.inicio]} a ${DIAS_ABREV[faixa.fim]}`;
+      return `${dias}, ${formatHoraDoDia(faixa.opensAtMinutes)} às ${formatHoraDoDia(faixa.closesAtMinutes)}`;
+    })
+    .join(" · ");
+}
