@@ -152,6 +152,26 @@
   color: #f7f6f3;
 }
 
+.btnFantasma {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  align-self: flex-start;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 8px 16px;
+  border-radius: 999px;
+  border: 1px solid var(--borda);
+  background: transparent;
+  color: var(--texto);
+  text-decoration: none;
+  transition: border-color 0.15s, color 0.15s;
+}
+.btnFantasma:hover {
+  border-color: var(--primaria);
+  color: var(--primaria);
+}
+
 .selo {
   border-top: 1px solid var(--borda);
   margin-top: 32px;

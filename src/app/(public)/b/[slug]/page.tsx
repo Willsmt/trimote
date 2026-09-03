@@ -42,12 +42,33 @@ function iniciaisDe(nome: string): string {
     .toUpperCase();
 }
 
+// Botão de WhatsApp (#53), reaproveitado nos dois pontos onde aparece (bloco incondicional e
+// fallback de "agenda em preparação") pra não duplicar o SVG escrito à mão. Ícone decorativo
+// (aria-hidden/focusable=false): o texto do link já identifica o destino pro leitor de tela.
+function WhatsappButton({ href }: { href: string }) {
+  return (
+    <a href={href} target="_blank" rel="noopener noreferrer" className={styles.btnFantasma}>
+      <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z" />
+        <path d="M12.05 2C6.495 2 2 6.495 2 12.05c0 1.876.507 3.633 1.393 5.147L2.023 22l4.933-1.323A9.988 9.988 0 0 0 12.05 22.1c5.555 0 10.05-4.495 10.05-10.05C22.1 6.495 17.605 2 12.05 2zm0 18.323a8.243 8.243 0 0 1-4.204-1.158l-.301-.179-3.114.812.83-3.03-.197-.31a8.221 8.221 0 0 1-1.256-4.408c0-4.549 3.702-8.25 8.25-8.25 4.548 0 8.25 3.701 8.25 8.25 0 4.549-3.702 8.273-8.258 8.273z" />
+      </svg>
+      Falar no WhatsApp
+    </a>
+  );
+}
+
 // cache() do React deduplica dentro da MESMA request: generateMetadata e o componente da página
 // chamam esta função com o mesmo slug e o Next reaproveita o resultado, evitando 2 queries.
 const getBusinessBySlug = cache((slug: string) =>
   prisma.business.findUnique({
     where: { slug },
-    select: { id: true, name: true, timezone: true, _count: { select: { openingHours: true } } },
+    select: {
+      id: true,
+      name: true,
+      timezone: true,
+      whatsapp: true,
+      _count: { select: { openingHours: true } },
+    },
   }),
 );
 
@@ -98,6 +119,14 @@ export default async function BusinessPublicPage({
   // funcionamento antes mesmo de escolher um serviço.
   const openingHours = await listOpeningHoursPublic(business.id);
   const openingHoursLabel = formatOpeningHours(openingHours);
+
+  // Botão de WhatsApp (#53): incondicional, não gated por sessão — visível a qualquer visitante,
+  // igual ao mockup. null quando o dono não preencheu o campo (#52); nenhum bloco renderiza.
+  const whatsappHref = business.whatsapp
+    ? `https://wa.me/${business.whatsapp.replace(/\D/g, "")}?text=${encodeURIComponent(
+        `Olá! Vim pela página de ${business.name} e queria falar com você.`,
+      )}`
+    : null;
 
   // Gate de login: a página continua PÚBLICA (visitante navega os slots). Lemos a sessão UMA vez só
   // para decidir o comportamento do CLIQUE no cliente. Escopo mínimo — um booleano, nunca dados da sessão.
@@ -151,6 +180,7 @@ export default async function BusinessPublicPage({
         </div>
       </div>
       <main className="mx-auto flex max-w-xl flex-col gap-6 p-8">
+        {whatsappHref && <WhatsappButton href={whatsappHref} />}
         <p className="text-sm text-neutral-500">
           {isReadyForBooking
             ? "Escolha um serviço, um dia e um horário livre."
@@ -165,9 +195,12 @@ export default async function BusinessPublicPage({
             restoreError={restoreError}
           />
         ) : (
-          <p className="text-sm text-neutral-500">
-            {business.name} está preparando a agenda. Volte em breve para marcar seu horário por aqui.
-          </p>
+          <>
+            <p className="text-sm text-neutral-500">
+              {business.name} está preparando a agenda. Volte em breve para marcar seu horário por aqui.
+            </p>
+            {whatsappHref && <WhatsappButton href={whatsappHref} />}
+          </>
         )}
       </main>
     </>
