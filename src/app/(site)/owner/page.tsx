@@ -65,8 +65,8 @@ export default async function OwnerHomePage() {
   return (
     <main className="mx-auto flex max-w-2xl flex-col gap-6 p-8">
       <header>
-        <h1 className="text-2xl font-bold">Painel do dono</h1>
-        <p className="text-sm text-neutral-500">Gerencie o catálogo e o horário de funcionamento.</p>
+        <h1 className="text-2xl font-bold text-texto">Painel do dono</h1>
+        <p className="text-sm text-texto-secundario">Gerencie o catálogo e o horário de funcionamento.</p>
       </header>
 
       {!setupComplete && business && (
@@ -77,24 +77,33 @@ export default async function OwnerHomePage() {
       )}
 
       <section className="flex flex-col gap-2">
-        <h2 className="text-lg font-semibold">Agenda de hoje</h2>
+        <h2 className="text-lg font-semibold text-texto">Agenda de hoje</h2>
         <TodaySchedule items={scheduleItems} timeZone={timeZone} />
       </section>
 
       <nav className="flex flex-col gap-2">
-        <Link href="/owner/business" className="rounded border border-neutral-300 p-3 hover:bg-neutral-50">
+        <Link
+          href="/owner/business"
+          className="rounded-card border border-borda bg-superficie p-3 text-texto transition-colors hover:border-primaria hover:bg-primaria-suave"
+        >
           Dados do negócio
         </Link>
-        <Link href="/owner/services" className="rounded border border-neutral-300 p-3 hover:bg-neutral-50">
+        <Link
+          href="/owner/services"
+          className="rounded-card border border-borda bg-superficie p-3 text-texto transition-colors hover:border-primaria hover:bg-primaria-suave"
+        >
           Gerenciar serviços
         </Link>
         <Link
           href="/owner/opening-hours"
-          className="rounded border border-neutral-300 p-3 hover:bg-neutral-50"
+          className="rounded-card border border-borda bg-superficie p-3 text-texto transition-colors hover:border-primaria hover:bg-primaria-suave"
         >
           Horário de funcionamento
         </Link>
-        <Link href="/owner/ledger" className="rounded border border-neutral-300 p-3 hover:bg-neutral-50">
+        <Link
+          href="/owner/ledger"
+          className="rounded-card border border-borda bg-superficie p-3 text-texto transition-colors hover:border-primaria hover:bg-primaria-suave"
+        >
           Financeiro
         </Link>
       </nav>
