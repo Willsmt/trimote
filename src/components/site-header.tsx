@@ -19,10 +19,10 @@ export async function SiteHeader() {
   const isAdmin = role === Role.ADMIN;
 
   return (
-    <header className="border-b border-neutral-200">
+    <header className="border-b border-borda bg-superficie">
       <nav className="mx-auto flex max-w-3xl flex-col gap-2 p-4">
         <div className="flex items-center justify-between gap-4">
-          <Link href="/" className="font-bold">
+          <Link href="/" className="font-bold text-texto">
             Trimote
           </Link>
 
@@ -30,11 +30,11 @@ export async function SiteHeader() {
             {user ? (
               <>
                 {/* Indicação de sessão ativa: identifica o usuário realmente logado (FR-007). */}
-                <span className="hidden text-sm text-neutral-500 sm:inline">{user.name ?? user.email}</span>
-                <SignOutButton />
+                <span className="hidden text-sm text-texto-secundario sm:inline">{user.name ?? user.email}</span>
+                <SignOutButton className="rounded-botao border border-borda px-3 py-1 text-sm text-texto transition-colors hover:border-primaria hover:text-primaria" />
               </>
             ) : (
-              <SignInButton />
+              <SignInButton className="rounded-botao bg-primaria px-3 py-1 text-sm font-medium text-white transition-colors hover:bg-primaria-hover" />
             )}
           </div>
         </div>
@@ -44,15 +44,15 @@ export async function SiteHeader() {
               negócio (/b/[slug]); não há mais catálogo global (F007/US4). */}
           {user && (
             <>
-              <Link href="/my-bookings" className="text-sm hover:underline">
+              <Link href="/my-bookings" className="text-sm text-texto-secundario transition-colors hover:text-primaria">
                 Meus agendamentos
               </Link>
               {/* Histórico dos próprios gastos (006, US5): qualquer autenticado; filtro por sessão no servidor. */}
-              <Link href="/my-spending" className="text-sm hover:underline">
+              <Link href="/my-spending" className="text-sm text-texto-secundario transition-colors hover:text-primaria">
                 Meus gastos
               </Link>
               {/* Perfil (034): edição do próprio telefone/WhatsApp. */}
-              <Link href="/profile" className="text-sm hover:underline">
+              <Link href="/profile" className="text-sm text-texto-secundario transition-colors hover:text-primaria">
                 Perfil
               </Link>
             </>
@@ -62,10 +62,10 @@ export async function SiteHeader() {
               Esconder é conveniência; a barreira real é requireOwner no servidor. */}
           {isOwner && (
             <>
-              <Link href="/owner" className="text-sm hover:underline">
+              <Link href="/owner" className="text-sm text-texto-secundario transition-colors hover:text-primaria">
                 Painel
               </Link>
-              <Link href="/owner/finance" className="text-sm hover:underline">
+              <Link href="/owner/finance" className="text-sm text-texto-secundario transition-colors hover:text-primaria">
                 Financeiro
               </Link>
             </>
@@ -73,7 +73,7 @@ export async function SiteHeader() {
 
           {/* Área ADMIN (F007, US1): só Role ADMIN. A barreira real é requireAdmin no servidor. */}
           {isAdmin && (
-            <Link href="/admin" className="text-sm hover:underline">
+            <Link href="/admin" className="text-sm text-texto-secundario transition-colors hover:text-primaria">
               Admin
             </Link>
           )}

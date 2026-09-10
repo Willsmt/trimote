@@ -1,3 +1,36 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Tokens da Constituição Visual (specs/landing/CONSTITUICAO-VISUAL.md), movidos de
+   src/app/(public)/public-page.module.css (issue #57) — fonte única global, disponível pra
+   qualquer rota do app, não só a página pública. Valores copiados sem alteração. */
+:root {
+  --fundo: #f7f6f3;
+  --superficie: #ffffff;
+  --superficie-2: #f0efeb;
+  --texto: #1a1d23;
+  --texto-secundario: #626a76;
+  --borda: #e2e3df;
+  --primaria: #2b4c7e;
+  --primaria-hover: #23406c;
+  --primaria-pressed: #1b3459;
+  --primaria-suave: #e9eff7;
+  --anel-foco: rgba(43, 76, 126, 0.35);
+  --desabilitado-bg: #e4e5e2;
+  --desabilitado-texto: #9aa0a8;
+  --ouro: #d2a03a;
+  --ouro-metal: linear-gradient(135deg, #e3b54f, #c08a26);
+  --ouro-suave: #f6edda;
+  --ouro-texto: #8f6812;
+  --carmesim: #b0402f;
+  --carmesim-suave: #f7e7e3;
+  --carmesim-texto: #8a2f21;
+  --sucesso: #2f8161;
+  --sucesso-suave: #e4f1eb;
+  --sucesso-texto: #205a43;
+  --polimento: inset 0 1px 0 rgba(255, 255, 255, 0.14);
+  --raio-input: 6px;
+  --raio-botao: 10px;
+  --raio-card: 14px;
+}
