@@ -43,18 +43,23 @@ export function CreateBusinessForm() {
   }
 
   return (
-    <section className="flex flex-col gap-2 rounded-lg border border-neutral-200 p-4">
-      <h2 className="font-semibold">Criar negócio</h2>
-      {message && <p className="text-sm text-neutral-600">{message}</p>}
-      <input className="rounded border border-neutral-300 p-2 text-sm" placeholder="Nome" value={name} onChange={(e) => onName(e.target.value)} />
+    <section className="flex flex-col gap-2 rounded-card border border-borda bg-superficie p-6">
+      <h2 className="font-semibold text-texto">Criar negócio</h2>
+      {message && <p className="text-sm text-texto-secundario">{message}</p>}
+      <input className="rounded-input border border-borda p-2 text-sm" placeholder="Nome" value={name} onChange={(e) => onName(e.target.value)} />
       <input
-        className="rounded border border-neutral-300 p-2 text-sm"
+        className="rounded-input border border-borda p-2 text-sm"
         placeholder="slug"
         value={slug}
         onChange={(e) => { setSlug(e.target.value); setSlugEdited(true); }}
       />
-      <input className="rounded border border-neutral-300 p-2 text-sm" placeholder="Fuso (timezone)" value={timeZone} onChange={(e) => setTimeZone(e.target.value)} />
-      <button type="button" onClick={submit} disabled={pending || !name || !slug} className="self-start rounded-md bg-neutral-900 px-4 py-1 text-sm text-white disabled:opacity-50">
+      <input className="rounded-input border border-borda p-2 text-sm" placeholder="Fuso (timezone)" value={timeZone} onChange={(e) => setTimeZone(e.target.value)} />
+      <button
+        type="button"
+        onClick={submit}
+        disabled={pending || !name || !slug}
+        className="self-start rounded-botao border border-borda px-4 py-1 text-sm text-texto transition-colors hover:border-primaria hover:text-primaria disabled:opacity-50"
+      >
         {pending ? "Criando…" : "Criar"}
       </button>
     </section>
