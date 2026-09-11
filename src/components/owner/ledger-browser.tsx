@@ -7,12 +7,12 @@ import { listLedger, type LedgerPageDTO, type LedgerRowDTO } from "@/server/acti
 import { deactivateLedgerEntry } from "@/server/actions/deactivate-ledger-entry";
 import { duplicateLedgerEntry } from "@/server/actions/duplicate-ledger-entry";
 import type { Granularity } from "@/domain/time";
+import { formatBRL } from "@/domain/money";
 
 // Ilha client do razão (006, US3): filtros combináveis, "carregar mais" (keyset via nextCursor),
 // expansão de itens client-side e sinal visual do valor pelo tipo. O período vem do caixa (mesma
 // tela) para manter caixa e razão coerentes; os demais filtros são locais.
 
-const BRL = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
 const PAYMENT_METHOD_LABELS: Record<string, string> = {
   CASH: "Dinheiro",
   PIX: "Pix",
@@ -48,7 +48,7 @@ export interface LedgerBrowserProps {
 }
 
 function signed(row: LedgerRowDTO): string {
-  const value = BRL.format(Number(row.amount));
+  const value = formatBRL(Number(row.amount));
   return row.type === "INCOME" ? `+ ${value}` : `- ${value}`;
 }
 
@@ -238,7 +238,7 @@ export function LedgerBrowser({ initialPage, period }: LedgerBrowserProps) {
                   {row.items.map((it, i) => (
                     <li key={i} className="flex justify-between">
                       <span>{it.description}</span>
-                      <span className="tabular-nums">{BRL.format(Number(it.amount))}</span>
+                      <span className="tabular-nums">{formatBRL(Number(it.amount))}</span>
                     </li>
                   ))}
                 </ul>
