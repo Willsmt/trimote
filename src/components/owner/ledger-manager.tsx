@@ -7,6 +7,7 @@ import type { PaymentMethod } from "@prisma/client";
 import { completeBooking } from "@/server/actions/complete-booking";
 import { registerWalkIn } from "@/server/actions/register-walk-in";
 import { registerExpense } from "@/server/actions/register-expense";
+import { formatBRL } from "@/domain/money";
 
 // Mapa completo reason -> mensagem (pt-BR) de TODOS os fluxos do ledger (T022). Nenhum reason órfão:
 // mesma disciplina que evita mensagem ausente (bug do no_change). SEM relatório/agregação (F006).
@@ -62,10 +63,6 @@ function formatWhen(iso: string): string {
     dateStyle: "short",
     timeStyle: "short",
   }).format(new Date(iso));
-}
-
-function formatBRL(value: number): string {
-  return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value);
 }
 
 export function LedgerManager({

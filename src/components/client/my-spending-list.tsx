@@ -3,11 +3,10 @@
 import { useState, useTransition } from "react";
 
 import { listMyLedger, type ClientHistoryPageDTO } from "@/server/actions/list-my-ledger";
+import { formatBRL } from "@/domain/money";
 
 // Ilha client do histórico do próprio cliente (006, US5): exibe momento, descrição/itens e valor,
 // com "carregar mais" via keyset (nextCursor). Só receitas do cliente — sem sinal de despesa.
-
-const BRL = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
 
 // Total das linhas EXIBIDAS (polish): somado no client a partir do que já foi carregado — nenhuma
 // query nova. Em centavos (inteiros) para não acumular erro de float; valores vêm com 2 casas.
@@ -40,7 +39,7 @@ export function MySpendingList({ initialPage }: { initialPage: ClientHistoryPage
       <div className="rounded-card border border-borda bg-superficie p-6">
         <p className="text-sm text-texto-secundario">{cursor ? "Total carregado até aqui" : "Total"}</p>
         <p className="text-xl font-semibold text-texto tabular-nums">
-          {BRL.format(sumDisplayed(rows))}
+          {formatBRL(sumDisplayed(rows))}
         </p>
         {cursor && (
           <p className="text-xs text-texto-secundario">
@@ -54,7 +53,7 @@ export function MySpendingList({ initialPage }: { initialPage: ClientHistoryPage
           <li key={row.id} className="flex flex-col gap-1 p-3 text-sm">
             <div className="flex items-center justify-between gap-3">
               <span className="font-medium text-texto">{row.description}</span>
-              <span className="tabular-nums font-semibold">{BRL.format(Number(row.amount))}</span>
+              <span className="tabular-nums font-semibold">{formatBRL(Number(row.amount))}</span>
             </div>
             <span className="text-xs text-texto-secundario">
               {new Date(row.occurredAtIso).toLocaleString("pt-BR")} · {row.businessName}
@@ -64,7 +63,7 @@ export function MySpendingList({ initialPage }: { initialPage: ClientHistoryPage
                 {row.items.map((it, i) => (
                   <li key={i} className="flex justify-between">
                     <span>{it.description}</span>
-                    <span className="tabular-nums">{BRL.format(Number(it.amount))}</span>
+                    <span className="tabular-nums">{formatBRL(Number(it.amount))}</span>
                   </li>
                 ))}
               </ul>

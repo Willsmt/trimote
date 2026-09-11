@@ -1,3 +1,5 @@
+import { formatBRL } from "@/domain/money";
+
 // Componente de LEITURA (server-friendly, sem estado) do caixa + breakdown (006, US1/US2). Recebe os
 // valores já serializados como string (Decimal→string na fronteira Server/Client) e aplica os rótulos
 // pt-BR. Sem gráficos (FR-026): só números e tabelas.
@@ -10,12 +12,6 @@ const PAYMENT_METHOD_LABELS: Record<string, string> = {
   OTHER: "Outro",
   UNSET: "Não informado",
 };
-
-const BRL = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
-
-function money(value: string): string {
-  return BRL.format(Number(value));
-}
 
 interface Bucket {
   key: string | null;
@@ -44,16 +40,16 @@ export function CashSummaryView({
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <div className="rounded-card border border-borda bg-superficie p-6">
           <p className="text-sm text-texto-secundario">Entradas</p>
-          <p className="text-xl font-semibold text-sucesso-texto">{money(income)}</p>
+          <p className="text-xl font-semibold text-sucesso-texto">{formatBRL(Number(income))}</p>
         </div>
         <div className="rounded-card border border-borda bg-superficie p-6">
           <p className="text-sm text-texto-secundario">Saídas</p>
-          <p className="text-xl font-semibold text-carmesim-texto">{money(expense)}</p>
+          <p className="text-xl font-semibold text-carmesim-texto">{formatBRL(Number(expense))}</p>
         </div>
         <div className="rounded-card border border-borda bg-superficie p-6">
           <p className="text-sm text-texto-secundario">Saldo</p>
           <p className={`text-xl font-semibold ${negative ? "text-carmesim-texto" : "text-texto"}`}>
-            {money(balance)}
+            {formatBRL(Number(balance))}
           </p>
         </div>
       </div>
@@ -68,7 +64,7 @@ export function CashSummaryView({
               {incomeByPaymentMethod.map((b) => (
                 <li key={b.key ?? "UNSET"} className="flex justify-between text-sm">
                   <span>{PAYMENT_METHOD_LABELS[b.key ?? "UNSET"] ?? b.key}</span>
-                  <span className="tabular-nums">{money(b.amount)}</span>
+                  <span className="tabular-nums">{formatBRL(Number(b.amount))}</span>
                 </li>
               ))}
             </ul>
@@ -83,7 +79,7 @@ export function CashSummaryView({
               {expenseByCategory.map((b) => (
                 <li key={b.key ?? "__sem_categoria__"} className="flex justify-between text-sm">
                   <span>{b.key ?? "Sem categoria"}</span>
-                  <span className="tabular-nums">{money(b.amount)}</span>
+                  <span className="tabular-nums">{formatBRL(Number(b.amount))}</span>
                 </li>
               ))}
             </ul>
