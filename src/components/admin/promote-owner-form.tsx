@@ -39,16 +39,21 @@ export function PromoteOwnerForm({ businesses }: { businesses: BusinessOption[] 
   }
 
   return (
-    <section className="flex flex-col gap-2 rounded-lg border border-neutral-200 p-4">
-      <h2 className="font-semibold">Promover dono</h2>
-      {message && <p className="text-sm text-neutral-600">{message}</p>}
-      <select className="rounded border border-neutral-300 p-2 text-sm" value={businessId} onChange={(e) => setBusinessId(e.target.value)}>
+    <section className="flex flex-col gap-2 rounded-card border border-borda bg-superficie p-6">
+      <h2 className="font-semibold text-texto">Promover dono</h2>
+      {message && <p className="text-sm text-texto-secundario">{message}</p>}
+      <select className="rounded-input border border-borda p-2 text-sm" value={businessId} onChange={(e) => setBusinessId(e.target.value)}>
         {businesses.map((b) => (
           <option key={b.id} value={b.id}>{b.name}</option>
         ))}
       </select>
-      <input className="rounded border border-neutral-300 p-2 text-sm" placeholder="email do usuário" value={email} onChange={(e) => setEmail(e.target.value)} />
-      <button type="button" onClick={submit} disabled={pending || !businessId || !email} className="self-start rounded-md bg-neutral-900 px-4 py-1 text-sm text-white disabled:opacity-50">
+      <input className="rounded-input border border-borda p-2 text-sm" placeholder="email do usuário" value={email} onChange={(e) => setEmail(e.target.value)} />
+      <button
+        type="button"
+        onClick={submit}
+        disabled={pending || !businessId || !email}
+        className="self-start rounded-botao border border-borda px-4 py-1 text-sm text-texto transition-colors hover:border-primaria hover:text-primaria disabled:opacity-50"
+      >
         {pending ? "Vinculando…" : "Vincular como dono"}
       </button>
     </section>

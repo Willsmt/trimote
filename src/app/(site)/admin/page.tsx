@@ -27,7 +27,7 @@ export default async function AdminPage() {
     <main className="mx-auto flex max-w-2xl flex-col gap-6 p-8">
       <header>
         <h1 className="font-fraunces text-2xl font-bold">Administração da plataforma</h1>
-        <p className="text-sm text-neutral-500">Criar negócios e vincular donos. Ações auditadas.</p>
+        <p className="text-sm text-texto-secundario">Criar negócios e vincular donos. Ações auditadas.</p>
       </header>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -36,19 +36,19 @@ export default async function AdminPage() {
       </div>
 
       <section className="flex flex-col gap-2">
-        <h2 className="font-semibold">Negócios</h2>
-        <ul className="divide-y divide-neutral-100 rounded-lg border border-neutral-200 text-sm">
+        <h2 className="font-semibold text-texto">Negócios</h2>
+        <ul className="divide-y divide-borda rounded-card border border-borda bg-superficie text-sm">
           {businesses.length === 0 ? (
-            <li className="p-3 text-neutral-400">Nenhum negócio ainda.</li>
+            <li className="p-3 text-texto-secundario">Nenhum negócio ainda.</li>
           ) : (
             businesses.map((b) => (
               <li key={b.id} className="flex flex-col gap-1 p-3">
                 <div className="flex items-center justify-between">
-                  <span className="font-medium">{b.name}</span>
-                  <span className="text-neutral-500">/b/{b.slug} · {b.owners.length} dono(s)</span>
+                  <span className="font-medium text-texto">{b.name}</span>
+                  <span className="text-texto-secundario">/b/{b.slug} · {b.owners.length} dono(s)</span>
                 </div>
                 {b.owners.length > 0 && (
-                  <ul className="text-neutral-500">
+                  <ul className="text-texto-secundario">
                     {b.owners.map((o) => (
                       <li key={o.membershipId} className="flex items-center justify-between gap-2">
                         <span>

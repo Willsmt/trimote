@@ -62,11 +62,11 @@ export function RemoveOwnerButton({
         type="button"
         onClick={onRemove}
         disabled={isPending}
-        className="text-xs text-red-600 underline disabled:opacity-50"
+        className="text-xs text-carmesim-texto underline disabled:opacity-50"
       >
         {isPending ? "removendo…" : "remover"}
       </button>
-      {message && <span className="text-xs text-red-600">{message}</span>}
+      {message && <span className="text-xs text-carmesim-texto">{message}</span>}
     </span>
   );
 }
