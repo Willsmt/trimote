@@ -12,8 +12,9 @@ export const inter = Inter({
   display: "swap",
 });
 
-// Fraunces é dos títulos/identidade e vive SÓ na landing (aplicada no layout do grupo (marketing)
-// via variável CSS, consumida pelo CSS Module da landing). Não entra no resto do app.
+// Fraunces é dos títulos/identidade (CONSTITUICAO-VISUAL.md: títulos de 24px+). Aplicada via
+// variável CSS no layout de cada grupo que a usa — (marketing) via CSS Module da landing, (public)
+// via public-page.module.css, (site) via classes utilitárias Tailwind (fontFamily.fraunces).
 export const fraunces = Fraunces({
   subsets: ["latin"],
   variable: "--font-fraunces",

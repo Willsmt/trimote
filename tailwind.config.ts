@@ -36,6 +36,9 @@ const config: Config = {
         botao: "var(--raio-botao)",
         card: "var(--raio-card)",
       },
+      fontFamily: {
+        fraunces: ["var(--font-fraunces)", "Georgia", "serif"],
+      },
     },
   },
   plugins: [require("tailwindcss-animate")],
