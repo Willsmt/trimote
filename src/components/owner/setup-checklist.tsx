@@ -37,7 +37,7 @@ export function SetupChecklist({
   ];
 
   return (
-    <section className="flex flex-col gap-3 rounded-card border border-borda bg-superficie p-4">
+    <section className="flex flex-col gap-3 rounded-card border border-borda bg-superficie p-6">
       <div>
         <h2 className="text-lg font-semibold text-texto">Prepare sua agenda</h2>
         <p className="text-sm text-texto-secundario">
@@ -49,7 +49,7 @@ export function SetupChecklist({
         {items.map((item) => (
           <li
             key={item.href}
-            className="flex items-center justify-between gap-3 rounded-card border border-borda p-3"
+            className="flex items-center justify-between gap-3 rounded-card border border-borda p-6"
           >
             {/* Feito = check + texto esmaecido, SEM line-through (riscado lê como cancelado). */}
             <p className={`text-sm ${item.done ? "text-texto-secundario" : "font-medium"}`}>

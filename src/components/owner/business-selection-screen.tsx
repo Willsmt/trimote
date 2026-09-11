@@ -40,7 +40,7 @@ export function BusinessSelectionScreen({ options }: BusinessSelectionScreenProp
               type="button"
               disabled={pending}
               onClick={() => choose(b.businessId)}
-              className="w-full rounded-card border border-borda p-3 text-left text-texto transition-colors hover:border-primaria hover:bg-primaria-suave disabled:opacity-50"
+              className="w-full rounded-card border border-borda p-6 text-left text-texto transition-colors hover:border-primaria hover:bg-primaria-suave disabled:opacity-50"
             >
               {b.name}
             </button>
