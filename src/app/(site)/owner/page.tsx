@@ -65,7 +65,7 @@ export default async function OwnerHomePage() {
   return (
     <main className="mx-auto flex max-w-2xl flex-col gap-6 p-8">
       <header>
-        <h1 className="text-2xl font-bold text-texto">Painel do dono</h1>
+        <h1 className="font-fraunces text-2xl font-bold text-texto">Painel do dono</h1>
         <p className="text-sm text-texto-secundario">Gerencie o catálogo e o horário de funcionamento.</p>
       </header>
 
