@@ -98,7 +98,7 @@ export default async function OwnerFinancePage({
     <main className="mx-auto flex max-w-3xl flex-col gap-6 p-8">
       <header>
         <h1 className="font-fraunces text-2xl font-bold">Balancete</h1>
-        <p className="text-sm text-neutral-500">Caixa da barbearia por período (entradas, saídas e saldo).</p>
+        <p className="text-sm text-texto-secundario">Caixa da barbearia por período (entradas, saídas e saldo).</p>
       </header>
 
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -107,8 +107,10 @@ export default async function OwnerFinancePage({
             <Link
               key={g}
               href={href(g, referenceLocalDate)}
-              className={`rounded-md border px-3 py-1 text-sm ${
-                g === granularity ? "border-neutral-900 bg-neutral-900 text-white" : "border-neutral-200"
+              className={`rounded-botao border px-3 py-1 text-sm transition-colors ${
+                g === granularity
+                  ? "border-primaria bg-primaria text-white"
+                  : "border-borda text-texto hover:border-primaria hover:text-primaria"
               }`}
             >
               {GRANULARITY_LABELS[g]}
@@ -116,13 +118,19 @@ export default async function OwnerFinancePage({
           ))}
         </div>
         <div className="flex items-center gap-2">
-          <Link href={href(granularity, prev)} className="rounded-md border border-neutral-200 px-3 py-1 text-sm">
+          <Link
+            href={href(granularity, prev)}
+            className="rounded-botao border border-borda px-3 py-1 text-sm text-texto transition-colors hover:border-primaria hover:text-primaria"
+          >
             ← Anterior
           </Link>
-          <span className="min-w-[10rem] text-center text-sm font-medium">
+          <span className="min-w-[10rem] text-center text-sm font-medium text-texto">
             {periodLabel(summary.period.startUtc, granularity, timeZone)}
           </span>
-          <Link href={href(granularity, next)} className="rounded-md border border-neutral-200 px-3 py-1 text-sm">
+          <Link
+            href={href(granularity, next)}
+            className="rounded-botao border border-borda px-3 py-1 text-sm text-texto transition-colors hover:border-primaria hover:text-primaria"
+          >
             Próximo →
           </Link>
         </div>

@@ -65,7 +65,7 @@ export default async function OwnerLedgerPage() {
     <main className="mx-auto flex max-w-2xl flex-col gap-6 p-8">
       <header>
         <h1 className="font-fraunces text-2xl font-bold">Financeiro</h1>
-        <p className="text-sm text-neutral-500">
+        <p className="text-sm text-texto-secundario">
           Concluir atendimento, registrar avulso e despesa. Para consultar o caixa e corrigir
           lançamentos, use o Financeiro.
         </p>

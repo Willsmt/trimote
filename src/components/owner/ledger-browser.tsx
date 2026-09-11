@@ -139,11 +139,11 @@ export function LedgerBrowser({ initialPage, period }: LedgerBrowserProps) {
 
   return (
     <section className="flex flex-col gap-3">
-      <h2 className="text-sm font-semibold text-neutral-700">Lançamentos do período</h2>
+      <h2 className="text-sm font-semibold text-texto">Lançamentos do período</h2>
 
       <div className="flex flex-wrap items-center gap-2 text-sm">
         <select
-          className="rounded-md border border-neutral-200 px-2 py-1"
+          className="rounded-input border border-borda px-2 py-1"
           value={filter.type ?? ""}
           onChange={(e) => applyFilter({ ...filter, type: (e.target.value || undefined) as LocalFilter["type"] })}
         >
@@ -152,7 +152,7 @@ export function LedgerBrowser({ initialPage, period }: LedgerBrowserProps) {
           <option value="EXPENSE">Saídas</option>
         </select>
         <select
-          className="rounded-md border border-neutral-200 px-2 py-1"
+          className="rounded-input border border-borda px-2 py-1"
           value={filter.origin ?? ""}
           onChange={(e) => applyFilter({ ...filter, origin: (e.target.value || undefined) as LocalFilter["origin"] })}
         >
@@ -162,7 +162,7 @@ export function LedgerBrowser({ initialPage, period }: LedgerBrowserProps) {
           <option value="EXPENSE">Despesa</option>
         </select>
         <select
-          className="rounded-md border border-neutral-200 px-2 py-1"
+          className="rounded-input border border-borda px-2 py-1"
           value={filter.paymentMethod ?? ""}
           onChange={(e) => applyFilter({ ...filter, paymentMethod: (e.target.value || undefined) as LocalFilter["paymentMethod"] })}
         >
@@ -184,38 +184,38 @@ export function LedgerBrowser({ initialPage, period }: LedgerBrowserProps) {
         </label>
       </div>
 
-      {actionError && <p className="text-sm font-medium text-red-600">{actionError}</p>}
+      {actionError && <p className="text-sm font-medium text-carmesim-texto">{actionError}</p>}
 
-      <ul className="flex flex-col divide-y divide-neutral-100 rounded-lg border border-neutral-200">
+      <ul className="flex flex-col divide-y divide-borda rounded-card border border-borda bg-superficie">
         {rows.length === 0 ? (
-          <li className="p-3 text-sm text-neutral-400">Nenhum lançamento.</li>
+          <li className="p-3 text-sm text-texto-secundario">Nenhum lançamento.</li>
         ) : (
           rows.map((row) => (
-            <li key={row.id} className={`p-3 text-sm ${row.isActive ? "" : "bg-neutral-50 text-neutral-400"}`}>
+            <li key={row.id} className={`p-3 text-sm ${row.isActive ? "" : "bg-superficie-2 text-texto-secundario"}`}>
               <div className="flex items-center justify-between gap-3">
                 <div className="flex flex-col">
-                  <span className="font-medium">
+                  <span className="font-medium text-texto">
                     {row.description}
                     {!row.isActive && <span className="ml-2 text-xs uppercase">(inativo)</span>}
                   </span>
-                  <span className="text-xs text-neutral-500">
+                  <span className="text-xs text-texto-secundario">
                     {new Date(row.occurredAtIso).toLocaleString("pt-BR")} · {ORIGIN_LABELS[row.origin]}
                     {row.paymentMethod ? ` · ${PAYMENT_METHOD_LABELS[row.paymentMethod]}` : ""}
                   </span>
                 </div>
                 <div className="flex items-center gap-3">
-                  <span className={`tabular-nums font-semibold ${row.type === "INCOME" ? "text-emerald-600" : "text-red-600"}`}>
+                  <span className={`tabular-nums font-semibold ${row.type === "INCOME" ? "text-sucesso-texto" : "text-carmesim-texto"}`}>
                     {signed(row)}
                   </span>
                   {row.items.length > 0 && (
-                    <button type="button" className="text-xs text-neutral-500 underline" onClick={() => toggle(row.id)}>
+                    <button type="button" className="text-xs text-texto-secundario underline" onClick={() => toggle(row.id)}>
                       {expanded.has(row.id) ? "ocultar" : "itens"}
                     </button>
                   )}
                   {row.isActive ? (
                     <button
                       type="button"
-                      className="text-xs text-red-600 underline disabled:opacity-50"
+                      className="text-xs text-carmesim-texto underline disabled:opacity-50"
                       disabled={pending}
                       onClick={() => inactivate(row.id)}
                     >
@@ -224,7 +224,7 @@ export function LedgerBrowser({ initialPage, period }: LedgerBrowserProps) {
                   ) : (
                     <button
                       type="button"
-                      className="text-xs text-emerald-700 underline disabled:opacity-50"
+                      className="text-xs text-sucesso-texto underline disabled:opacity-50"
                       disabled={pending}
                       onClick={() => duplicate(row.id)}
                     >
@@ -234,7 +234,7 @@ export function LedgerBrowser({ initialPage, period }: LedgerBrowserProps) {
                 </div>
               </div>
               {expanded.has(row.id) && row.items.length > 0 && (
-                <ul className="mt-2 flex flex-col gap-1 pl-4 text-xs text-neutral-500">
+                <ul className="mt-2 flex flex-col gap-1 pl-4 text-xs text-texto-secundario">
                   {row.items.map((it, i) => (
                     <li key={i} className="flex justify-between">
                       <span>{it.description}</span>
@@ -253,7 +253,7 @@ export function LedgerBrowser({ initialPage, period }: LedgerBrowserProps) {
           type="button"
           onClick={loadMore}
           disabled={pending}
-          className="self-center rounded-md border border-neutral-200 px-4 py-1 text-sm disabled:opacity-50"
+          className="self-center rounded-botao border border-borda px-4 py-1 text-sm text-texto transition-colors hover:border-primaria hover:text-primaria disabled:opacity-50"
         >
           {pending ? "Carregando…" : "Carregar mais"}
         </button>
