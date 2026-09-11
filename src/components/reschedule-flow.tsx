@@ -113,14 +113,14 @@ export function RescheduleFlow({
 
   return (
     <div className="flex flex-col gap-4">
-      <p className="text-sm text-neutral-500">
-        Horário atual: <span className="font-medium text-neutral-800">{formatDateTime(currentStartsAtIso)}</span>
+      <p className="text-sm text-texto-secundario">
+        Horário atual: <span className="font-medium text-texto">{formatDateTime(currentStartsAtIso)}</span>
       </p>
 
       <label className="flex flex-col gap-1 text-sm">
         Serviço
         <select
-          className="rounded border border-neutral-300 p-2"
+          className="rounded-input border border-borda p-2"
           value={serviceId}
           onChange={(event) => onServiceChange(event.target.value)}
         >
@@ -136,7 +136,7 @@ export function RescheduleFlow({
         Novo dia
         <input
           type="date"
-          className="rounded border border-neutral-300 p-2"
+          className="rounded-input border border-borda p-2"
           value={date}
           onChange={(event) => setDate(event.target.value)}
         />
@@ -144,14 +144,14 @@ export function RescheduleFlow({
 
       <button
         type="button"
-        className="rounded bg-neutral-900 p-2 text-white disabled:opacity-50"
+        className="rounded-botao bg-primaria p-2 text-white transition-colors hover:bg-primaria-hover disabled:opacity-50"
         onClick={loadSlots}
         disabled={loading || !serviceId || !date}
       >
         Ver horários livres
       </button>
 
-      {message && <p className="text-sm font-medium">{message}</p>}
+      {message && <p className="text-sm font-medium text-texto">{message}</p>}
 
       {slots.length > 0 && (
         <div className="grid grid-cols-3 gap-2">
@@ -159,7 +159,7 @@ export function RescheduleFlow({
             <button
               key={slot}
               type="button"
-              className="rounded border border-neutral-300 p-2 text-sm hover:bg-neutral-100 disabled:opacity-50"
+              className="rounded-botao border border-borda p-2 text-sm transition-colors hover:border-primaria hover:text-primaria disabled:opacity-50"
               onClick={() => confirm(slot)}
               disabled={loading}
             >

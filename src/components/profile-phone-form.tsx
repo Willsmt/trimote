@@ -82,13 +82,13 @@ export function ProfilePhoneForm({ initialPhone }: { initialPhone: string | null
         <input
           type="tel"
           inputMode="numeric"
-          className="rounded border border-neutral-300 p-2"
+          className="rounded-input border border-borda p-2"
           placeholder="(11) 99999-9999"
           value={value}
           onChange={(event) => setValue(maskPhoneBR(event.target.value))}
         />
       </label>
-      <p className="text-xs text-neutral-500">
+      <p className="text-xs text-texto-secundario">
         Informe seu WhatsApp para que a barbearia possa confirmar ou avisar sobre mudanças no seu
         agendamento.
       </p>
@@ -97,7 +97,7 @@ export function ProfilePhoneForm({ initialPhone }: { initialPhone: string | null
           type="button"
           onClick={onSave}
           disabled={isPending}
-          className="rounded bg-neutral-900 px-4 py-1 text-sm text-white disabled:opacity-50"
+          className="rounded-botao bg-primaria px-4 py-1 text-sm text-white transition-colors hover:bg-primaria-hover disabled:opacity-50"
         >
           {isPending ? "Salvando…" : "Salvar"}
         </button>
@@ -107,13 +107,13 @@ export function ProfilePhoneForm({ initialPhone }: { initialPhone: string | null
             type="button"
             onClick={onRemove}
             disabled={isPending}
-            className="rounded border border-neutral-300 px-4 py-1 text-sm disabled:opacity-50"
+            className="rounded-botao border border-borda px-4 py-1 text-sm text-texto-secundario transition-colors hover:bg-superficie-2 disabled:opacity-50"
           >
             Remover
           </button>
         )}
       </div>
-      {message && <p className="text-sm font-medium">{message}</p>}
+      {message && <p className="text-sm font-medium text-texto">{message}</p>}
     </div>
   );
 }

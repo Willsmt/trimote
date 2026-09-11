@@ -63,7 +63,7 @@ export default async function ReschedulePage({
     <main className="mx-auto flex max-w-xl flex-col gap-6 p-8">
       <header>
         <h1 className="font-fraunces text-2xl font-bold">Remarcar agendamento</h1>
-        <p className="text-sm text-neutral-500">Escolha o serviço, um novo dia e horário livre.</p>
+        <p className="text-sm text-texto-secundario">Escolha o serviço, um novo dia e horário livre.</p>
       </header>
       <RescheduleFlow
         bookingId={booking.id}
