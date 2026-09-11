@@ -37,13 +37,13 @@ export function PublicPageCard({ publicUrl }: { publicUrl: string }) {
   }
 
   const actionClass =
-    "rounded border border-neutral-300 px-3 py-1 text-sm text-neutral-700 hover:bg-neutral-100";
+    "rounded-botao border border-borda px-3 py-1 text-sm text-texto transition-colors hover:border-primaria hover:text-primaria";
 
   return (
-    <section className="flex flex-col gap-3 rounded border border-neutral-300 p-4">
+    <section className="flex flex-col gap-3 rounded-card border border-borda bg-superficie p-4">
       <div>
-        <h2 className="text-lg font-semibold">Sua página de agendamento</h2>
-        <p className="text-sm text-neutral-500">
+        <h2 className="text-lg font-semibold text-texto">Sua página de agendamento</h2>
+        <p className="text-sm text-texto-secundario">
           Compartilhe o QR ou o link para os clientes agendarem.
         </p>
       </div>
@@ -54,7 +54,7 @@ export function PublicPageCard({ publicUrl }: { publicUrl: string }) {
         <QRCodeCanvas value={publicUrl} size={512} ref={canvasRef} className="hidden" />
 
         <div className="flex min-w-0 flex-col gap-2">
-          <code className="break-all text-sm text-neutral-700">{publicUrl}</code>
+          <code className="break-all text-sm text-texto">{publicUrl}</code>
           <div className="flex flex-wrap gap-2">
             <button type="button" onClick={onCopy} className={actionClass}>
               {copied ? "Copiado!" : "Copiar link"}

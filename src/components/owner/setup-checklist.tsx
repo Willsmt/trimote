@@ -37,10 +37,10 @@ export function SetupChecklist({
   ];
 
   return (
-    <section className="flex flex-col gap-3 rounded border border-neutral-300 p-4">
+    <section className="flex flex-col gap-3 rounded-card border border-borda bg-superficie p-4">
       <div>
-        <h2 className="text-lg font-semibold">Prepare sua agenda</h2>
-        <p className="text-sm text-neutral-500">
+        <h2 className="text-lg font-semibold text-texto">Prepare sua agenda</h2>
+        <p className="text-sm text-texto-secundario">
           Falta pouco para seus clientes agendarem: complete os passos abaixo.
         </p>
       </div>
@@ -49,11 +49,11 @@ export function SetupChecklist({
         {items.map((item) => (
           <li
             key={item.href}
-            className="flex items-center justify-between gap-3 rounded border border-neutral-300 p-3"
+            className="flex items-center justify-between gap-3 rounded-card border border-borda p-3"
           >
             {/* Feito = check + texto esmaecido, SEM line-through (riscado lê como cancelado). */}
-            <p className={`text-sm ${item.done ? "text-neutral-500" : "font-medium"}`}>
-              <span aria-hidden="true" className={`mr-2 ${item.done ? "text-emerald-600" : ""}`}>
+            <p className={`text-sm ${item.done ? "text-texto-secundario" : "font-medium"}`}>
+              <span aria-hidden="true" className={`mr-2 ${item.done ? "text-sucesso-texto" : ""}`}>
                 {item.done ? "✓" : "○"}
               </span>
               {item.label}
@@ -61,7 +61,7 @@ export function SetupChecklist({
             {!item.done && (
               <Link
                 href={item.href}
-                className="whitespace-nowrap rounded border border-neutral-300 px-3 py-1 text-sm text-neutral-700 hover:bg-neutral-100"
+                className="whitespace-nowrap rounded-botao border border-borda px-3 py-1 text-sm text-texto transition-colors hover:border-primaria hover:text-primaria"
               >
                 {item.cta}
               </Link>

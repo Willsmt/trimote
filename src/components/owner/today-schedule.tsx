@@ -141,11 +141,11 @@ export function TodaySchedule({
     return (
       <div className="flex flex-col gap-2">
         {message && (
-          <p className="rounded border border-neutral-300 bg-neutral-50 p-3 text-sm font-medium">
+          <p className="rounded-card border border-borda bg-superficie-2 p-3 text-sm font-medium">
             {message}
           </p>
         )}
-        <p className="text-sm text-neutral-500">Nenhum atendimento agendado para hoje.</p>
+        <p className="text-sm text-texto-secundario">Nenhum atendimento agendado para hoje.</p>
       </div>
     );
   }
@@ -153,21 +153,21 @@ export function TodaySchedule({
   return (
     <div className="flex flex-col gap-2">
       {message && (
-        <p className="rounded border border-neutral-300 bg-neutral-50 p-3 text-sm font-medium">
+        <p className="rounded-card border border-borda bg-superficie-2 p-3 text-sm font-medium">
           {message}
         </p>
       )}
 
       <ul className="flex flex-col gap-2">
         {items.map((item) => (
-          <li key={item.id} className="rounded border border-neutral-300 p-3">
+          <li key={item.id} className="rounded-card border border-borda bg-superficie p-3">
             <div className="flex items-center justify-between gap-3">
               <div>
-                <p className="font-medium">
+                <p className="font-medium text-texto">
                   {formatTime(item.startsAtIso, timeZone)}–{formatTime(item.endsAtIso, timeZone)} ·{" "}
                   {item.serviceName}
                 </p>
-                <p className="text-sm text-neutral-500">
+                <p className="text-sm text-texto-secundario">
                   {item.clientName ?? item.clientEmail ?? "Cliente"}
                 </p>
                 {/* WhatsApp do cliente (issue #34): só se preenchido; abre em nova aba para não tirar
@@ -177,7 +177,7 @@ export function TodaySchedule({
                     href={`https://wa.me/${item.clientPhone.replace(/\D/g, "")}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-sm text-emerald-700 underline"
+                    className="text-sm text-sucesso-texto underline"
                   >
                     WhatsApp: {formatPhoneDisplay(item.clientPhone)}
                   </a>
@@ -186,7 +186,7 @@ export function TodaySchedule({
               <div className="flex items-center gap-3">
                 <button
                   type="button"
-                  className="text-xs text-emerald-700 underline disabled:opacity-50"
+                  className="text-xs text-sucesso-texto underline disabled:opacity-50"
                   disabled={isPending}
                   onClick={() => toggleComplete(item.id)}
                 >
@@ -194,7 +194,7 @@ export function TodaySchedule({
                 </button>
                 <button
                   type="button"
-                  className="text-xs text-red-600 underline disabled:opacity-50"
+                  className="text-xs text-carmesim-texto underline disabled:opacity-50"
                   disabled={isPending}
                   onClick={() => onCancel(item.id)}
                 >
@@ -204,9 +204,9 @@ export function TodaySchedule({
             </div>
 
             {completingId === item.id && (
-              <div className="mt-2 flex flex-wrap items-center gap-2 border-t border-neutral-200 pt-2">
+              <div className="mt-2 flex flex-wrap items-center gap-2 border-t border-borda pt-2">
                 <select
-                  className="rounded border border-neutral-300 p-1 text-xs"
+                  className="rounded-input border border-borda p-1 text-xs"
                   value={payment}
                   onChange={(e) => setPayment(e.target.value)}
                 >
@@ -219,7 +219,7 @@ export function TodaySchedule({
                 </select>
                 <button
                   type="button"
-                  className="rounded bg-neutral-900 px-3 py-1 text-xs text-white disabled:opacity-50"
+                  className="rounded-botao bg-primaria px-3 py-1 text-xs text-white transition-colors hover:bg-primaria-hover disabled:opacity-50"
                   disabled={isPending}
                   onClick={() => onConfirmComplete(item.id)}
                 >
@@ -227,7 +227,7 @@ export function TodaySchedule({
                 </button>
                 <button
                   type="button"
-                  className="rounded border border-neutral-300 px-3 py-1 text-xs text-neutral-600 hover:bg-neutral-100"
+                  className="rounded-botao border border-borda px-3 py-1 text-xs text-texto-secundario transition-colors hover:bg-superficie-2"
                   onClick={() => setCompletingId(null)}
                 >
                   Voltar
