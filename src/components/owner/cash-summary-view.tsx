@@ -42,17 +42,17 @@ export function CashSummaryView({
   return (
     <section className="flex flex-col gap-6">
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <div className="rounded-lg border border-neutral-200 p-4">
-          <p className="text-sm text-neutral-500">Entradas</p>
-          <p className="text-xl font-semibold text-emerald-600">{money(income)}</p>
+        <div className="rounded-card border border-borda bg-superficie p-6">
+          <p className="text-sm text-texto-secundario">Entradas</p>
+          <p className="text-xl font-semibold text-sucesso-texto">{money(income)}</p>
         </div>
-        <div className="rounded-lg border border-neutral-200 p-4">
-          <p className="text-sm text-neutral-500">Saídas</p>
-          <p className="text-xl font-semibold text-red-600">{money(expense)}</p>
+        <div className="rounded-card border border-borda bg-superficie p-6">
+          <p className="text-sm text-texto-secundario">Saídas</p>
+          <p className="text-xl font-semibold text-carmesim-texto">{money(expense)}</p>
         </div>
-        <div className="rounded-lg border border-neutral-200 p-4">
-          <p className="text-sm text-neutral-500">Saldo</p>
-          <p className={`text-xl font-semibold ${negative ? "text-red-600" : "text-neutral-900"}`}>
+        <div className="rounded-card border border-borda bg-superficie p-6">
+          <p className="text-sm text-texto-secundario">Saldo</p>
+          <p className={`text-xl font-semibold ${negative ? "text-carmesim-texto" : "text-texto"}`}>
             {money(balance)}
           </p>
         </div>
@@ -60,9 +60,9 @@ export function CashSummaryView({
 
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
         <div>
-          <h2 className="mb-2 text-sm font-semibold text-neutral-700">Entradas por forma de pagamento</h2>
+          <h2 className="mb-2 text-sm font-semibold text-texto">Entradas por forma de pagamento</h2>
           {incomeByPaymentMethod.length === 0 ? (
-            <p className="text-sm text-neutral-400">Sem entradas no período.</p>
+            <p className="text-sm text-texto-secundario">Sem entradas no período.</p>
           ) : (
             <ul className="flex flex-col gap-1">
               {incomeByPaymentMethod.map((b) => (
@@ -75,9 +75,9 @@ export function CashSummaryView({
           )}
         </div>
         <div>
-          <h2 className="mb-2 text-sm font-semibold text-neutral-700">Saídas por categoria</h2>
+          <h2 className="mb-2 text-sm font-semibold text-texto">Saídas por categoria</h2>
           {expenseByCategory.length === 0 ? (
-            <p className="text-sm text-neutral-400">Sem saídas no período.</p>
+            <p className="text-sm text-texto-secundario">Sem saídas no período.</p>
           ) : (
             <ul className="flex flex-col gap-1">
               {expenseByCategory.map((b) => (

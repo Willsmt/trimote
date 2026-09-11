@@ -224,16 +224,16 @@ export function LedgerManager({
   return (
     <div className="flex flex-col gap-8">
       {message && (
-        <p className="rounded border border-neutral-300 bg-neutral-50 p-3 text-sm font-medium">
+        <p className="rounded-card border border-borda bg-superficie-2 p-6 text-sm font-medium">
           {message}
         </p>
       )}
 
       {/* Concluir atendimento (US1 + extras US2) */}
       <section className="flex flex-col gap-2">
-        <h2 className="font-semibold">Concluir atendimento</h2>
+        <h2 className="font-semibold text-texto">Concluir atendimento</h2>
         <select
-          className="rounded border border-neutral-300 p-2 text-sm"
+          className="rounded-input border border-borda p-2 text-sm"
           value={bookingId}
           onChange={(e) => setBookingId(e.target.value)}
         >
@@ -253,7 +253,7 @@ export function LedgerManager({
         />
         <button
           type="button"
-          className="self-start rounded bg-neutral-900 px-4 py-2 text-sm text-white disabled:opacity-50"
+          className="self-start rounded-botao border border-borda px-4 py-2 text-sm text-texto transition-colors hover:border-primaria hover:text-primaria disabled:opacity-50"
           onClick={onComplete}
           disabled={isPending}
         >
@@ -263,7 +263,7 @@ export function LedgerManager({
 
       {/* Atendimento avulso / walk-in (US3) */}
       <section className="flex flex-col gap-2">
-        <h2 className="font-semibold">Atendimento avulso (walk-in)</h2>
+        <h2 className="font-semibold text-texto">Atendimento avulso (walk-in)</h2>
         <ItemsEditor
           label="Itens"
           rows={walkInItems}
@@ -271,7 +271,7 @@ export function LedgerManager({
           services={services}
         />
         <input
-          className="rounded border border-neutral-300 p-2 text-sm"
+          className="rounded-input border border-borda p-2 text-sm"
           placeholder="Nome do cliente (opcional)"
           value={walkInClientName}
           onChange={(e) => setWalkInClientName(e.target.value)}
@@ -279,7 +279,7 @@ export function LedgerManager({
         <PaymentSelect value={walkInPayment} onChange={setWalkInPayment} />
         <button
           type="button"
-          className="self-start rounded bg-neutral-900 px-4 py-2 text-sm text-white disabled:opacity-50"
+          className="self-start rounded-botao border border-borda px-4 py-2 text-sm text-texto transition-colors hover:border-primaria hover:text-primaria disabled:opacity-50"
           onClick={onWalkIn}
           disabled={isPending}
         >
@@ -289,21 +289,21 @@ export function LedgerManager({
 
       {/* Despesa (US4) */}
       <section className="flex flex-col gap-2">
-        <h2 className="font-semibold">Despesa</h2>
+        <h2 className="font-semibold text-texto">Despesa</h2>
         <input
-          className="rounded border border-neutral-300 p-2 text-sm"
+          className="rounded-input border border-borda p-2 text-sm"
           placeholder="Descrição"
           value={expenseDescription}
           onChange={(e) => setExpenseDescription(e.target.value)}
         />
         <input
-          className="rounded border border-neutral-300 p-2 text-sm"
+          className="rounded-input border border-borda p-2 text-sm"
           placeholder="Categoria (opcional)"
           value={expenseCategory}
           onChange={(e) => setExpenseCategory(e.target.value)}
         />
         <input
-          className="rounded border border-neutral-300 p-2 text-sm"
+          className="rounded-input border border-borda p-2 text-sm"
           placeholder="Valor"
           inputMode="decimal"
           value={expenseAmount}
@@ -312,7 +312,7 @@ export function LedgerManager({
         <PaymentSelect value={expensePayment} onChange={setExpensePayment} />
         <button
           type="button"
-          className="self-start rounded bg-neutral-900 px-4 py-2 text-sm text-white disabled:opacity-50"
+          className="self-start rounded-botao border border-borda px-4 py-2 text-sm text-texto transition-colors hover:border-primaria hover:text-primaria disabled:opacity-50"
           onClick={onExpense}
           disabled={isPending}
         >
@@ -326,7 +326,7 @@ export function LedgerManager({
 function PaymentSelect({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   return (
     <select
-      className="rounded border border-neutral-300 p-2 text-sm"
+      className="rounded-input border border-borda p-2 text-sm"
       value={value}
       onChange={(e) => onChange(e.target.value)}
     >
@@ -362,12 +362,12 @@ function ItemsEditor({
   }
 
   return (
-    <div className="flex flex-col gap-2 rounded border border-neutral-200 p-2">
-      <span className="text-xs font-medium text-neutral-500">{label}</span>
+    <div className="flex flex-col gap-2 rounded-card border border-borda p-2">
+      <span className="text-xs font-medium text-texto-secundario">{label}</span>
       {rows.map((row, index) => (
         <div key={index} className="flex flex-wrap items-center gap-2">
           <select
-            className="rounded border border-neutral-300 p-1 text-sm"
+            className="rounded-input border border-borda p-1 text-sm"
             value={row.serviceId}
             onChange={(e) => update(index, { serviceId: e.target.value })}
           >
@@ -381,13 +381,13 @@ function ItemsEditor({
           {!row.serviceId && (
             <>
               <input
-                className="rounded border border-neutral-300 p-1 text-sm"
+                className="rounded-input border border-borda p-1 text-sm"
                 placeholder="Descrição"
                 value={row.description}
                 onChange={(e) => update(index, { description: e.target.value })}
               />
               <input
-                className="w-24 rounded border border-neutral-300 p-1 text-sm"
+                className="w-24 rounded-input border border-borda p-1 text-sm"
                 placeholder="Valor"
                 inputMode="decimal"
                 value={row.amount}
@@ -397,7 +397,7 @@ function ItemsEditor({
           )}
           <button
             type="button"
-            className="rounded border border-neutral-300 px-2 py-0.5 text-xs text-neutral-600 hover:bg-neutral-100"
+            className="rounded-botao border border-borda px-2 py-0.5 text-xs text-texto-secundario transition-colors hover:bg-superficie-2"
             onClick={() => remove(index)}
           >
             Remover
@@ -406,7 +406,7 @@ function ItemsEditor({
       ))}
       <button
         type="button"
-        className="self-start rounded border border-neutral-300 px-2 py-0.5 text-xs text-neutral-700 hover:bg-neutral-100"
+        className="self-start rounded-botao border border-borda px-2 py-0.5 text-xs text-texto transition-colors hover:border-primaria hover:text-primaria"
         onClick={add}
       >
         + Adicionar item
