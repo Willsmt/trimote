@@ -1,3 +1,4 @@
+import { fraunces } from "@/app/fonts";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 
@@ -7,13 +8,16 @@ import { SiteFooter } from "@/components/site-footer";
 //
 // Vale para TODAS as rotas do app (/owner, /b/[slug], /my-bookings, /privacidade, ...). A landing
 // (grupo (marketing)) fica de fora e traz sua própria navegação.
+//
+// fraunces.variable no wrapper (mesmo padrão do grupo (public)): a Constituição exige Fraunces nos
+// títulos de 24px+ em qualquer tela do app, não só na landing (issue #59).
 export default function SiteLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className={`${fraunces.variable} flex min-h-screen flex-col`}>
       <SiteHeader />
       <div className="flex-1">{children}</div>
       <SiteFooter />

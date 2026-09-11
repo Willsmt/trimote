@@ -40,7 +40,7 @@ export function PublicPageCard({ publicUrl }: { publicUrl: string }) {
     "rounded-botao border border-borda px-3 py-1 text-sm text-texto transition-colors hover:border-primaria hover:text-primaria";
 
   return (
-    <section className="flex flex-col gap-3 rounded-card border border-borda bg-superficie p-4">
+    <section className="flex flex-col gap-3 rounded-card border border-borda bg-superficie p-6">
       <div>
         <h2 className="text-lg font-semibold text-texto">Sua página de agendamento</h2>
         <p className="text-sm text-texto-secundario">

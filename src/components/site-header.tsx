@@ -22,8 +22,8 @@ export async function SiteHeader() {
     <header className="border-b border-borda bg-superficie">
       <nav className="mx-auto flex max-w-3xl flex-col gap-2 p-4">
         <div className="flex items-center justify-between gap-4">
-          <Link href="/" className="font-bold text-texto">
-            Trimote
+          <Link href="/" className="font-fraunces text-2xl font-bold text-texto">
+            trimote<span className="bg-[image:var(--ouro-metal)] bg-clip-text text-transparent">.</span>
           </Link>
 
           <div className="flex items-center gap-3">

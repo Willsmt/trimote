@@ -97,7 +97,7 @@ export default async function OwnerFinancePage({
   return (
     <main className="mx-auto flex max-w-3xl flex-col gap-6 p-8">
       <header>
-        <h1 className="text-2xl font-bold">Balancete</h1>
+        <h1 className="font-fraunces text-2xl font-bold">Balancete</h1>
         <p className="text-sm text-neutral-500">Caixa da barbearia por período (entradas, saídas e saldo).</p>
       </header>
 

@@ -31,7 +31,7 @@ export default async function OwnerServicesPage() {
   return (
     <main className="mx-auto flex max-w-2xl flex-col gap-6 p-8">
       <header>
-        <h1 className="text-2xl font-bold">Gerenciar serviços</h1>
+        <h1 className="font-fraunces text-2xl font-bold">Gerenciar serviços</h1>
         <p className="text-sm text-neutral-500">Criar, editar e ativar/desativar serviços.</p>
       </header>
       <ServicesManager services={services} />

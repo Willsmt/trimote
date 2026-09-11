@@ -141,7 +141,7 @@ export function TodaySchedule({
     return (
       <div className="flex flex-col gap-2">
         {message && (
-          <p className="rounded-card border border-borda bg-superficie-2 p-3 text-sm font-medium">
+          <p className="rounded-card border border-borda bg-superficie-2 p-6 text-sm font-medium">
             {message}
           </p>
         )}
@@ -153,14 +153,14 @@ export function TodaySchedule({
   return (
     <div className="flex flex-col gap-2">
       {message && (
-        <p className="rounded-card border border-borda bg-superficie-2 p-3 text-sm font-medium">
+        <p className="rounded-card border border-borda bg-superficie-2 p-6 text-sm font-medium">
           {message}
         </p>
       )}
 
       <ul className="flex flex-col gap-2">
         {items.map((item) => (
-          <li key={item.id} className="rounded-card border border-borda bg-superficie p-3">
+          <li key={item.id} className="rounded-card border border-borda bg-superficie p-6">
             <div className="flex items-center justify-between gap-3">
               <div>
                 <p className="font-medium text-texto">

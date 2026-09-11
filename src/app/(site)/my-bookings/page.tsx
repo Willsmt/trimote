@@ -27,7 +27,7 @@ export default async function MyBookingsPage() {
   return (
     <main className="mx-auto flex max-w-xl flex-col gap-6 p-8">
       <header>
-        <h1 className="text-2xl font-bold">Meus agendamentos</h1>
+        <h1 className="font-fraunces text-2xl font-bold">Meus agendamentos</h1>
         <p className="text-sm text-neutral-500">Veja e cancele seus agendamentos.</p>
       </header>
       <MyBookingsList items={items} />

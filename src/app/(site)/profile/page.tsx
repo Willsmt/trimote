@@ -22,7 +22,7 @@ export default async function ProfilePage() {
   return (
     <main className="mx-auto flex max-w-xl flex-col gap-6 p-8">
       <header>
-        <h1 className="text-2xl font-bold">Perfil</h1>
+        <h1 className="font-fraunces text-2xl font-bold">Perfil</h1>
         <p className="text-sm text-neutral-500">Seus dados de contato.</p>
       </header>
       <ProfilePhoneForm initialPhone={record?.phone ?? null} />

@@ -28,7 +28,7 @@ export function BusinessSelectionScreen({ options }: BusinessSelectionScreenProp
   return (
     <main className="mx-auto flex max-w-md flex-col gap-4 p-8">
       <header>
-        <h1 className="text-2xl font-bold text-texto">Selecione o negócio</h1>
+        <h1 className="font-fraunces text-2xl font-bold text-texto">Selecione o negócio</h1>
         <p className="text-sm text-texto-secundario">
           Você é dono de mais de um negócio. Escolha em qual deseja trabalhar.
         </p>
@@ -40,7 +40,7 @@ export function BusinessSelectionScreen({ options }: BusinessSelectionScreenProp
               type="button"
               disabled={pending}
               onClick={() => choose(b.businessId)}
-              className="w-full rounded-card border border-borda p-3 text-left text-texto transition-colors hover:border-primaria hover:bg-primaria-suave disabled:opacity-50"
+              className="w-full rounded-card border border-borda p-6 text-left text-texto transition-colors hover:border-primaria hover:bg-primaria-suave disabled:opacity-50"
             >
               {b.name}
             </button>
